@@ -1,0 +1,89 @@
+newly added/modified grammar will be explained for now...
+
+here the new grammas will be explained with examples.
+we will mostly focus on the .OPTIMIZE section
+
+EXAMPLE
+
+.OPTIMIZE
+minimize D(optname = opt1 );					// 1
+simply_minimize D(optname = opt2 );				// 2
+
+minimize D(optname = opt3, alphas=(0.0,2.0,3.0) );		// 3
+simply_minimize D(optname = opt4, alphas=(0.0,2.0,3.0) );	// 4
+
+write( sam1.nom, analysis(optname=opt3) );			// 5
+write( sam2.nom, analysis(optname=opt3,1) );			// 6
+write( sam3.nom, analysis(optname=opt3USTT1.out) );		// 7
+
+mwrite ( sam4.m,						// 8
+  path_lengths(m_var_name=pl1,opt(opt1)),			// 9
+  path_lengths(m_var_name=pl2,opt(opt3,2)),			// 10
+  path_lengths(m_var_name=pl3,opt(opt3USTT1.out)),		// 11
+
+  path_variances(m_var_name=pv5,opt(opt2)),			// 12
+
+  widths(m_var_name=ws2, opt(opt3)),				// 13
+
+  criticalities(m_var_name=sc2,opt(opt4),monte(normal,10000))	// 14
+);
+
+
+draw(sam5.m, pdf(normal,10000,.9, (opt1,pomax) ) );		// 15
+
+.ENDS
+
+.GLBCNSTR
+MIN_WIDTH = 0.5;						// 16
+MAX_WIDTH = 100;						// 17
+.ENDS
+
+line 1: this is easy, just simple deterministic opt. with opt. name "opt1"; refer to grammar file
+line 2: this is for simplied model only, when we say 'simply_minimize' it actually doesn't look
+	up for the .dio file for delay functions, but predefined models defined in network.cpp
+	for this special purpose only. so probably Dinesh wouldn't need to use this one unless
+	he wants to reproduce the result plotted in THE paper.
+line 3: again everybody knows this line; refer to grammar file
+line 4: refer to grammar file for further explanation
+
+line 5: write in the file named "sam1.nom", the static timing analysis result of opt3
+line 6: same, but with different grammar; line 5 and line 6 do the same thing
+line 7: same, but the optimization is indicated by .out file name, hence ciropt simply reads the
+	results from opt3USTT1.out to produce the result
+** so line 5-7 were partially intended to show the three different methods to specify a specific
+	optimization task
+
+line 8: start this statement with the keyword "mwrite"; this means, ciropt is going to write
+	statement like "A = [1 2 3];" in .m file SO THAT when 'sam1' is typed in matlab,
+	a number of variables have some values mostly coming from the results of optimization
+	or post-analysis (e.g. monte carlo, etc.), examples follow.
+line 9: this line writes in the file specified the nominal lengths (or delays) of ALL the paths
+	of the network with the results from the optimization task named "opt1" and assign them
+	to a vector named "pl1"
+line 10, line 11: same but from different optimization task and matlab vector names
+
+line 12: writes in the file specified the total variances (= sum of all the variances of the delay
+	on the path) of ALL the paths of the net work with results from the optimization task named
+	"opt2" and assign them to a vector names "pv5"
+line 13: writes optimized widths (or generally variables) of all devices to "ws2"
+
+line 14: writes criticality indices of all gates to "sc2"
+
+** now when line 8-14 are executed by 'ciropt' without errors, then the file 'sam4.m' is made
+	in the working directory.  when 'sam4' is typed in matlab command line, there will be
+	6 new vectors, which are pl1, pl2, pl3, pv5, ws2, sc2.
+	usually user wants to plot these directly/ or possibly after meanful operations
+	from these vectors.
+
+line 15: the usual drawing line
+
+NOW we CAN just say MIN_WIDTH = {number}; or MAX_WIDTH = {number};
+to specify the mininum/maximum width constraint.
+
+line 16: set the minimum width contraint; this applies for all the n-mos and p-mos widths
+	in all the gates 
+line 17: set the maximum width contraint; this applies for all the n-mos and p-mos widths
+	in all the gates 
+
+** hopefully in the futuer, we will have more refined statements for these like slope constraints
+	via delay constraints for each gate; refer to the file grammar

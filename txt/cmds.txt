@@ -1,0 +1,3 @@
+../bin/spnet  -shortnames -width 5000 -emf -flat -noendcard -exp_notation moregates.sp 1> moregates.flog 2>&1
+../diogen/bin/diogen -p invChain3.sp invChain3.mod ../tech/scmos90.prm 100
+

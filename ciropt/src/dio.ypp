@@ -1,0 +1,319 @@
+%{
+    #include "randomc.hpp"
+
+    #include <iostream.h>
+    #include <vector>
+    #include "gp.hpp"
+    #include "symtab.hpp"
+    #include "network.hpp"
+
+    class idPair { public: int i; double d; };
+
+    int diolex();
+    int dioerror( const std::string & em );
+    void errorBasedHalt();
+
+    extern network * nw;
+
+    extern unsigned dio_line_number;
+    extern std::string dio_filename;
+
+    static symbol_table * tst;
+    static ccc * cc;
+    static dio * meanDio, * stdDio;
+    static std::string cccName;
+    static std::string inoutName, inName, outName;
+    static int choose;
+%}
+
+
+%union
+{
+    double   doubleV;
+    char   * charpV;
+    gposy  * gposyV;
+
+    std::vector<gposy *> * gpvecV;
+}
+
+
+%token MINIMIZE MAX COMMA
+%token <doubleV> PNUMBER
+%token <charpV>  IDENTIFIER
+
+%type <doubleV> number
+%type <gposyV>  genposy
+%type <gpvecV>  gp_list
+
+%left PLUS MINUS
+%left TIMES DIVIDE
+%nonassoc PNUMBER POPEN IDENTIFIER MAX SQRT INV
+%left MUL
+%left POWER
+
+%token MINIMIZE
+%token COMMA PCLOSE DELIMITER
+%token EQUALTO LESSTHAN GREATERTHAN
+%token COLON
+%token ILLEGAL_TOKEN
+
+%token RF FR RR FF STD
+
+%%
+
+main:   dio_desc
+| main dio_desc
+;
+
+dio_desc: IDENTIFIER
+{
+    const std::string cccin = $1;
+    unsigned dotPos = cccin.find('.');
+
+    cccName = cccin.substr(0,dotPos);
+    inoutName = cccin.substr(dotPos+1);
+
+    dotPos = inoutName.find('.');
+    inName = inoutName.substr(0,dotPos);
+    outName = inoutName.substr(dotPos+1);
+    cout << cccName << ": ";
+    const std::map<std::string,ccc *> & cccmap = nw->getCCCMap();
+    std::map<std::string,ccc *>::const_iterator itr;
+
+    itr = cccmap.find(cccName);
+    if( inName == "" || outName == "" )
+    {
+        dioerror( "Dio syntax not proper for " + cccName);
+    }
+
+    if( itr == cccmap.end())
+    {
+        dioerror( "ccc named " + cccName + " has not been defined" );
+    }
+    else
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+
+        meanDio = new dio();
+        stdDio  = new dio();
+    }
+
+    delete $1;
+}
+
+
+dios
+{
+    cc->putMeanDio(*meanDio,inName,outName);
+    cc->putSTDDio (*stdDio,inName,outName);
+    cout << "Recorded dio for " << inName << " to " << outName << endl;
+}
+
+
+|
+// 1      2
+IDENTIFIER COLON
+{
+    const std::string cccin = $1;
+    unsigned dotPos = cccin.find('.');
+
+    cccName = cccin.substr(0,dotPos);
+    std::string latterpart = cccin.substr(dotPos+1);
+
+    dotPos = latterpart.find('.');
+
+    outName = latterpart.substr(dotPos+1);
+    latterpart = latterpart.substr(0,dotPos);
+
+    const std::map<std::string, ccc *> & cccmap = nw->getCCCMap();
+    std::map<std::string, ccc *>::const_iterator itr;
+
+    if( latterpart == "" || outName == "" )
+    {
+        dioerror( "Power spec. syntax not proper for " + cccName);
+    }
+
+    itr = cccmap.find(cccName);
+
+		choose = -1;
+    if( latterpart == "CWIRE_POWER" && itr != cccmap.end())
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+        choose = 0;
+    }
+		else if( latterpart == "CPAR_POWER" && itr != cccmap.end())
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+        choose = 1;
+    }
+    else if (latterpart == "LEAK_POWER_P_NOM" && itr != cccmap.end())
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+        choose = 2;
+    }
+    else if (latterpart == "LEAK_POWER_N_NOM" && itr != cccmap.end())
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+        choose = 3;
+    }
+    else if (latterpart == "LEAK_POWER_P_STAT" && itr != cccmap.end())
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+        choose = 4;
+    }
+    else if (latterpart == "LEAK_POWER_N_STAT" && itr != cccmap.end())
+    {
+        cc = itr->second;
+        tst = & cc->getSymbolTable();
+        choose = 5;
+    }
+    else if( itr == cccmap.end() )
+    {
+        dioerror( "ccc named " + cccName + " has not been defined" );
+    }
+    else
+    {
+        dioerror( "ParCap / leakPow statement format error" );
+    }
+    cout << cccName << ": ";
+
+    delete $1;
+
+    errorBasedHalt();
+}
+
+
+// 4       5
+genposy DELIMITER
+{
+    if(choose == 0)
+		{
+				cout << "Recorded wireCap for net " << outName << endl;
+        cc->putWireCap( $4, outName);
+		}
+		else if(choose == 1)
+		{
+				cout << "Recorded parCap for net " << outName << endl;
+        cc->putParCap( $4, outName);
+		}
+    else if(choose == 2)
+		{
+				cout << "Recorded LeakPowNmean for output " << outName << endl;
+        cc->putLeakPowNmean( $4, outName );
+		}
+    else if(choose == 3)
+		{
+				cout << "Recorded LeakPowPmean for output " << outName << endl;
+        cc->putLeakPowPmean( $4, outName );
+		}
+    else if(choose == 4)
+		{
+				cout << "Recorded LeakPowNstat for output " << outName << endl;
+        cc->putLeakPowNstat( $4, outName );
+		}
+    else if(choose == 5)
+		{
+				cout << "Recorded LeakPowPstat for output " << outName << endl;
+        cc->putLeakPowPstat( $4, outName );
+		}
+    else
+        dioerror(" Could not record Parasitic cap or leakage for" + cccName);
+
+}
+
+
+;
+
+dios:   dio
+| dios dio
+;
+
+dio:      RF COLON genposy DELIMITER
+{ 
+		 meanDio->putRF(*$3); 
+}
+| RF COLON genposy DELIMITER STD COLON genposy DELIMITER
+{ 
+		 meanDio->putRF(*$3); stdDio->putRF(*$7); 
+}
+| FR COLON genposy DELIMITER
+{ 
+		 meanDio->putFR(*$3); 
+}
+| FR COLON genposy DELIMITER STD COLON genposy DELIMITER
+{ 
+		 meanDio->putFR(*$3); stdDio->putFR(*$7); 
+}
+| RR COLON genposy DELIMITER
+{ 
+		 meanDio->putRR(*$3); 
+}
+| RR COLON genposy DELIMITER STD COLON genposy DELIMITER
+{ 
+		 meanDio->putRR(*$3); stdDio->putRR(*$7); 
+}
+| FF COLON genposy DELIMITER
+{ 
+		 meanDio->putFF(*$3); 
+}
+| FF COLON genposy DELIMITER STD COLON genposy DELIMITER
+{ 
+		 meanDio->putFF(*$3); stdDio->putFF(*$7); 
+}
+;
+
+genposy : PNUMBER { $$ = new gposy( $1 ); }
+| IDENTIFIER
+{
+    tst->put( $1 );
+    $$ = new gposy( tst->index( $1 ) );
+    delete $1;
+}
+
+
+| POPEN genposy PCLOSE      { $$ = $2; }
+| INV POPEN genposy PCLOSE  { $$ = & $3->power(-1); }
+| SQRT POPEN genposy PCLOSE { $$ = & $3->power(.5); }
+| MAX POPEN gp_list PCLOSE  { $$ = new gposy(*$3); }
+| genposy TIMES genposy     { $$ = & $1->multiply(*$3); }
+| genposy genposy %prec MUL { $$ = & $1->multiply(*$2); }
+| genposy DIVIDE genposy    { $$ = & $1->divide(*$3); }
+| genposy POWER number      { $$ = & $1->power($3); }
+| genposy PLUS genposy      { $$ = & $1->add(*$3); }
+;
+
+gp_list : genposy COMMA genposy
+{
+    $$ = new std::vector<gposy *>;
+
+    $$->push_back( $1 );
+    $$->push_back( $3 );
+}
+
+
+| gp_list COMMA genposy
+{
+    $$->push_back( $3 );
+}
+
+
+;
+
+number  : PNUMBER       { $$ = $1; }
+| MINUS PNUMBER     { $$ = -$2; }
+| POPEN number PCLOSE   { $$ = $2; }
+;
+%%
+int dioerror( const std::string & em )
+{
+    cerr << dio_filename << ":" << dio_line_number << ": " << em << endl;
+
+    exit( -1 );
+    return -1;
+}

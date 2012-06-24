@@ -1,0 +1,70 @@
+P1 write 2x2 matrix
+
+P2 get criticality of nodes, plots it,
+
+P3 histogram of widths, and their variations...
+
+P4 revise the pdf generation thing : probably I want a member function of
+ProbDist which gives a reference (or equivalently a pointer) to
+some new class, say, pdfcdfplot, which has x, pdf, cdf, quantile points,
+mean, std, etc;
+this will eventually benificial
+because we only need to keep this new class in instance after montecarlos;
+
+P5 completely separate opt_spec and opt_storage, which are totally differnet
+  concepts. opt_storage "will" be identified (and distinguished) by
+  it's name tag, which is either "opt_sepc", or ".out file name".
+
+
+P... carefully correct all the statements with ciropterror in ciropt.ypp
+
+P... will eventually arrange all the classes regarding the analysis,
+  e.g. define 'opt description class' corresponding to "opt({opt name},{num})"
+    or "opt({opt name})"
+
+
+-3. do one than one analysis in one file..^
+
+
+-2. check drawing or writing has legal optnames in checkLegitimacy...
+
+-1. labeling function
+
+0. check whether _LOAD_R_ is only in fr dio and _LOAD_F_ is only in rf dio.
+  ** to do this we need to have difference symbol table for each dio (mean or std) functions... also make changes to gp.cpp, so that it asserts that it has only legal variables...
+
+1. accept c = {genposy} for capacitor node in general
+
+3. take care of all noRefException throwing properly
+
+4. rearrage all the private & public members, fields, functions according to
+
+5. error report: collect error messages up to some point in the program,
+     and report them together at the point (instead of reporting the error
+     and quit whenever one is found).
+     for example, the checking/stopping points can be A) after reading the
+     network (e.g. no ccc error, network connectivity error, etc.),
+     B) after preparing up the optimization and just before start optimization
+  ** In order to get this thing done correctly, we may want to remember the
+     line numbers, in which every gate/node, net/edge, ccc is defined, etc.
+
+6. memory allocation check: when we request memory allocation to OS, we may
+    want to check whether the memory has been properly allocated (sometimes
+    the memory can be run out e.g. when there are too many Montecarlos and
+    does not free memories on time, etc.).
+
+7. remember the line number at which netspec, values, and analysis are defined,
+    and write the line number with the error messages produced
+    by legitimacy checking
+
+(done) take care of the objective function for statistical formulation
+  subjects not by the formalism
+
+(done) when calculating CLoad, deal with the case when cap is not just a simple
+  constant, but a generalized posynomial.
+  ** More generally, let's consider have each node instance contain
+     generalized posynomial, gposy, instances for each delay when
+     it write down the problem. ??? -> this would eventually resolves
+     every problem of this kind... ??
+
+(done) add grammar ignoring capacitor statement in .subckt description

@@ -1,0 +1,15 @@
+This file list the things that were changed from the previous version
+of ciropt to clean it and remove old things.
+
+1> remove the simply_minimize option and its associated models and 
+parsing directives from all files.
+
+
+2> implementing deuniquify for which made another variable called 
+var_name to be used to prefix the WN WP, etc variables. var_name can
+be same for deuiquified nodes so that they can get sized the same way.
+
+3> Including default activity factor (in addition to min_act_fact) for the nets which do not happen to be initialized or if the .power section is not given or something.
+
+4> including duty factor support for the gates (like activity factors are
+for nets).

@@ -1,0 +1,20 @@
+Problem Status:     primal-dual feasible
+Solution Status:    optimal
+Primal Objective:   2.125e+00, log of: 7.536e-01
+Dual Objective:     2.126e+00, log of: 7.542e-01
+
+Optimal Objective Value: 2.126e+00
+
+Optimal Variable Values: 
+x                   2.126e+00
+y                   2.000e+00
+z                   7.931e+00
+
+Inequality Constraints:
+LABEL LHS            RHS            MARGIN         DUALMUL        
+~L1:  2.126e+00      2.126e+00      -1.592e-04     1.000e+00      
+~L2:  1.261e-01      1.000e+00      2.071e+00      6.019e-05      
+~L3:  9.931e+00      1.000e+01      6.890e-03      7.416e-02      
+~L4:  5.000e-01      5.000e-01      9.095e-05      9.559e-01      
+~L5:  2.000e+00      5.000e+04      1.013e+01      1.020e-05      
+

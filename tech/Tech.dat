@@ -1,0 +1,93 @@
+.base_dios
+CovN = 0.0832;
+CovP = 0.1872;
+CparN_r_edge  = 1.7250;
+CparP_r_edge  = 0.8625;
+CparN_r_width = 0.0031;
+CparP_r_width = 0.0031;
+CparN_f_edge  = 1.8328;
+CparP_f_edge  = 0.8625;
+CparN_f_width = 0.0066;
+CparP_f_width = 0.0066;
+idr_rise = 1000;
+idr_fall = 1000;
+CgateP_rise = 0.7480;
+CgateP_fall = 1.8919;
+CgateN_rise = 0.4451;
+CgateN_fall = 1.8919;
+CenergyN_edge    = 0.8934;
+CenergyP_edge    = 2.0101;
+CenergyN_width   = 0.0925;
+CenergyP_width   = 0.2082;
+CgateN_energy    = 0.0001;
+CgateP_energy    = 0.0001;
+Cgate_energy_n   = 0.0001;
+Cgate_energy_p   = 0.0001;
+Vthn = 0.3900;
+Vthp = 0.4000;
+Vdd = params.vddNom;
+Vdd_energy = Vdd;
+min_act_factor   = 0.0010;
+A1_rf = 1;
+A2_rf = 1;
+A3_rf = 1;
+A4_rf = 1;
+A1_fr = 1;
+A2_fr = 1;
+A3_fr = 1;
+A4_fr = 1;
+fr_mean_1 = ((1.0*0.00016/W1)*(1.66666666667+1.0*3.29872469814*2.77777777779)*(1+0.1*0.4/1.0));
+rf_mean_1 = ((1.0*7.5e-05/W1)*(1.6393442623+1.0*1.17930372239*2.68744961034)*(1+0.1*0.39/1.0));
+fr_mean_2 = ((1.0*0.00016)*(max(1/W1,1/W2)*1.66666666667+1.0*(1/W1+1/W2)*3.29872469814*2.77777777779)*(1+0.1*0.4/1.0));
+rf_mean_2 = ((1.0*7.5e-05)*(max(1/W1,1/W2)*1.6393442623+1.0*(1/W1+1/W2)*1.17930372239*2.68744961034)*(1+0.1*0.39/1.0));
+fr_mean_3 = ((1.0*0.00016)*(max(1/W1,1/W2,1/W3)*1.66666666667+1.0*(1/W1+1/W2+1/W3)*3.29872469814*2.77777777779)*(1+0.1*0.4/1.0));
+rf_mean_3 = ((1.0*7.5e-05)*(max(1/W1,1/W2,1/W3)*1.6393442623+1.0*(1/W1+1/W2+1/W3)*1.17930372239*2.68744961034)*(1+0.1*0.39/1.0));
+fr_mean_4 = ((1.0*0.00016)*(max(1/W1,1/W2,1/W3,1/W4)*1.66666666667+1.0*(1/W1+1/W2+1/W3+1/W4)*3.29872469814*2.77777777779)*(1+0.1*0.4/1.0));
+rf_mean_4 = ((1.0*7.5e-05)*(max(1/W1,1/W2,1/W3,1/W4)*1.6393442623+1.0*(1/W1+1/W2+1/W3+1/W4)*1.17930372239*2.68744961034)*(1+0.1*0.39/1.0));
+fr_mean_5 = ((1.0*0.00016)*(max(1/W1,1/W2,1/W3,1/W4,1/W5)*1.66666666667+1.0*(1/W1+1/W2+1/W3+1/W4+1/W5)*3.29872469814*2.77777777779)*(1+0.1*0.4/1.0));
+rf_mean_5 = ((1.0*7.5e-05)*(max(1/W1,1/W2,1/W3,1/W4,1/W5)*1.6393442623+1.0*(1/W1+1/W2+1/W3+1/W4+1/W5)*1.17930372239*2.68744961034)*(1+0.1*0.39/1.0));
+
+fr_std_1 = 1.0;
+fr_std_2 = 1.0;
+fr_std_3 = 1.0;
+fr_std_4 = 1.0;
+fr_std_5 = 1.0;
+
+rf_std_1 = 1.0;
+rf_std_2 = 1.0;
+rf_std_3 = 1.0;
+rf_std_4 = 1.0;
+rf_std_5 = 1.0;
+
+fr_std_trans_0_1 = 1.0;
+fr_std_trans_0_2 = 1.0;
+fr_std_trans_0_3 = 1.0;
+fr_std_trans_0_4 = 1.0;
+rf_std_trans_0_1 = 1.0;
+rf_std_trans_0_2 = 1.0;
+rf_std_trans_0_3 = 1.0;
+rf_std_trans_0_4 = 1.0;
+
+fr_mean_trans_0_1 = (1/WT1);
+fr_mean_trans_0_2 = (1/WT1);
+fr_mean_trans_0_3 = (1/WT1);
+fr_mean_trans_0_4 = (1/WT1);
+rf_mean_trans_0_1 = (1/WT1);
+rf_mean_trans_0_2 = (1/WT1);
+rf_mean_trans_0_3 = (1/WT1);
+rf_mean_trans_0_4 = (1/WT1);
+
+rr_mean_1 = 0;
+rr_mean_2 = 0;
+rr_mean_3 = 0;
+rr_mean_4 = 0;
+ff_mean_1 = 0;
+ff_mean_2 = 0;
+ff_mean_3 = 0;
+ff_mean_4 = 0;
+
+p_leak_nom = W*0.009241;
+n_leak_nom = W*0.001848;
+p_leak_stat = W;
+n_leak_stat = W;
+.ends

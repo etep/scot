@@ -1,0 +1,54 @@
+This is release 9.4 of irsim.
+Note that the format of the binary files has changed (from version 8.x).
+
+To compile irsim run the make_irsim script.  This will compile and install
+everything that's needed (read the end of this file for additional directions).
+
+You may change the default directory (~cad) in which things get installed
+by setting CAD_HOME to whatever is appropriate in your system.
+
+The CFLAGS file should contains the system dependent flags.  You should 
+normally link this file to one of the provided files in the Flags/
+directory. 
+--- OLDER note: 
+For ultrix, hp's and sun's you don't need to change them.  For SYSTEM-V 
+installations set the SYS_V flag (-DSYS_V).  If your system doesn't 
+support sending SIGIO on sockets (asynchronous reads) then set the 
+NO_SIGIO (-DNO_SIGIO) flag as well, if you are not sure about this,
+then set it anyhow. If your compiler is a strict ansii C compiler then 
+you might want to set -cckr (it works fine with SGI IRIX compiler). 
+If you are using HPUX add the flag +u4.
+--------------
+
+For systems that do not have an X11 library, you can compile irsim without
+the analyzer, for this you will have to edit the file src/irsim/Makefile
+and set X=NO, and XLIB="".
+
+The lib directory contains prm files for the scalable-cmos process.  You may
+want to install these in "~cad/lib" as well.
+
+The calibrate directory contains information on creating your own prm files.
+
+This release includes the software to perform incremental simulations, which
+can also be used to create an incremental-fault-simulator.  To make the
+fault simulator, you will have to do it by hand: First use the make_irsim
+script to build irsim, then (before cleaning anything in irsim) go into the
+src/fsim directory and run make.  This will create the program called "ifsim",
+which you can use to run statistical simulations of stuck-at faults.
+The directory src/fsim/doc contains both latex and PostScript versions of the
+documentation needed to use ifsim.
+
+This release also includes the following extra code
+
+1) Power estimation code through toggle counts (written by Don Ramsey)
+   Since the code is not completely debugged yet but there is demand for
+   it from a lot of people it is ifdef'd so that it can be turned off
+   selectively. See the file man/powerEst.doc for details on how to
+   use this.
+
+ 2) Code that enables the user to write their own subcircuit models
+    for "analogish stuff". (written by R. Gonzales and S.  Sidiropoulos).
+    Again it is ifdef'd and an example pll is in src/irsim/UserSubckt
+ 
+ 3) Some extra commands (assertWhen and until) which would help debugging
+    of asynchronous designs (thanks to M. Godfrey).

@@ -1,0 +1,186 @@
+%{
+#include <iostream.h>
+#include <vector>
+#include "symtab.h"
+#include "gp.hpp"
+#include "ggp.hpp"
+
+#define DBP false
+
+extern int line_number;
+int ggperror( const char * );
+int ggplex();
+
+extern ggp * GGP;
+symbol_table symtab;
+symbol_table labSymTab;
+std::string filename;
+%}
+
+%union
+{
+  double doubleV;
+  char   * stringV;
+  gposy  * gposyV;
+
+  std::vector<gposy *> * gpvecV;
+}
+
+%token MINIMIZE MAX COMMA
+%token <doubleV> PNUMBER
+%token <stringV> VARIABLE
+
+%type <doubleV> number
+%type <gposyV>  genposy
+%type <gpvecV>  gp_list
+
+%left PLUS MINUS
+%left TIMES DIVIDE
+%nonassoc PNUMBER POPEN VARIABLE MAX SQRT INV
+%left MUL
+%left POWER
+
+%token MINIMIZE
+%token COMMA PCLOSE DELIMITER
+%token EQUALTO LESSTHAN GREATERTHAN
+%token COLON
+%token ILLEGAL_TOKEN
+
+%%
+ggp: obj_statement
+	| obj_statement constraints
+	;
+
+obj_statement: MINIMIZE genposy DELIMITER
+	{ GGP = new ggp(*$2,symtab); }
+	;
+
+constraints: constraint
+	| constraints constraint
+	;
+
+constraint: DELIMITER
+	| genposy EQUALTO genposy DELIMITER
+        {
+	  int labNum = labSymTab.makeAndGetIndexOfAuxLabel();
+
+	  if( GGP->addEqConstraint(*$1,*$3,labSymTab.getSymbol(labNum) ) )
+	  {
+	    if(DBP)
+	      $3->toOstream($1->toOstream(cout,symtab) << " = ",symtab) << endl;
+	  }
+          else
+	     cerr << line_number << ": "
+	     << "either side of equality constraint statement is not monomial" << endl;
+        }
+	| VARIABLE COLON genposy EQUALTO genposy DELIMITER
+        {
+				if(labSymTab.find( $1 ) != -1)
+				cerr << line_number << ": " << "repeated name or something" << endl;
+	  assert( labSymTab.find( $1 ) == -1 );
+	  labSymTab.put( $1 );
+
+	  if( GGP->addEqConstraint(*$3,*$5,$1) )
+	  {
+	    if(DBP)
+	      $5->toOstream($3->toOstream(cout,symtab) << " = ",symtab) << endl;
+	  }
+          else
+	     cerr << line_number << ": "
+	     << "either side of equality constraint statement is not monomial" << endl;
+
+	  delete $1;
+        }
+	| genposy LESSTHAN genposy DELIMITER
+	{
+	  int labNum = labSymTab.makeAndGetIndexOfAuxLabel();
+
+	  if( GGP->addInConstraint(*$1,*$3,labSymTab.getSymbol(labNum)) )
+	  {
+	    if(DBP)
+	      $3->toOstream($1->toOstream(cout,symtab) << " < ",symtab) << endl;
+	  }
+	  else
+	     cerr << line_number << ": "
+	     << "RHS of inequality constraint statement is not monomial" << endl;
+        }
+	| VARIABLE COLON genposy LESSTHAN genposy DELIMITER
+	{
+	  if(DBP) cout << $1 << endl;
+		if(labSymTab.find( $1 ) != -1)
+				cerr << line_number << ": " << "repeated name or something" << endl;
+	  assert( labSymTab.find($1) == -1 );
+	  labSymTab.put( $1 );
+
+	  if( GGP->addInConstraint(*$3,*$5,$1) )
+	  {
+	    if(DBP)
+	      $5->toOstream($3->toOstream(cout,symtab) << " < ",symtab) << endl;
+	  }
+	  else
+	     cerr << line_number << ": "
+	     << "RHS of inequality constraint statement is not monomial" << endl;
+
+          delete $1;
+        }
+	;
+
+genposy	: PNUMBER { $$ = new gposy( $1 ); }
+	| VARIABLE
+	{
+	  symtab.put( $1 );
+	  $$ = new gposy( symtab.index( $1 ) );
+	  delete $1;
+	}
+	| POPEN genposy PCLOSE		{ $$ = $2; }
+	| INV POPEN genposy PCLOSE	{ $$ = & $3->power(-1); }
+	| SQRT POPEN genposy PCLOSE	{ $$ = & $3->power(.5); }
+	| MAX POPEN gp_list PCLOSE
+	{ 
+	  if( $3->size() == 1 )
+	  { $$ = (*$3)[0]; delete $3; }
+	  else
+	    $$ = new gposy(*$3);
+	}
+	| genposy TIMES genposy		{ $$ = & $1->multiply(*$3); }
+	| genposy genposy %prec MUL	{ $$ = & $1->multiply(*$2); }
+	| genposy DIVIDE genposy	{ $$ = & $1->divide(*$3); }
+	| genposy POWER number		{ $$ = & $1->power($3); }
+	| genposy PLUS genposy		{ $$ = & $1->add(*$3); }
+	;
+
+gp_list	: genposy
+	{
+	  $$ = new std::vector<gposy *>;
+	  $$->push_back( $1 );
+        }
+	| gp_list COMMA genposy
+	{
+	  $$->push_back( $3 ); 
+	}
+	;
+
+number	: PNUMBER		{ $$ = $1; }
+	| MINUS PNUMBER		{ $$ = -$2; }
+	| POPEN number PCLOSE	{ $$ = $2; }
+	;
+
+/*
+exp:	exp PLUS exp
+	| exp MINUS exp
+	| exp DIVIDE exp
+	| exp POWER exp
+	| POPEN exp PCLOSE
+	| PNUMBER
+	;
+*/
+
+%%
+int
+ggperror( const char * s )
+{
+  cerr << "ggpsol: " << filename << ":" << line_number << ": " << s << endl;
+
+  exit(-1);
+  return -1;
+}

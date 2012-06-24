@@ -1,0 +1,4 @@
+.OPTIMIZE
+minimize D(optname=MIND);
+.ENDS
+

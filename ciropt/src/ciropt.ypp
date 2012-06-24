@@ -1,0 +1,2982 @@
+%{
+    #include "randomc.hpp"
+    #include "cnvt.hpp"
+
+    #include "network.hpp"
+    #include "opt.hpp"
+    #include "analyzer.hpp"
+
+    #define DB false
+
+    extern int ciropt_line_number;
+    extern std::string ciropt_filename;
+    std::map<std::string, int> glbVars;
+		
+    int ciropterror( const std::string & );
+    int ciropterror( const std::string & errMessage, bool dep );
+    void ciroptMessage( const std::string & message );
+    void putGlbVar(const std::string a);
+		
+    int ciroptlex();
+    int dioparse();
+
+    void errorBasedHalt();
+
+    const std::string getDefaultName( const std::string & what );
+    const std::string getDefaultName( unsigned itern, unsigned N, double p );
+    const std::string getDefaultName( unsigned itern, unsigned N, double p, const std::string & dist );
+
+    extern opt_prob_generator * op;
+    extern network * nw;
+
+    static piinfo * pi;
+    static poinfo * po;
+    static ccc * cc;
+    static symbol_table * tst;
+
+%}
+
+
+%union
+{
+    double    doubleV;
+    std::string * stringV;
+
+    std::vector<std::string> * strvecV;
+    std::pair<std::string,std::vector<std::string> > * siV;
+    std::pair<std::string,std::string> * ssV;
+    std::map<std::string,std::string> * smV;
+    std::map<std::string,gposy *> * sgV;
+    std::vector<std::pair<std::string,std::string> > * ssvecV;
+
+    std::vector<subplot *> *  subplotVecV;
+    subplot *         subplotV;
+    std::vector<netspec> *    netspecVecV;
+    netspec *         netspecV;
+
+    gposy *           gposyV;
+    std::vector<gposy *> *    gpvecV;
+
+    std::vector<double> *         doubleVecV;
+
+    std::vector<opt_dscr> *   optdscrVecV;
+    opt_dscr *            optdscrV;
+
+    std::vector<mvec> *       mvecVecV;
+    mvec *            mvecV;
+
+    monte_carlo *         monteV;
+
+    std::vector<mos> *        mosVecV;
+    mos *             mosV;
+
+    prob_dist *           probdistV;
+}
+
+
+%left PLUS MINUS
+%left TIMES DIVIDE
+%nonassoc PNUMBER POPEN IDENTIFIER MAX SQRT INV
+%left MUL
+%left POWER
+
+%token MINIMIZE SMINIMIZE MAX COMMA
+%token <doubleV> PNUMBER
+%token <stringV> IDENTIFIER
+%token EQUALTO LESSTHAN
+%token COMMA PCLOSE DELIMITER
+%token COLON SINGLE_I
+
+%token AREA ENGY PWR DELAY TFALL TRISE 
+%token GND
+%token GLBPARAM SUBCKT CONNECT GLBCNSTR OPTIMIZE TRAN_GATE_SEC POWER_SEC DUTY_SEC PI PO ENDS
+%token ILLEGAL_TOKEN
+%token RF FR RR FF
+%token NAME MVARNAME SLOPE AT AF
+%token MIN_WIDTH MAX_WIDTH
+
+%token MIN_VTH_P MAX_VTH_P MIN_VTH_N MAX_VTH_N
+%token MIN_VDD MAX_VDD
+%token LDF
+%token OFP
+%token DNU
+%token DNIL
+%token NRF
+%token NAETC
+%token GLBVAR
+%token SUK SCK
+%token UDAF
+%token ANTICORR INTPRECHARGE
+
+%token PDF CDF ITER DRAW WRITE ANALYSIS
+%token WIDTHDIST CRCALDIST OPT
+%token MWRITE WIDTHS GATEDIOS CRCALS MONTE PATHLNGS PATHVARS
+
+%token KAPPA KAPPAS BETA VALUES
+
+%type <doubleV> number
+%type <stringV> str_genposy str_gp_list risefall
+
+%type <stringV>  node_name ccc_type var_name
+%type <sgV>  gposy_assignment_list
+%type <strvecV> identifier_list in_edge_list out_edge_list
+%type <doubleVecV> pnumber_list
+
+%type <smV>     tran_mos_list
+%type <smV>     mos_pairs
+%type <mosV>     mos
+%type <mosVecV>  mos_list
+
+%type <subplotVecV> subplot_statements
+%type <subplotV>    subplot_statement
+%type <netspecVecV> net_specification_list
+%type <netspecV>    net_specification
+
+%type <optdscrVecV> opt_dscr_list
+%type <optdscrV>    opt_dscr
+%type <mvecVecV>    mvec_list
+%type <mvecV>       mvec
+%type <monteV>      monte
+%type <probdistV>   prob_dist
+
+%type <gposyV>      genposy
+%type <gpvecV>      gp_list
+
+%%
+
+main:
+subckt_sections
+
+connect_sections
+{
+//		 nw->MakeVRLnodes();
+}
+other_sections
+
+{	nw->MakeVRLCnodes();   
+  nw->MakeCorrelatedEdgeTable();   
+//  netw.CheckVRLnodes(); // no need for this anymore.  
+	nw->CheckConnectionsOfEdges();
+	dioparse(); }
+
+;
+
+subckt_sections:
+subckt_section
+| opt_section
+| glbparam_section
+| subckt_sections subckt_section
+| subckt_sections opt_section
+| subckt_sections glbparam_section
+;
+
+connect_sections:
+connect_section
+| connect_sections connect_section
+| connect_sections opt_section
+| connect_sections glbparam_section
+;
+
+other_sections:
+pi_section
+| po_section
+| glbcnstr_section
+| energy_section
+| duty_section
+| other_sections pi_section
+| other_sections po_section
+| other_sections glbcnstr_section
+| other_sections opt_section
+| other_sections glbparam_section
+| other_sections energy_section
+| other_sections duty_section
+| other_sections tran_gates_section
+;
+
+/*
+ * SUBCKT SECTION
+ */
+
+subckt_section:
+/**
+.SUBCKT {ccc name} {output net list} : {input net list} {var_assignment};  [mos_list] .ENDS
+**/
+// 1   2             3           4         5                     6                 7
+SUBCKT IDENTIFIER identifier_list COLON identifier_list noaction_num_assignment_list DELIMITER
+{
+		cc = new ccc(*$2,*$3,*$5);
+    nw->put(*cc);
+		tst = & cc->getSymbolTable();
+    delete $2,$3,$5;
+}
+// 8      9
+mos_list ENDS
+{
+    cc->putMosList(*$9);
+    cc->putInternalNets();
+    delete $9;
+}
+
+
+;
+
+mos_list: mos
+{
+    $$ = new std::vector<mos>;
+    $$->push_back(*$1);
+    delete $1;
+}
+
+
+| mos_list mos
+{
+    $$ = $1;
+    $$->push_back(*$2);
+
+    delete $2;
+}
+
+
+;
+
+mos:
+// 1               2
+identifier_list gposy_assignment_list DELIMITER
+{
+    assert($1->size()>=5);
+//    if( !((*$2)["W"]->isMonomial()) )
+//    {
+//        ciroptMessage(
+//            "Warning: The width assignment here is posynomial." 
+//						"It may cause problems if the width is used in the denominator"
+//            );
+//
+//    }
+    $$ = new mos (*$1,*$2);
+    //$$ = new std::pair<std::string,std::string>((*$1)[2],*$2);
+
+    delete $1,$2;
+}
+|
+// 1         2         3            4         5 
+IDENTIFIER COLON identifier_list  EQUALTO genposy DELIMITER
+{
+		 ciroptMessage("Identified a capacitor inside a CCC");
+		 if( $3->size() == 3 && (*$3)[2] == "c" )
+		 {
+					$$ = new mos (*$1,*$3,$5);
+		 }
+		 else if ( $3->size() == 3 && (*$3)[2] == "v" 
+							 || $3->size() == 4 && (*$3)[3] == "v")
+		 {
+					ciropterror("Voltage sources, resistors or inductors not allowed inside a CCC"); 
+		 }
+		 else
+		 {
+					ciropterror("The capacitance definition in not correct."
+										"No resistors, inductors or voltage sources are"
+										"allowed inside a CCC");
+		 }
+		 delete $1,$3;
+}
+
+
+
+;
+
+/*
+ * CONNECT SECTION
+ */
+
+connect_section:
+/**
+.CONNECT [node_dscr_list] .ENDS
+**/
+CONNECT node_dscr_list ENDS
+;
+
+node_dscr_list:
+node_dscr
+
+|
+node_dscr_list node_dscr
+
+;
+
+node_dscr:
+/**
+empty statement
+**/
+DELIMITER
+
+|
+/**
+{node name} {output net list} : {input net list}
+: {ccc type} {assignment list} ;
+**/
+// 1         2          3      4
+node_name out_edge_list COLON in_edge_list
+// 5     6        7                        8
+COLON ccc_type noaction_assignment_list DELIMITER
+{
+    nw->putNode( *$1, *$6, *$2, *$4, *$1);
+    delete $1, $2, $4, $6;
+}
+|
+/**
+{node name} {output net list} : {input net list}
+: {ccc type};
+**/
+// 1         2          3      4
+node_name out_edge_list COLON in_edge_list
+// 5     6        7       
+COLON ccc_type  DELIMITER
+{
+    nw->putNode( *$1, *$6, *$2, *$4, *$1);
+    delete $1, $2, $4, $6;
+}
+
+
+|
+/**
+{node name} {output net list} : {input net list}
+: {ccc type} : {var_name} {assignment list} ;
+**/
+// 1         2          3      4
+node_name out_edge_list COLON in_edge_list
+//5     6      7         8                   9            10
+COLON ccc_type COLON var_name noaction_assignment_list DELIMITER
+{
+    nw->putNode( *$1, *$6, *$2, *$4, *$8);
+    delete $1, $2, $4, $6, $8;
+}
+|
+
+/**
+{node name} {output net list} : {input net list}
+: {ccc type} : {var_name} ;
+**/
+// 1         2          3      4
+node_name out_edge_list COLON in_edge_list
+//5     6      7         8       9
+COLON ccc_type COLON var_name DELIMITER
+{
+    nw->putNode( *$1, *$6, *$2, *$4, *$8);
+    delete $1, $2, $4, $6, $8;
+}
+
+
+|
+/**
+{node name} {output net list} : {input net list}
+: {ccc type} {identifier list} ;
+**/
+// 1         2          3       4
+node_name out_edge_list COLON in_edge_list
+//5        6               7       8
+COLON ccc_type identifier_list DELIMITER
+{
+    nw->putNode( *$1, *$6, *$2, *$4 , *$1);
+    delete $1, $2, $4, $6;
+}
+
+
+|
+/**
+{node name} {net name1} {net name2} c = [gen_posy] ;
+**/
+// 1         2       3            4       5     
+node_name COLON IDENTIFIER in_edge_list EQUALTO {tst = new symbol_table;}
+// 7      8
+genposy DELIMITER
+{
+    // this is mainly to prevent shift/reduce conflict in yacc.
+		if( $4->size() == 2 && ((*$4)[1] == "c")) 
+		{
+				 nw->putVRLC_info( *$1, *$3, (*$4)[0], "c", *$7, *tst);
+				 op->setIncludeWireEnergy();
+		}
+		else if($4->size() == 2 && ((*$4)[1] == "v"))
+		{
+				 ciroptMessage("Recording voltage source " + *$1);
+				 //has to keep a value of 1e-6 as the gposy would not take 0.
+				 nw->putVRLC_info(*$1, *$3, (*$4)[0], "v", *$7, *tst);
+		}
+		else if($4->size() == 3 && ((*$4)[2] == "v"))
+		{
+				 ciroptMessage("Recording voltage source " + *$1);
+				 //has to keep a value of 1e-6 as the gposy would not take 0.
+				 nw->putVRLC_info(*$1, *$3, (*$4)[0], "v", *$7, *tst);
+		}
+		else if($4->size() == 2 && ((*$4)[1] == "r"))
+		{
+				 ciroptMessage("Recording resistor in Kohms : " + *$1);
+				 nw->putVRLC_info(*$1, *$3, (*$4)[0], "r", *$7, *tst);
+		}
+		else if($4->size() == 2 && ((*$4)[1] == "l"))
+		{
+				 ciroptMessage("Recording inductance in nH : " + *$1);
+				 nw->putVRLC_info(*$1, *$3, (*$4)[0], "l", *$7, *tst);
+		}
+		else
+    {
+        ciropterror(
+            "VRLC node definition statement format error: "
+            "usage: {node name} {net name1} {net name2} c = {gen posy};"
+            );
+				delete tst;
+    }
+    delete $1, $3, $4,tst;
+}
+;
+
+node_name:
+IDENTIFIER { $$=$1; }
+;
+
+ccc_type:
+IDENTIFIER { $$=$1; }
+;
+
+var_name:
+IDENTIFIER { $$=$1; }
+;
+
+in_edge_list:
+identifier_list { $$=$1; }
+;
+
+out_edge_list:
+identifier_list { $$=$1; }
+;
+
+/*
+ * PI SECTION
+ */
+
+pi_section:
+/**
+.PI [pi_list] .ENDS
+**/
+PI pi_list ENDS
+;
+
+pi_list:
+pi
+
+|
+pi_list pi
+
+;
+
+pi:
+/**
+empty statement
+**/
+DELIMITER
+
+|
+// 1                    2                3
+{ pi = new piinfo; }
+pi_argument_list DELIMITER
+
+{
+    if( !pi->hasProperlyInitiated() )
+    {
+        ciropterror(
+            "primary input description statement error: "
+            "missing fields"
+            );
+
+        delete pi;
+    }
+    else
+        { op->put( * pi ); }
+}
+
+
+;
+
+pi_argument_list:
+pi_argument
+
+|
+pi_argument_list COMMA pi_argument
+
+;
+
+pi_argument:
+/**
+name = {name}
+**/
+// 1    2       3
+NAME EQUALTO IDENTIFIER
+{
+    pi->put("name",*$3);
+    delete $3;
+}
+
+
+|
+/**
+at = {number}
+**/
+// 1  2       3
+AT EQUALTO PNUMBER
+{ pi->put("at",$3); }
+
+|
+/**
+s = ({rising slope},{falling slope})
+**/
+// 1     2       3     4       5     6       7
+SLOPE EQUALTO POPEN PNUMBER COMMA PNUMBER PCLOSE
+{
+    pi->put("s",$4,$6);
+}
+
+|
+/**
+af = {number}
+**/
+AF EQUALTO PNUMBER
+{ pi->put("af",$3);}
+
+|
+/**
+c = [genposy]
+**/
+// 1          2       3                          4
+IDENTIFIER EQUALTO {tst = new symbol_table; }
+genposy
+{
+    if( *$1 != "c" )
+    {
+        ciropterror(
+            "primary input capacitor constraint statement "
+            "format error: "
+						"error : " + *$1 +
+            "  usage: c = {generalized posynomial}"
+            );
+
+        delete tst;
+        delete $4;
+    }
+    else if( !($4->isMonomial()) )
+    {
+        ciropterror(
+            "capacitor constraint for primary input "
+            "must be monomial: "
+            "usage: c = {generalized posynomial}"
+            );
+
+        delete tst;
+        delete $4;
+    }
+    else
+    {
+        pi->put(*$1,*$4,*tst);
+    }
+
+    delete $1;
+}
+
+
+;
+
+/*
+ * PO SECTION
+ */
+
+po_section:
+/**
+.PO [po_list] .ENDS
+**/
+PO po_list ENDS
+;
+
+po_list:
+po
+
+|
+po_list po
+
+;
+
+po:
+/**
+empty statement
+**/
+DELIMITER
+
+|
+// 1                    2                3
+{ po = new poinfo; }
+po_argument_list DELIMITER
+
+{
+    if( !po->hasProperlyInitiated() )
+    {
+        ciropterror(
+            "primary output description statement error: "
+            "missing fields"
+            );
+
+        delete po;
+    }
+    else
+    {
+        op->put( * po );
+    }
+}
+
+
+;
+
+po_argument_list:
+po_argument
+
+|
+po_argument_list COMMA po_argument
+
+;
+
+po_argument:
+/**
+name = {name}
+**/
+// 1    2       3
+NAME EQUALTO IDENTIFIER
+{
+    po->put("name",*$3);
+    delete $3;
+}
+
+
+|
+/**
+c = [genposy]
+**/
+// 1          2       3                         4
+IDENTIFIER EQUALTO {tst = new symbol_table;}
+genposy
+{
+    if( *$1 != "c" )
+    {
+        ciropterror(
+            "primary output capacitor statement"
+            "format error: "
+            "usage: c = {generalized posynomial}"
+            );
+
+        delete tst;
+        delete $4;
+    }
+    else
+    {
+        po->put(*$1,*$4,*tst);
+    }
+
+    delete $1;
+}
+
+
+;
+
+/*
+ * GLBCNSTR SECTION
+ */
+
+glbcnstr_section:
+/**
+.GLBCNSTR [constraint_list] .ENDS
+**/
+GLBCNSTR constraint_list ENDS
+;
+
+constraint_list:
+constraint
+
+|
+constraint_list constraint
+
+;
+
+constraint:
+/**
+empty statement
+**/
+DELIMITER
+
+|
+// Delay, Area, Energy minimization
+/**
+D < opt ;
+**/
+// 1     2        3          4
+DELAY LESSTHAN IDENTIFIER DELIMITER
+{
+    if( *$3 != "opt" )
+    {
+        ciropterror(
+            "delay minimization statement format error: "
+            "D < opt ; "
+            );
+    }
+    else
+    {
+        std::string optname = getDefaultName("delay");
+        ciroptMessage(
+            "default name created for the optimization task: " + optname
+            );
+
+        op->minimizeDelay( optname );
+    }
+
+    delete $3;
+}
+
+
+|
+/**
+A < opt ;
+**/
+// 1    2        3          4
+AREA LESSTHAN IDENTIFIER DELIMITER
+{
+    if( *$3 != "opt" )
+    {
+        ciropterror(
+            "area minimization statement format error: "
+            "A < opt ; "
+            );
+    }
+    else
+    {
+        std::string optname = getDefaultName("area");
+        ciroptMessage(
+            "default name created for the optimization task: " + optname
+            );
+        op->minimizeDelay( optname );
+    }
+
+    delete $3;
+}
+
+
+|
+/**
+E < opt ;
+**/
+// 1     2        3          4
+ENGY LESSTHAN IDENTIFIER DELIMITER
+{
+    if( *$3 != "opt" )
+    {
+        ciropterror(
+            "energy minimization statement format error: "
+            "E < opt ; "
+            );
+    }
+    else
+    {
+        std::string optname = getDefaultName("energy");
+        ciroptMessage(
+            "default name created for the optimization task: " + optname
+            );
+        op->minimizeEnergy( optname );
+    }
+
+    delete $3;
+}
+
+
+// Delay, Area, Energy constraints
+|
+/**
+A < {pnumber} ;
+**/
+// 1    2        3          4
+AREA LESSTHAN PNUMBER DELIMITER
+{ op->addAreaConstraint($3); }
+
+|
+/**
+E < {pnumber} ;
+**/
+// 1     2        3          4
+ENGY LESSTHAN PNUMBER DELIMITER
+{ op->addEnergyConstraint($3); }
+
+|
+/**
+P < {pnumber} ;
+**/
+// 1     2        3          4
+PWR LESSTHAN PNUMBER DELIMITER
+{ 
+		 ciropterror("DEPRECATED :: Please use:"  
+							"E < number; " 
+							"to give the energy constraint");
+		 op->addEnergyConstraint($3); 
+}
+
+|
+/**
+D < {pnumber} ;
+**/
+// 1     2        3          4
+DELAY LESSTHAN PNUMBER DELIMITER
+{ op->addDelayConstraint($3); }
+
+// NET DELAY CONSTRAINTS
+|
+/**
+t_rise ( {net name} ) < {pnumber} ;
+**/
+// 1     2     3          4      5        6       7
+TRISE POPEN IDENTIFIER PCLOSE LESSTHAN PNUMBER DELIMITER
+{
+    op->addTRise( *$3, $6 );
+    delete $3;
+}
+
+
+|
+/**
+t_fall ( {net name} ) < {pnumber} ;
+**/
+// 1     2     3          4      5        6       7
+TFALL POPEN IDENTIFIER PCLOSE LESSTHAN PNUMBER DELIMITER
+{
+    op->addTFall( *$3, $6 );
+    delete $3;
+}
+
+
+|
+/**
+generalized geometric programming constraints
+**/
+str_ggpconstraint
+{
+    // actions taken while reduced to [str_ggpconstraint]
+}
+
+
+// SLOPE CONSTRAINT VIA DELAY CONSTRAINT IN EACH GATE
+
+|
+// Type I
+// D( {gate name} or all} ) < {monomial} ;
+// 1     2     3          4      5        6       7
+DELAY POPEN IDENTIFIER PCLOSE LESSTHAN str_genposy DELIMITER
+{
+    /* this line says all the Dio's for both rf and fr
+       in the specified gate (by IDENTIFIER) is less than PNUMBER */
+
+    const std::map<std::string, node *> & nm = nw->getNodeMap();
+    const std::string & name = *$3;
+//		cout << "Reached here 1 for " << name << endl;
+    std::map<std::string, node *>::const_iterator itr;
+
+    if( !( name == "all" || (itr = nm.find(name)) != nm.end()
+        && !(itr->second->isCapacitor()) ) )
+    {
+        ciropterror(
+            "gate delay constraint format error: "
+            "usage: D( {gate name} or all} ) < {pnumber};"
+            );
+    }
+    else
+    {
+        op->addDelayConstraint(*$3,*$6);
+    }
+
+    delete $3,$6;
+}
+
+
+|
+// Type II
+// D( {gate name} or all, rf or fr ) < {monomial} ;
+// 1     2     3          4     5        6      7        8       9
+DELAY POPEN IDENTIFIER COMMA risefall PCLOSE LESSTHAN str_genposy DELIMITER
+{
+    /* this line says Dio for <risefall>
+       in the specified gate (by IDENTIFIER) is less than PNUMBER */
+    
+    const std::map<std::string,  node *> & nm = nw->getNodeMap();
+    const std::string & name = *$3;
+    const std::string & rfstr = *$5;
+//		ciroptMessage("This is what it is " + name);
+    std::map<std::string, node *>::const_iterator itr;
+
+    if( !( ( name == "all"
+        || ( itr = nm.find(name) ) != nm.end()
+        && !(itr->second->isCapacitor()) )
+        && ( rfstr == "rf" || rfstr == "fr" ) ) )
+    {
+        ciropterror(
+            "gate delay constraint format error: "
+            "usage: D( {gate name} or all}, rf or fr ) < {pnumber};"
+            );
+    }
+    else
+    {
+        op->addDelayConstraint(*$3,*$5,*$8);
+    }
+
+    delete $3, $5,$8;
+}
+
+
+|
+// Type III
+// D( {gate name} or all, {quantile} ) < {PNUMBER} ;
+// 1     2     3          4     5       6      7        8       9
+DELAY POPEN IDENTIFIER COMMA PNUMBER PCLOSE LESSTHAN PNUMBER DELIMITER
+{
+    /* this line says PNUMBER($5)-quantile points
+       of Dios's for both rf and fr
+       in the specified gate (by IDENTIFIER) is less than PNUMBER($8) */
+
+    const std::map<std::string, node *> & nm = nw->getNodeMap();
+    const std::string & name = *$3;
+//		cout << "Reached here 2 for " << name << endl;
+    std::map<std::string, node *>::const_iterator itr;
+
+    if( !( name == "all" || (itr = nm.find(name)) != nm.end()
+        && !(itr->second->isCapacitor()) ) )
+    {
+        ciropterror(
+            "gate delay constraint format error: "
+            "usage: D( {gate name} or all}, {quantile} ) < {monomial};"
+            );
+    }
+    else if( $8 <= 0.5 )
+    {
+        ciropterror(
+            "quantile value must be greater than 0.5 in "
+            "D( {gate name} or all}, {quantile} ) < {pnumber};"
+            );
+    }
+    else
+    {
+        op->addDelayConstraint(*$3,$5,$8);
+    }
+
+    delete $3;
+}
+
+
+|
+// Type IV
+// D( {gate name}, rf or fr, {quantile} ) < {pnumber} ;
+// 1     2     3          4     5        6     7       8
+DELAY POPEN IDENTIFIER COMMA risefall COMMA PNUMBER PCLOSE
+// 9        10      12
+LESSTHAN PNUMBER DELIMITER
+{
+    /* this line says PNUMBER($5)-quantile points
+       of Dios's for both rf and fr
+       in the specified gate (by IDENTIFIER) is less than PNUMBER($8) */
+
+    const std::map<std::string,  node *> & nm = nw->getNodeMap();
+    const std::string & name = *$3;
+    const std::string & rfstr = *$5;
+//		cout << "Reached here 3 for " << name << endl;
+    std::map<std::string, node *>::const_iterator itr;
+
+    if( !( ( name == "all"
+        || ( itr = nm.find(name) ) != nm.end()
+        && !(itr->second->isCapacitor()) )
+        && ( rfstr == "rf" || rfstr == "fr" ) ) )
+    {
+        ciropterror(
+            "gate delay constraint format error: "
+            "usage: D( {gate name} or all}, rf or fr, {quantile} ) "
+            "< {pnumber};"
+            );
+    }
+    else if( $7 <= 0.5 )
+    {
+        ciropterror(
+            "quantile value must be greater than 0.5 in "
+            "D( {gate name} or all}, rf or fr, {quantile} ) < {pnumber};"
+            );
+    }
+    else
+    {
+        op->addDelayConstraint(*$3,*$5,$7,$10);
+    }
+
+    delete $3, $5;
+}
+
+
+|
+/**
+MIN_WIDTH = [PNUMBER] ;
+**/
+// 1         2       3       4
+MIN_WIDTH EQUALTO PNUMBER DELIMITER
+{
+    op->setMinWidth( $3 );
+}
+
+
+|
+/**
+MAX_WIDTH = [PNUMBER] ;
+**/
+// 1         2       3       4
+MAX_WIDTH EQUALTO PNUMBER DELIMITER
+{
+    op->setMaxWidth( $3 );
+}
+
+
+|
+/**
+MIN_VTH_P = [PNUMBER] ;
+**/
+// 1         2       3       4
+MIN_VTH_P EQUALTO PNUMBER DELIMITER
+{
+    op->setMinVthP( $3 );
+}
+
+
+|
+/**
+MAX_VTH_P = [PNUMBER] ;
+**/
+// 1         2       3       4
+MAX_VTH_P EQUALTO PNUMBER DELIMITER
+{
+    op->setMaxVthP( $3 );
+}
+
+
+|
+/**
+MIN_VTH_N = [PNUMBER] ;
+**/
+// 1         2       3       4
+MIN_VTH_N EQUALTO PNUMBER DELIMITER
+{
+    op->setMinVthN( $3 );
+}
+
+
+|
+/**
+MAX_VTH_N = [PNUMBER] ;
+**/
+// 1         2       3       4
+MAX_VTH_N EQUALTO PNUMBER DELIMITER
+{
+    op->setMaxVthN( $3 );
+}
+
+
+|
+/**
+MAX_VDD = [PNUMBER] ;
+**/
+// 1         2       3       4
+MAX_VDD EQUALTO PNUMBER DELIMITER
+{
+    op->setMaxVdd( $3 );
+}
+
+
+|
+/**
+MIN_VDD = [PNUMBER] ;
+**/
+// 1         2       3       4
+MIN_VDD EQUALTO PNUMBER DELIMITER
+{
+    op->setMinVdd( $3 );
+}
+|
+/**
+ * Define the logic depth factor to determine leakage period.
+ */
+LDF EQUALTO PNUMBER DELIMITER
+{
+    op->setLogicDepthFactor( $3 );
+}
+
+|
+/**
+ONLY FORMULATE PROBLEM ;
+**/
+// 1         2       3       4
+OFP DELIMITER
+{
+    op->setOFP();
+}
+|
+DNU identifier_list DELIMITER
+{
+		 delete $2;
+		 // Do nothing.
+}
+|
+GLBVAR identifier_list DELIMITER
+{
+		 for(unsigned i = 0; i < $2->size(); i++)
+		 {
+					putGlbVar((*$2)[i]);
+		 }
+		 delete $2;
+}
+|
+SUK DELIMITER
+{
+    op->setUniformKappa();
+}
+|
+SCK DELIMITER
+{
+    op->setCriticalityKappa();
+}
+|
+UDAF DELIMITER
+{
+    op->setUseDefActFact();
+}
+|
+DNIL DELIMITER
+{
+    op->setNoLeakPow();
+}
+|
+NRF DELIMITER
+{
+    op->setNoRiseFallTiming();
+}
+|
+NAETC DELIMITER
+{
+    op->setNoAllEdgeTimeConst();
+}
+|
+/* AntiCorr cccTypeName in1 in2 ; */
+ANTICORR IDENTIFIER IDENTIFIER IDENTIFIER DELIMITER
+{
+		 // ignore since its not used here.
+		 // Its used for the model generator.
+}
+|
+/* IntPrecharge cccTypeName List_of_inputs ; */
+INTPRECHARGE IDENTIFIER identifier_list DELIMITER
+{
+		 // ignore since its not used here.
+		 // Its used for the model generator.
+}
+
+;
+
+risefall:
+RF { $$ = new std::string("rf"); }
+
+|
+FR { $$ = new std::string("fr"); }
+
+|
+RR { $$ = new std::string("rr"); }
+
+|
+FF { $$ = new std::string("ff"); }
+
+;
+
+/*
+ * GLBPARAM SECTION
+ */
+
+glbparam_section:
+/**
+.GLBPARAM [param_assignment_list] .ENDS
+**/
+GLBPARAM param_assignment_list ENDS
+{
+    cout << "Recorded the global parameters" <<endl;
+}
+
+
+;
+
+param_assignment_list:
+param_assignment
+
+|
+param_assignment_list param_assignment
+
+;
+
+param_assignment:
+/**
+{param_name} = [identifier] ;
+| {param_name} = [number] ;
+**/
+// 1          2       3      4
+IDENTIFIER EQUALTO IDENTIFIER DELIMITER
+{
+    op->put(*$1,*$3); delete $1;
+}
+
+
+|
+
+IDENTIFIER EQUALTO PNUMBER DELIMITER
+{
+    op->put(*$1,$3); delete $1;
+}
+
+
+;
+
+/*
+ * OPTIMIZE SECTION
+ */
+
+opt_section:
+/**
+.OPTIMIZE [opt_statement_list] .ENDS
+**/
+OPTIMIZE opt_statement_list ENDS
+
+;
+
+opt_statement_list:
+/**
+empty statement
+**/
+DELIMITER
+
+|
+opt_statement
+
+|
+draw_statement
+
+|
+write_statement
+
+|
+opt_statement_list DELIMITER
+
+|
+opt_statement_list opt_statement
+
+|
+opt_statement_list draw_statement
+
+|
+opt_statement_list write_statement
+
+;
+
+opt_statement:
+/**
+minimize A(optname={opt. name});
+**/
+// 1        2    3     4          5       6          7      8
+MINIMIZE AREA POPEN IDENTIFIER EQUALTO IDENTIFIER PCLOSE DELIMITER
+{
+    if( *$4 == "optname" )
+        op->minimizeArea(*$6);
+    else
+        ciropterror(
+            "area minimization statement error: "
+            "usage: minimize A(optname={opt. name});"
+            );
+
+    delete $4, $6;
+}
+
+|
+/**
+minimize A();
+**/
+// 1        2    3     4      5
+MINIMIZE AREA POPEN PCLOSE DELIMITER
+{
+    std::string optname = getDefaultName("area");
+    ciroptMessage(
+        "default name created for the optimization task: " + optname
+        );
+    op->minimizeArea( optname );
+}
+
+
+|
+/**
+minimize P(optname={opt. name});
+**/
+// 1        2     3     4          5       6          7      8
+MINIMIZE ENGY POPEN IDENTIFIER EQUALTO IDENTIFIER PCLOSE DELIMITER
+{
+    if( *$4 == "optname" )
+    {
+        op->minimizeEnergy(*$6);
+    }
+    else
+    {
+        ciropterror(
+            "energy minimization statement error: "
+            "usage: minimize P(optname={opt. name});"
+            );
+    }
+
+    delete $4, $6;
+}
+
+
+|
+/**
+minimize P();
+**/
+// 1        2     3     4      5
+MINIMIZE ENGY POPEN PCLOSE DELIMITER
+{
+    std::string optname = getDefaultName("energy");
+    ciroptMessage(
+        "default name created for the optimization task: " + optname
+        );
+    op->minimizeEnergy( optname );
+}
+
+|
+/**
+minimize D(optname={opt. name});
+**/
+// 1        2     3     4          5       6          7      8
+MINIMIZE DELAY POPEN IDENTIFIER EQUALTO IDENTIFIER PCLOSE DELIMITER
+{
+    if( *$4 == "optname" )
+        op->minimizeDelay(*$6);
+    else
+        ciropterror(
+            "delay minimization statement error: "
+            "usage: minimize D(optname={name});"
+            );
+
+    delete $4, $6;
+}
+
+|
+/**
+minimize D();
+**/
+// 1        2     3     4      5
+MINIMIZE DELAY POPEN PCLOSE DELIMITER
+{
+    std::string optname = getDefaultName("delay");
+    ciroptMessage(
+        "default name created for the optimization task: " + optname
+        );
+    op->minimizeDelay( getDefaultName("delay") );
+}
+
+|
+/** DEPRECATED
+minimize D(optname={opt. name},iter={num},N={NN},p={pp});
+N = number of monte_carlos in each iteration
+p = quantile value used to update the kappas etc.
+**/
+// 1        2
+MINIMIZE DELAY
+// 3     4          5       6
+POPEN IDENTIFIER EQUALTO IDENTIFIER
+// 7     8    9       10
+COMMA ITER EQUALTO PNUMBER
+// 11    12         13      14
+COMMA IDENTIFIER EQUALTO PNUMBER
+// 15    16         17      18
+COMMA IDENTIFIER EQUALTO PNUMBER
+// 19     20
+PCLOSE DELIMITER
+{
+    if( *$4 == "optname" && *$12 == "N" && *$16 == "p" )
+    {
+        op->minimizeDelay(*$6,(unsigned)($10+.5),(unsigned)($14+.5),$18);
+        ciropterror(
+            "DEPRECATED: "
+            "minimize D(optname={name},iter={number},"
+            "N={number},p={number});"
+            , true );
+    }
+    else
+    {
+        ciropterror(
+            "statistical delay minimization statement "
+            "format error: "
+            "usage: minimize D(optname={name},iter={number},"
+            "N={number},p={number});"
+            );
+    }
+
+    delete $4, $6, $12, $16;
+}
+|
+/** DEPRECATED
+minimize D(optname={opt. name},iter={num},N={NN},p={pp}, kmax = {kk});
+N = number of monte_carlos in each iteration
+p = quantile value used to update the kappas etc.
+kmax = maximum kappa for any node (will be scaled according to criticality)
+**/
+// 1        2
+MINIMIZE DELAY
+// 3     4          5       6
+POPEN IDENTIFIER EQUALTO IDENTIFIER
+// 7     8    9       10
+COMMA ITER EQUALTO PNUMBER
+// 11    12         13      14
+COMMA IDENTIFIER EQUALTO PNUMBER
+// 15    16         17      18
+COMMA IDENTIFIER EQUALTO PNUMBER 
+// 19     20      21      22
+COMMA IDENTIFIER EQUALTO PNUMBER
+// 23     24
+PCLOSE DELIMITER
+{
+    if( *$4 == "optname" && *$12 == "N" && *$16 == "p"  && *$20 == "kmax")
+    {
+        op->minimizeDelay(*$6,(unsigned)($10+.5),(unsigned)($14+.5),$18,$22);
+        ciropterror(
+            "DEPRECATED: "
+            "minimize D(optname={name},iter={number},"
+            "N={number},p={number},kmax={number});"
+            , true );
+    }
+    else
+    {
+        ciropterror(
+            "statistical delay minimization statement "
+            "format error: "
+            "usage: minimize D(optname={name},iter={number},"
+            "N={number},p={number}, kmax ={number});"
+            );
+    }
+
+    delete $4, $6, $12, $16, $20;
+}
+
+
+|
+/** DEPRECATED
+minimize D(optname={opt. name},itr={num},N={NN},p={pp},dist={distrib});
+N = number of monte_carlos in each iteration
+p = quantile value used to update the kappas etc.
+**/
+// 1        2
+MINIMIZE DELAY
+// 3     4          5       6
+POPEN IDENTIFIER EQUALTO IDENTIFIER
+// 7     8    9       10
+COMMA ITER EQUALTO PNUMBER
+// 11    12         13      14
+COMMA IDENTIFIER EQUALTO PNUMBER
+// 15    16         17      18
+COMMA IDENTIFIER EQUALTO PNUMBER
+// 19    20         21      22
+COMMA IDENTIFIER EQUALTO IDENTIFIER
+// 23     24
+PCLOSE DELIMITER
+{
+    if( *$4 == "optname" && *$12 == "N" && *$16 == "p" && *$20 == "dist" )
+    {
+        op->minimizeDelay
+            ( *$6,(unsigned)($10+.5),(unsigned)($14+.5), $18, *$22 );
+        ciropterror(
+            "DEPRECATED: minimize D(optname={opt. name},iter={number},"
+            "N={number},p={number},dist={distribution});"
+            , true );
+    }
+    else
+    {
+        ciropterror(
+            "statistical delay minimization statement "
+            "format error: "
+            "usage: minimize D(optname={opt. name},iter={number},"
+            "N={number},p={number},dist={distribution});"
+            );
+    }
+
+    delete $4, $6, $12, $16, $20, $22;
+}
+
+
+|
+/** DEPRECATED
+minimize D(optname={opt. name},kappa=({s},{e},{num}));
+**/
+// 1        2
+MINIMIZE DELAY
+// 3     4          5       6
+POPEN IDENTIFIER EQUALTO IDENTIFIER
+// 7     8     9       10    11      12    13      14    15      16
+COMMA KAPPA EQUALTO POPEN PNUMBER COMMA PNUMBER COMMA PNUMBER PCLOSE
+// 17     18
+PCLOSE DELIMITER
+{
+    int num = (unsigned)($15+.5);
+    double s = $11;
+    double e = $13;
+
+    if( *$4 != "optname" )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={name},kappa=({s},{e},{num}));"
+            );
+    }
+    else if ( num <= 1 )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={name},kappa=({s},{e},{num})); "
+            "where {num} must be a positive integer greater than 1"
+            );
+    }
+    else if ( s >= e )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={name},kappa=({s},{e},{num})); "
+            "where {e} must be greater than {s}"
+            );
+    }
+    else
+    {
+        op->minimizeDelay(*$6, "kappas", s, e, (unsigned)num );
+
+        ciropterror(
+            "DEPRECATED: minimize D(optname={name},kappa=({s},{e},{num})); "
+            "USE: minimize D(optname={name},kappa=linspace({s},{e},{num})); "
+            , true );
+    }
+
+    delete $4, $6;
+}
+
+
+|
+/** DEPRECATED
+minimize D(optname={opt. name},kappas=([pnumber_list]));
+**/
+// 1        2
+MINIMIZE DELAY
+// 3     4          5       6
+POPEN IDENTIFIER EQUALTO IDENTIFIER
+// 7     8      9       10    11           12
+COMMA KAPPAS EQUALTO POPEN pnumber_list PCLOSE
+// 13     14
+PCLOSE DELIMITER
+{
+    if( *$4 != "optname" )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={name},kappas=([pnumber_list]));"
+            );
+    }
+    else
+    {
+        op->minimizeDelay(*$6, "kappas", *$11 );
+//        ciropterror(
+//            "DEPRECATED: minimize D(optname={name},kappas=([pnumber_list])); "
+//            "USE: minimize D(optname={name},kappa=list([pnumber_list])); "
+//            , true
+//            );
+    }
+
+    delete $4, $6, $11;
+}
+
+|
+/**
+minimize D(optname={opt. name},kappa={a},beta={b});
+**/
+// 1        2
+MINIMIZE DELAY
+// 3     4          5       6
+POPEN IDENTIFIER EQUALTO IDENTIFIER
+// 7     8     9       10      11    12   13      14
+COMMA KAPPA EQUALTO PNUMBER COMMA BETA EQUALTO PNUMBER
+// 15     16
+PCLOSE DELIMITER
+{
+    double kappa = $10;
+    double beta = $14;
+
+    if( *$4 != "optname" )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={opt. name},kappa={a},beta={b});"
+            );
+    }
+    else if( kappa <= 0.0 )
+    {
+        ciropterror(
+            "statistical delay minimization statment format error: "
+            "usage: minimize D(optname={opt. name},kappa={a},beta={b}); "
+            "where {a} must be a positive real number"
+            );
+    }
+    else if( beta < 0.0 )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={opt. name},kappa={a},beta={b}); "
+            "where {b} must be a nonnegative real number"
+            );
+    }
+    else
+    {
+        op->minimizeDelay(*$6, "kappabeta", kappa, beta );
+    }
+
+    delete $4, $6;
+}
+
+|
+/**
+minimize D(optname={opt. name},u=[prob_dist],M={number});
+**/
+// 1         2     3
+MINIMIZE DELAY POPEN
+// 4          5       6          7
+IDENTIFIER EQUALTO IDENTIFIER COMMA
+// 8          9       10        11
+IDENTIFIER EQUALTO prob_dist COMMA
+// 12         13      14
+IDENTIFIER EQUALTO PNUMBER
+// 15     16
+PCLOSE DELIMITER
+{
+    if( *$4 != "optname" || ( *$8 != "u" && *$8 != "v" ) || *$12 != "M" )
+    {
+        ciropterror(
+            "statistical delay minimization statement format error: "
+            "usage: minimize D(optname={opt. name},"
+            "u=[prob_dist],M={number}); OR"
+            "simply_minimize D(optname={opt. name},"
+            "v=[prob_dist],M={number});"
+            );
+    }
+    else if( $14 < 1.0 )
+    {
+        ciropterror( "M must be a postive integer" );
+    }
+    else
+    {
+        unsigned M = (unsigned)($14+.1);
+
+        if( *$8 == "u" )
+            op->addNewOptSpec( * new opt_spec(false,*$6,*$10,prob_dist(),M) );
+        else if( *$8 == "v" )
+            op->addNewOptSpec( * new opt_spec(false,*$6,prob_dist("normal",1.0,0.0),*$10,M) );
+        else
+            assert( false );
+    }
+
+    delete $4, $6, $8, $10, $12;
+}
+
+;
+
+draw_statement:
+/**
+draw ( {m-filename}, [subplot_statements] ) ;
+**/
+// 1    2     3          4     5                  6      7
+DRAW POPEN IDENTIFIER COMMA subplot_statements PCLOSE DELIMITER
+{
+    op->putDrawing( *$3, *$5 );
+    delete $3, $5;
+}
+|
+DRAW POPEN IDENTIFIER COMMA subplot_statements COMMA PCLOSE DELIMITER
+{
+    op->putDrawing( *$3, *$5 );
+    delete $3, $5;
+}
+
+;
+
+subplot_statements:
+subplot_statement
+{ $$ = new std::vector<subplot *>; $$->push_back($1); }
+
+|
+subplot_statements COMMA subplot_statement
+{ $$ = $1; $$->push_back($3); }
+
+;
+
+subplot_statement:
+/**
+pdf( [monte], {quantile}, [net_specification_list] )
+**/
+// 1   2     3     4     5       6     7                      8
+PDF POPEN monte COMMA PNUMBER COMMA net_specification_list PCLOSE
+{
+    if( $5 <= 0.0 || $5 >= 1.0 )
+    {
+        ciropterror(
+            "quantile point out of range in: "
+            "pdf([monte],{quantile},{list of nets})"
+            );
+        errorBasedHalt();
+    }
+    else
+    {
+        $$ = new subplot("pdf",*$3,$5,*$7);
+    }
+
+    delete $3, $7;
+}
+|
+/**
+pdf( [monte], {quantile}, [net_specification_list] , )
+**/
+// 1   2     3     4     5       6     7                           8
+PDF POPEN monte COMMA PNUMBER COMMA net_specification_list COMMA PCLOSE
+{
+    if( $5 <= 0.0 || $5 >= 1.0 )
+    {
+        ciropterror(
+            "quantile point out of range in: "
+            "pdf([monte],{quantile},{list of nets})"
+            );
+        errorBasedHalt();
+    }
+    else
+    {
+        $$ = new subplot("pdf",*$3,$5,*$7);
+    }
+
+    delete $3, $7;
+}
+
+|
+/** DEPRECATED
+pdf({distribution},{number of montecarlos},{quantile},
+  [net_specification_list])
+**/
+// 1   2     3          4     5       6     7
+PDF POPEN IDENTIFIER COMMA PNUMBER COMMA PNUMBER
+// 8     9                      10
+COMMA net_specification_list PCLOSE
+{
+    if( $7 <= 0.0 || $7 >= 1.0 )
+    {
+        ciropterror(
+            "quantile point out of range in: "
+            "pdf({distribution},{number of montecarlos},"
+            "{quantile},{list of nets})"
+            );
+        errorBasedHalt();
+    }
+    else
+    {
+        $$ = new subplot( "pdf", *$3, (unsigned)($5+.5), $7, *$9 );
+        ciropterror(
+            "DEPRECATED: pdf({distribution},{number of montecarlos},"
+            "{quantile},[net_specification_list]) "
+            "USE: pdf(monte({dist},{N}),quantile={quantile},"
+            "[net_specification_list])"
+            , true );
+    }
+
+    delete $3, $9;
+}
+|
+/** DEPRECATED
+pdf({distribution},{number of montecarlos},{quantile},
+  [net_specification_list], )
+**/
+// 1   2     3          4     5       6     7
+PDF POPEN IDENTIFIER COMMA PNUMBER COMMA PNUMBER
+// 8     9                      10
+COMMA net_specification_list COMMA PCLOSE
+{
+    if( $7 <= 0.0 || $7 >= 1.0 )
+    {
+        ciropterror(
+            "quantile point out of range in: "
+            "pdf({distribution},{number of montecarlos},"
+            "{quantile},{list of nets})"
+            );
+        errorBasedHalt();
+    }
+    else
+    {
+        $$ = new subplot( "pdf", *$3, (unsigned)($5+.5), $7, *$9 );
+        ciropterror(
+            "DEPRECATED: pdf({distribution},{number of montecarlos},"
+            "{quantile},[net_specification_list]) "
+            "USE: pdf(monte({dist},{N}),quantile={quantile},"
+            "[net_specification_list])"
+            , true );
+    }
+
+    delete $3, $9;
+}
+
+
+|
+/** DEPRECATED
+cdf({distribution},{number of montecarlos},{quantile},
+  [net_specification_list])
+**/
+// 1   2     3          4     5       6     7
+CDF POPEN IDENTIFIER COMMA PNUMBER COMMA PNUMBER
+// 8     9                      10
+COMMA net_specification_list PCLOSE
+{
+    if( $7 <= 0.0 || $7 >= 1.0 )
+    {
+        ciropterror(
+            "quantile point out of range in: "
+            "cdf({distribution},{number of montecarlos},{quantile},"
+            "[net_specification_list])"
+            );
+    }
+    else
+    {
+        $$ = new subplot( "cdf", *$3, (unsigned)($5+.5), $7, *$9 );
+        ciropterror(
+            "DEPRECATED: cdf({distribution},{number of montecarlos},"
+            "{quantile},[net_specification_list]) "
+            "USE: cdf(monte({dist},{N}),quantile={quantile},"
+            "[net_specification_list])"
+            , true );
+    }
+
+    delete $3, $9;
+}
+|
+/** DEPRECATED
+cdf({distribution},{number of montecarlos},{quantile},
+  [net_specification_list],)
+**/
+// 1   2     3          4     5       6     7
+CDF POPEN IDENTIFIER COMMA PNUMBER COMMA PNUMBER
+// 8     9                      10
+COMMA net_specification_list COMMA PCLOSE
+{
+    if( $7 <= 0.0 || $7 >= 1.0 )
+    {
+        ciropterror(
+            "quantile point out of range in: "
+            "cdf({distribution},{number of montecarlos},{quantile},"
+            "[net_specification_list])"
+            );
+    }
+    else
+    {
+        $$ = new subplot( "cdf", *$3, (unsigned)($5+.5), $7, *$9 );
+        ciropterror(
+            "DEPRECATED: cdf({distribution},{number of montecarlos},"
+            "{quantile},[net_specification_list]) "
+            "USE: cdf(monte({dist},{N}),quantile={quantile},"
+            "[net_specification_list])"
+            , true );
+    }
+
+    delete $3, $9;
+}
+
+
+
+|
+/**
+values( [net_specification], [monte], quantiles = {qualtile lists} )
+**/
+// 1      2     3                      4     5     6
+VALUES POPEN net_specification COMMA monte COMMA
+// 7          8       9     10           11     12
+IDENTIFIER EQUALTO POPEN pnumber_list PCLOSE PCLOSE
+
+{
+    if( $3->isByOutFileName() )
+    {
+        ciropterror(
+            "optimization name error: "
+            "optimization name must not be .out file name"
+            );
+    }
+    else if( *$7 != "quantiles" )
+    {
+        ciropterror(
+            "format error: "
+            "values( [net_specification], [monte], "
+            "quantiles = {qualtile lists} )"
+            );
+    }
+    else
+    {
+        $$ = new subplot("values", *$3, *$5, *$10 );
+    }
+
+    delete $3, $5, $10;
+}
+
+
+|
+/** DEPRECATED
+values( optname={on}, netname={nn}, {distribution},
+      {number of montecarlos}, quantiles = {qualtile lists} )
+**/
+// 1      2
+VALUES POPEN
+// 3          4       5          6
+IDENTIFIER EQUALTO IDENTIFIER COMMA
+// 7          8       9          10
+IDENTIFIER EQUALTO IDENTIFIER COMMA
+// 11         12
+IDENTIFIER COMMA
+// 13      14
+PNUMBER COMMA
+// 15         16      17    18           19
+IDENTIFIER EQUALTO POPEN pnumber_list PCLOSE
+// 20
+PCLOSE
+
+{
+    if( cnvt::getFileExtension(*$5) == "out" )
+    {
+        ciropterror(
+            "opt. name error: "
+            "in \"values(optname={on},netname={nn}, "
+            "{distribution}, {number of montecarlos}, "
+            "quantiles = {qualtile lists})\": "
+            "{on} must not be .out file name"
+            );
+    }
+    else if( *$3 != "optname" || *$7 != "netname" || *$15 != "quantiles" )
+    {
+        ciropterror(
+            "format error: values(optname={on},netname={nn}, "
+            "{distribution}, {number of montecarlos}, "
+            "quantiles = {qualtile lists})"
+            );
+    }
+    else
+    {
+        if( *$9 == "pomax" )
+        {
+            $$ = new subplot("values", *$5,
+                opt_prob_generator::MAX_OF_PRIMARY_OUTPUTS_NAME,
+                *$11, (unsigned)($13+.5), *$18 );
+        }
+        else
+        {
+            $$ = new subplot("values", *$5, *$9, *$11,
+                (unsigned)($13+.5),*$18);
+        }
+
+        ciropterror(
+            "DEPRECATED: values( optname={on}, netname={nn}, {distribution},"
+            "{number of montecarlos}, quantiles = {qualtile lists} ) "
+            "USE: "
+            "values( opt({opt. name}, {net name}), monte({distribution},{N}),"
+            "quantiles = {qualtile lists} )"
+            , true );
+    }
+
+    delete $3, $5, $7, $9, $11, $15, $18;
+}
+
+
+|
+/**
+widths_distribution( [opt_spec_list] )
+**/
+// 1         2     3             4
+WIDTHDIST POPEN opt_dscr_list PCLOSE 
+{
+    $$ = new subplot( "WIDTHDIST", *$3 );
+
+    delete $3;
+}
+|
+/**
+widths_distribution( [opt_spec_list] )
+**/
+// 1         2     3             4
+WIDTHDIST POPEN opt_dscr_list COMMA PCLOSE
+{
+    $$ = new subplot( "WIDTHDIST", *$3 );
+
+    delete $3;
+}
+
+
+|
+/** DEPRECATED
+criticality_distribution( {dist}, {N}, [op_dscr_list] )
+**/
+// 1         2     3          4     5       6     7             8
+CRCALDIST POPEN IDENTIFIER COMMA PNUMBER COMMA opt_dscr_list PCLOSE
+{
+    $$ =  new subplot( "CRCALDIST", *$3, (unsigned)($5+.1), *$7 );
+
+    ciropterror(
+        "DEPRECATED: "
+        "criticality_distribution( {dist}, {N}, [op_dscr_list] ) "
+        "USE: "
+        "criticality_distribution( monte({dist},{N}), [op_dscr_list] )"
+        , true );
+
+    delete $3,$7;
+}
+|
+/** DEPRECATED
+criticality_distribution( {dist}, {N}, [op_dscr_list] )
+**/
+// 1         2     3          4     5       6     7             8
+CRCALDIST POPEN IDENTIFIER COMMA PNUMBER COMMA opt_dscr_list COMMA PCLOSE
+{
+    $$ =  new subplot( "CRCALDIST", *$3, (unsigned)($5+.1), *$7 );
+
+    ciropterror(
+        "DEPRECATED: "
+        "criticality_distribution( {dist}, {N}, [op_dscr_list] ) "
+        "USE: "
+        "criticality_distribution( monte({dist},{N}), [op_dscr_list] )"
+        , true );
+
+    delete $3,$7;
+}
+
+
+;
+
+net_specification_list:
+net_specification
+{
+    $$ = new std::vector<netspec>;
+    $$->push_back( *$1 );
+    delete $1;
+}
+
+
+|
+net_specification_list COMMA net_specification
+{
+    $$ = $1;
+    $$->push_back( *$3 );
+    delete $3;
+}
+
+
+;
+
+net_specification:
+/** DEPRECATED
+( {opt. name}, {net name} )
+**/
+POPEN IDENTIFIER COMMA IDENTIFIER PCLOSE
+{
+    if( *$4 == "pomax" )
+        $$ = new netspec( *$2,
+            opt_prob_generator::MAX_OF_PRIMARY_OUTPUTS_NAME );
+    else
+        $$ = new netspec( *$2, *$4 );
+
+    ciropterror(
+        "DEPRECATED net specification format: "
+        "( {opt. name}, {net name} ) "
+        "USE: net({net name},[opt_dscr])"
+        , true );
+
+    delete $2, $4;
+}
+
+
+|
+/** DEPRECATED
+( {opt. name}, {num}, {net name}  )
+**/
+// 1     2          3     4          5     6       7
+POPEN IDENTIFIER COMMA PNUMBER COMMA IDENTIFIER PCLOSE
+{
+    unsigned num = (unsigned)($4+.5);
+
+    if( num == 0 )
+    {
+        ciropterror(
+            "in the statement: ({opt. name},{net name},{num}):"
+            " {num} must be a positive integer\n"
+            );
+    }
+    else
+    {
+        if( *$6 == "pomax" )
+        {
+            $$ = new netspec( *$2, num - 1,
+                opt_prob_generator::MAX_OF_PRIMARY_OUTPUTS_NAME );
+        }
+        else
+        {
+            $$ = new netspec( *$2, num - 1, *$6 );
+        }
+
+        ciropterror(
+            "DEPRECATED net specification format: "
+            "( {opt. name}, {num}, {net name} ) "
+            "USE: net({net name},[opt_dscr])"
+            , true );
+    }
+
+    delete $2, $6;
+}
+
+
+|
+/** DEPRECATED
+( {opt. name}, {net name}, {num} )
+**/
+// 1     2          3     4          5     6       7
+POPEN IDENTIFIER COMMA IDENTIFIER COMMA PNUMBER PCLOSE
+{
+    unsigned num = (unsigned)($6+.5);
+
+    if( num == 0 )
+    {
+        ciropterror(
+            "in the statement: ({opt. name},{net name},{num}):"
+            " {num} must be a positive integer\n"
+            );
+    }
+    else
+    {
+        if( *$4 == "pomax" )
+            $$ = new netspec( *$2, num - 1,
+                opt_prob_generator::MAX_OF_PRIMARY_OUTPUTS_NAME );
+        else
+            $$ = new netspec( *$2, num - 1, *$4 );
+
+        ciropterror(
+            "DEPRECATED net specification format: "
+            "( {opt. name}, {net name}, {num} ) "
+            "USE: net({net name},[opt_dscr])"
+            , true );
+    }
+
+    delete $2, $4;
+}
+
+
+;
+
+write_statement:
+/** DEPRECATED
+write( {filename}, analysis( optname = {optname}, {num} ) ) ;
+**/
+// 1     2     3          4
+WRITE POPEN IDENTIFIER COMMA
+// 5        6     7          8       9          10    11      12
+ANALYSIS POPEN IDENTIFIER EQUALTO IDENTIFIER COMMA PNUMBER PCLOSE
+// 13     14
+PCLOSE DELIMITER
+
+{
+    unsigned num = (unsigned)($11+.5);
+
+    if( *$7 != "optname" )
+    {
+        ciropterror(
+            "writing statement format error: "
+            "usage: write({filename},analysis(optname={optname},{num})); "
+            );
+    }
+    else if( $11 < 1.0 )
+    {
+        ciropterror(
+            "writing statement format error: "
+            "in \"write({filename},analysis(optname={optname},{num}));\" "
+            "{num} must be a positive integer"
+            );
+    }
+    else
+    {
+        op->putWriting( *$3, *$9, num - 1 , "");
+
+        ciropterror(
+            "DEPRECATED: write({filename},analysis(optname={optname},{num}));"
+            " USE: write({fiilename},analysis([opt_dscr]);"
+            , true );
+    }
+
+    delete $3, $7, $9;
+}
+|
+/** DEPRECATED
+write( {filename}, analysis( optname = {optname}, {num} ) ) ;
+**/
+// 1     2     3          4
+WRITE POPEN IDENTIFIER COMMA
+// 5        6     7          8       9          10    11      12   13        14       15         16
+ANALYSIS POPEN IDENTIFIER EQUALTO IDENTIFIER COMMA PNUMBER COMMA IDENTIFIER EQUALTO IDENTIFIER PCLOSE
+// 17     18
+PCLOSE DELIMITER
+
+{
+    unsigned num = (unsigned)($11+.5);
+
+    if( *$7 != "optname" || *$13 != "ccc")
+    {
+        ciropterror(
+            "writing statement format error: "
+            "usage: write({filename},analysis(optname={optname},{num})); "
+            );
+    }
+    else if( $11 < 1.0 )
+    {
+        ciropterror(
+            "writing statement format error: "
+            "in \"write({filename},analysis(optname={optname},{num},ccc={ccc instance}));\" "
+            "{num} must be a positive integer"
+            );
+    }
+    else
+    {
+        op->putWriting( *$3, *$9, num - 1, *$15);
+/*
+        ciropterror(
+            "DEPRECATED: write({filename},analysis(optname={optname},{num}));"
+            " USE: write({filename},analysis([opt_dscr]);"
+            , true );
+	*/					
+    }
+
+    delete $3, $7, $9, $13, $15;
+}
+
+|
+/** DEPRECATED
+write( {filename}, analysis( optname = {opt. name} ) ) ;
+**/
+// 1     2     3          4
+WRITE POPEN IDENTIFIER COMMA
+// 5        6     7          8       9          10     11     12
+ANALYSIS POPEN IDENTIFIER EQUALTO IDENTIFIER PCLOSE PCLOSE DELIMITER
+{
+    if( *$7 != "optname" )
+    {
+        ciropterror(
+            "writing statement format error: "
+            "usage: write({filename},analysis(optname={opt. name})); "
+            );
+    }
+    else if( cnvt::getFileExtension( *$9 ) != "out" )
+    {
+        ciropterror(
+            "writing statement format error: "
+            "In \"write({filename},analysis(optname={opt. name})); \" "
+            "{opt. name} must end with \".out\""
+            );
+    }
+    else
+    {
+        op->putWriting( *$3, *$9, "");
+
+        ciropterror(
+            "DEPRECATED: write({filename},analysis(optname={optname}));"
+            " USE: write({fiilename},analysis([opt_dscr]);"
+            , true );
+    }
+
+    delete $3, $7, $9;
+}
+|
+/** DEPRECATED
+write( {filename}, analysis( optname = {opt. name} ) ) ;
+**/
+// 1     2     3          4
+WRITE POPEN IDENTIFIER COMMA
+// 5        6     7          8       9          10     11       12       13    
+ANALYSIS POPEN IDENTIFIER EQUALTO IDENTIFIER COMMA IDENTIFIER EQUALTO IDENTIFIER 
+//14     15        16
+PCLOSE PCLOSE DELIMITER
+{
+    if( *$7 != "optname" || *$11 != "ccc")
+    {
+        ciropterror(
+            "writing statement format error: "
+            "usage: write({filename},analysis(optname={opt. name}, ccc={ccc instance})); "
+            );
+    }
+    else if( cnvt::getFileExtension( *$9 ) != "out" )
+    {
+        ciropterror(
+            "writing statement format error: "
+            "In \"write({filename},analysis(optname={opt. name})); \" "
+            "{opt. name} must end with \".out\""
+            );
+    }
+    else
+    {
+        op->putWriting( *$3, *$9, *$13 );
+
+        ciropterror(
+            "DEPRECATED: write({filename},analysis(optname={optname}));"
+            " USE: write({fiilename},analysis([opt_dscr]);"
+            , true );
+    }
+
+    delete $3, $7, $9, $11, $13;
+}
+
+|
+/**
+mwrite ( {m-file name}, [mvec_list] );
+**/
+// 1      2     3          4     5         6      7
+MWRITE POPEN IDENTIFIER COMMA mvec_list PCLOSE DELIMITER
+{
+    op->putMWriting( *$3, *$5 );
+    delete $3, $5;
+}
+|
+/**
+mwrite ( {m-file name}, [mvec_list] );
+**/
+// 1      2     3          4     5         6      7
+MWRITE POPEN IDENTIFIER COMMA mvec_list COMMA PCLOSE DELIMITER
+{
+    op->putMWriting( *$3, *$5 );
+    delete $3, $5;
+}
+
+
+
+;
+
+opt_dscr_list:
+// 1
+opt_dscr
+{
+    $$ = new std::vector<opt_dscr>();
+    $$->push_back( *$1 );
+
+    delete $1;
+}
+
+
+|
+// 1             2     3
+opt_dscr_list COMMA opt_dscr
+{
+    $$ = $1;
+    $$->push_back( *$3 );
+
+    delete $3;
+}
+
+
+;
+
+opt_dscr:
+/**
+opt( {opt. name})
+**/
+// 1   2     3          4
+OPT POPEN IDENTIFIER PCLOSE
+{
+    $$ = new opt_dscr(*$3,"");
+
+    delete $3;
+}
+
+
+|
+/**
+opt( {opt. name}, {num} )
+**/
+// 1   2     3          4     5       6
+OPT POPEN IDENTIFIER COMMA PNUMBER PCLOSE
+{
+    int num = (int)($5+.1);
+
+    if( num < 1 )
+    {
+        ciropterror(
+            "in the opt description section: "
+            "opt( {opt. name}, {num} ): "
+            "{num} must be a positive integer"
+            );
+        errorBasedHalt();
+    }
+    else
+    {
+        $$ = new opt_dscr(*$3,(unsigned)(num-1),"");
+    }
+
+    delete $3;
+}
+
+
+;
+
+mvec_list:
+mvec
+{
+    $$ = new std::vector<mvec>();
+    $$->push_back(*$1);
+    delete $1;
+}
+
+
+|
+mvec_list COMMA mvec
+{
+    $$ = $1;
+    $$->push_back(*$3);
+    delete $3;
+}
+
+
+;
+
+mvec    :
+/**
+widths ( m_var_name = {name}, [opt_dscr] )
+**/
+// 1      2     3        4       5          6     7        8
+WIDTHS POPEN MVARNAME EQUALTO IDENTIFIER COMMA opt_dscr PCLOSE
+{
+    $$ = new mvec( "widths", *$5, *$7 );
+
+    delete $5, $7;
+}
+|
+/**
+gate_dios ( m_var_name = {name}, [opt_dscr] )
+**/
+// 1      2     3        4       5          6     7        8
+GATEDIOS POPEN MVARNAME EQUALTO IDENTIFIER COMMA opt_dscr PCLOSE
+{
+    $$ = new mvec( "gate_dios", *$5, *$7 );
+
+    delete $5, $7;
+}
+
+|
+/**
+path_lengths ( m_var_name = {name}, [opt_dscr] )
+**/
+// 1        2     3        4       5          6     7        8
+PATHLNGS POPEN MVARNAME EQUALTO IDENTIFIER COMMA opt_dscr PCLOSE
+{
+    $$ = new mvec( "pathlengths", *$5, *$7 );
+
+    delete $5, $7;
+}
+
+
+|
+/**
+path_variances ( m_var_name = {name}, [opt_dscr] )
+**/
+// 1        2     3        4       5          6     7        8
+PATHVARS POPEN MVARNAME EQUALTO IDENTIFIER COMMA opt_dscr PCLOSE
+{
+    $$ = new mvec( "pathvariances", *$5, *$7 );
+
+    delete $5, $7;
+}
+
+
+|
+/**
+criticalities ( m_var_name = {name}, [opt_dscr] )
+**/
+// 1      2     3        4       5          6     7        8
+CRCALS POPEN MVARNAME EQUALTO IDENTIFIER COMMA opt_dscr PCLOSE
+{
+    $$ = new mvec( "criticalities", *$5, *$7 );
+
+    delete $5, $7;
+}
+
+
+|
+/**
+criticalities ( m_var_name = {name}, [opt_dscr], [monte] )
+**/
+// 1      2     3        4       5          6     7
+CRCALS POPEN MVARNAME EQUALTO IDENTIFIER COMMA opt_dscr
+// 8     9     10
+COMMA monte PCLOSE
+{
+    $$ = new mvec( "criticalities", *$5, *$7, *$9 );
+
+    delete $5, $7, $9;
+}
+
+
+;
+
+monte:
+/**
+monte ( {dist}, {N} )
+**/
+// 1     2     3          4     5       6
+MONTE POPEN IDENTIFIER COMMA PNUMBER PCLOSE
+{
+    $$ = new monte_carlo( *$3, (unsigned)($5+.1) );
+
+    delete $3;
+}
+
+
+|
+/**
+monte ( {dist}, {N}, {dependency_type}, {dependency_factor} )
+**/
+// 1     2     3          4     5       6     7
+MONTE POPEN IDENTIFIER COMMA PNUMBER COMMA IDENTIFIER
+// 8     9       10
+COMMA PNUMBER PCLOSE
+{
+    $$ = new monte_carlo( *$3, (unsigned)($5+.1), *$7, $9 );
+
+    delete $3, $7;
+}
+
+
+;
+
+prob_dist:
+/**
+normal ( {mean}, {var} )
+ OR uniform ( {lower}, {upper} )
+ OR ...
+**/
+// 1          2     3       4     5       6
+IDENTIFIER POPEN PNUMBER COMMA PNUMBER PCLOSE
+{
+    $$ = new prob_dist( *$1, $3, $5 );
+
+    delete $1;
+}
+
+
+;
+
+/*
+ * CORRELATED EDGES SECTION
+ */
+
+tran_gates_section: 
+TRAN_GATE_SEC ENDS
+|
+TRAN_GATE_SEC tran_gate_statements ENDS
+;
+tran_gate_statements:
+tran_gate_statement
+| tran_gate_statements tran_gate_statement
+;
+
+tran_gate_statement:
+/**
+{ccc type} : {Correlated MOS list} ;
+**/
+// 1       2       3
+IDENTIFIER COLON tran_mos_list DELIMITER
+{
+    nw->putCorrMos(*$1,*$3);
+    delete $1,$3;
+}
+
+
+;
+
+tran_mos_list:
+// 1         2         3       4
+IDENTIFIER EQUALTO IDENTIFIER
+{
+    $$ = new std::map<std::string,std::string>;
+    $$->insert(std::pair<std::string, std::string>(*$1, *$3));
+    delete $1,$3;
+}
+
+
+|mos_pairs IDENTIFIER EQUALTO IDENTIFIER
+{
+    $$ = $1;
+    //$$[*$2] = *$4;
+    $$->insert(std::pair<std::string, std::string>(*$2,*$4));
+    delete $2,$4;
+}
+
+
+;
+
+mos_pairs:
+IDENTIFIER EQUALTO IDENTIFIER COMMA
+{
+    $$ = new std::map<std::string, std::string>;
+    $$->insert(std::pair<std::string, std::string>(*$1,*$3));
+    delete $1,$3;
+}
+
+
+|mos_pairs IDENTIFIER EQUALTO IDENTIFIER COMMA
+{
+    $$ = $1;
+    //$$[*$2]= *$4;
+    $$->insert(std::pair<std::string, std::string>(*$2,*$4));
+    delete $2,$4;
+}
+
+
+;
+
+/*
+ * POWER SECTION
+ */
+
+energy_section: 
+POWER_SEC ENDS
+|
+POWER_SEC switching_factor_statements ENDS
+;
+
+switching_factor_statements:
+switching_factor_statement
+| switching_factor_statements switching_factor_statement
+;
+
+switching_factor_statement:
+/**
+{net name} : {switching factor} ;
+**/
+// 1          2     3       4
+IDENTIFIER COLON PNUMBER DELIMITER
+{
+    nw->putSwitchingFactor( *$1, $3 );
+    delete $1;
+}
+|
+/**
+ * SubcktName intNetName : switch factor
+ **/
+// 1          2         3       4     5
+IDENTIFIER IDENTIFIER COLON PNUMBER DELIMITER
+{
+		 nw->putSwitchingFactor( *$1,*$2, $4 );
+		 delete $1, $2;
+}
+
+
+
+;
+/*
+ * DUTY FACTOR SECTION
+ */
+
+duty_section: 
+DUTY_SEC ENDS
+|
+DUTY_SEC duty_factor_statements ENDS
+;
+
+duty_factor_statements:
+duty_factor_statement
+| duty_factor_statements duty_factor_statement
+;
+
+duty_factor_statement:
+/**
+{node name} : {switching factor} ;
+**/
+// 1          2     3       4        5
+IDENTIFIER IDENTIFIER COLON PNUMBER DELIMITER
+{
+    nw->putDutyFactor( *$1, $4 , *$2);
+    delete $1,$2;
+}
+
+
+;
+/*
+ * MISCELLANEOUS
+ */
+
+pnumber_list:
+PNUMBER
+{ $$ = new std::vector<double>; $$->push_back($1); }
+| pnumber_list COMMA PNUMBER
+{ $$ = $1; $$->push_back($3); }
+;
+
+noaction_assignment_list: noaction_num_assignment
+| noaction_str_assignment
+| noaction_assignment_list noaction_num_assignment
+| noaction_assignment_list noaction_str_assignment
+;
+
+noaction_str_assignment: IDENTIFIER EQUALTO IDENTIFIER { delete $1, $3; }
+;
+
+noaction_num_assignment_list:
+noaction_num_assignment
+
+|
+noaction_num_assignment_list noaction_num_assignment
+
+;
+
+noaction_num_assignment:
+IDENTIFIER EQUALTO PNUMBER { delete $1; }
+;
+
+identifier_list:
+IDENTIFIER
+{
+    $$ = new std::vector<std::string>;
+    $$->push_back(*$1); delete $1;
+}
+
+
+|
+identifier_list IDENTIFIER
+{ $1->push_back(*$2); $$=$1; delete $2; }
+
+;
+
+gposy_assignment_list:
+IDENTIFIER EQUALTO genposy
+{
+		 $$ = new std::map<std::string, gposy *>;
+     $$->insert(std::pair<std::string, gposy *>(*$1,$3));
+     delete $1;
+}
+|
+IDENTIFIER EQUALTO SINGLE_I genposy SINGLE_I
+{
+		 $$ = new std::map<std::string, gposy *>;
+     $$->insert(std::pair<std::string, gposy *>(*$1,$4));
+     delete $1;
+}
+
+|
+gposy_assignment_list IDENTIFIER EQUALTO genposy
+{ 
+		 $$=$1; 
+		 $$->insert(std::pair<std::string, gposy *>(*$2,$4));
+		 delete $2; 
+}
+|
+gposy_assignment_list IDENTIFIER EQUALTO SINGLE_I genposy SINGLE_I
+{ 
+		 $$=$1; 
+		 $$->insert(std::pair<std::string, gposy *>(*$2,$5));
+		 delete $2; 
+}
+;
+
+/*
+ * generalized posynomial grammar (must be identical to that of 'ggpsol')
+ */
+
+str_ggpconstraint: str_genposy EQUALTO str_genposy DELIMITER
+{
+    op->addConstraint( (*$1) + " = " + (*$3) );
+    delete $1,$3;
+}
+
+
+| IDENTIFIER COLON str_genposy EQUALTO str_genposy DELIMITER
+{
+    op->addConstraint( (*$1) + " : " + (*$3) + " = " + (*$5) );
+    delete $1,$3,$5;
+}
+
+
+| str_genposy LESSTHAN str_genposy DELIMITER
+{
+    op->addConstraint( (*$1) + " < " + (*$3) );
+    delete $1,$3;
+}
+
+
+| IDENTIFIER COLON str_genposy LESSTHAN str_genposy DELIMITER
+{
+    op->addConstraint( (*$1) + " : " + (*$3) + " < " + (*$5) );
+    delete $1,$3,$5;
+}
+
+
+;
+
+str_genposy : PNUMBER
+{ $$ = new std::string( cnvt::doubleToString($1) ); }
+| IDENTIFIER
+{ $$ = $1; }
+| POPEN str_genposy PCLOSE
+{ $$ = $2; }
+| INV POPEN str_genposy PCLOSE
+{ $$ = new std::string( std::string("inv(")+(*$3)+")" ); delete $3; }
+| SQRT POPEN str_genposy PCLOSE
+{ $$ = new std::string( std::string("sqrt(")+(*$3)+")" ); delete $3; }
+| MAX POPEN str_gp_list PCLOSE
+{ $$ = new std::string( std::string("max(")+(*$3)+")" ); delete $3; }
+| str_genposy TIMES str_genposy
+{ $$ = new std::string( (*$1) + " * " + (*$3) ); delete $1,$3; }
+| str_genposy str_genposy %prec MUL
+{ $$ = new std::string( (*$1) + " " + (*$2) ); delete $1,$2; }
+| str_genposy DIVIDE str_genposy
+{ $$ = new std::string( (*$1) + " / " + (*$3) ); delete $1,$3; }
+| str_genposy POWER number
+{
+    $$ = new std::string( (*$1) + " ^ " + cnvt::doubleToString($3) );
+    delete $1;
+}
+
+
+| str_genposy PLUS str_genposy
+{ $$ = new std::string( (*$1) + " + " + (*$3) ); delete $1,$3; }
+;
+
+str_gp_list : str_genposy COMMA str_genposy
+{
+    $$ = new std::string( (*$1) + ", " + (*$3) );
+    delete $1,$3;
+}
+
+
+| str_gp_list COMMA str_genposy
+{
+    $$ = new std::string( (*$1) + ", " + (*$3) );
+    delete $1,$3;
+}
+
+
+;
+
+genposy : 
+PNUMBER 
+{
+		 if($1 > 0)
+		 {
+					$$ = new gposy( $1 );
+		 }
+		 else
+		 {
+					$$=new gposy(1e-6);
+		 }
+}
+| IDENTIFIER
+{
+    tst->put( *$1 );
+    $$ = new gposy( tst->index( *$1 ) );
+    delete $1;
+}
+
+
+| POPEN genposy PCLOSE      { $$ = $2; }
+| INV POPEN genposy PCLOSE  { $$ = & $3->power(-1); }
+| SQRT POPEN genposy PCLOSE { $$ = & $3->power(.5); }
+| MAX POPEN gp_list PCLOSE  { $$ = new gposy(*$3); }
+| genposy TIMES genposy     { $$ = & $1->multiply(*$3); }
+//| genposy genposy %prec MUL { $$ = & $1->multiply(*$2); }
+| genposy DIVIDE genposy    { $$ = & $1->divide(*$3); }
+| genposy POWER number      { $$ = & $1->power($3); }
+| genposy PLUS genposy      { $$ = & $1->add(*$3); }
+;
+
+gp_list : genposy COMMA genposy
+{
+    $$ = new std::vector<gposy *>;
+
+    $$->push_back( $1 );
+    $$->push_back( $3 );
+}
+
+
+| gp_list COMMA genposy
+{
+    $$->push_back( $3 );
+}
+
+
+;
+
+number  : PNUMBER       { $$ = $1; }
+| MINUS PNUMBER     { $$ = -$2; }
+| POPEN number PCLOSE   { $$ = $2; }
+;
+
+%%
+int ciropterror( const std::string & em )
+{
+    cerr << ciropt_filename << ":" << ciropt_line_number << ": " << em << endl;
+
+    exit(-1);
+    return -1;
+}
+
+
+int ciropterror( const std::string & errMessage, bool dep )
+{
+    ciroptMessage( errMessage );
+
+    return -1;
+}
+
+
+void ciroptMessage( const std::string & message )
+{
+    cout << ciropt_filename << ":" << ciropt_line_number
+        << ": " << message << endl;
+}
+
+
+void putGlbVar(const std::string a)
+{
+		 glbVars[a] = 1;
+}
+
+
+
+const std::string getDefaultName( const std::string & what )
+{
+    std::string root = cnvt::removeAllExtensions(ciropt_filename);
+
+    if( what == "area" )      return root + "_A";
+    else if( what == "energy" )    return root + "_E";
+    else if( what == "delay" )    return root + "_D";
+    else              assert( false );
+
+    return "haha";
+}
+
+
+const std::string getDefaultName
+( unsigned itern, unsigned N, double p )
+{ return getDefaultName(itern,N,p,"dist"); }
+
+const std::string getDefaultName
+( unsigned itern, unsigned N, double p, const std::string & dist )
+{
+    std::string root = cnvt::removeAllExtensions(ciropt_filename);
+
+    return root + "_D_" + cnvt::intToString(itern)
+        + "_" + cnvt::intToString(N)
+        + "_" + cnvt::doubleToString(p)
+        + "_" + dist;
+}
