@@ -4,136 +4,137 @@ std::vector<std::string> cnvt::colors, cnvt::styles, cnvt::mrkers;
 
 bool cnvt::initDone = false;
 
-void cnvt::initializeColorsStyles()
-{
-  if( initDone ) return;
+void cnvt::initializeColorsStyles() {
 
-  colors.push_back("b");
-  colors.push_back("r");
-  colors.push_back("k");
-  colors.push_back("m");
-  colors.push_back("y");
-  colors.push_back("c");
-  colors.push_back("g");
-  
-  styles.push_back("-");
-  styles.push_back("--");
-  styles.push_back("-.");
-  styles.push_back(":");
+   if( initDone ) {
+      return;
+   }
 
-  mrkers.push_back("+");
-  mrkers.push_back("o");
-  mrkers.push_back("*");
-  mrkers.push_back(".");
-  mrkers.push_back("x");
-  mrkers.push_back("s");
-  mrkers.push_back("d");
-  mrkers.push_back("^");
-  mrkers.push_back("v");
-  mrkers.push_back(">");
-  mrkers.push_back("<");
-  mrkers.push_back("p");
-  mrkers.push_back("h");
+   colors.push_back( "b" );
+   colors.push_back( "r" );
+   colors.push_back( "k" );
+   colors.push_back( "m" );
+   colors.push_back( "y" );
+   colors.push_back( "c" );
+   colors.push_back( "g" );
 
-  initDone = true;
+   styles.push_back( "-" );
+   styles.push_back( "--" );
+   styles.push_back( "-." );
+   styles.push_back( ":" );
 
-  return;
+   mrkers.push_back( "+" );
+   mrkers.push_back( "o" );
+   mrkers.push_back( "*" );
+   mrkers.push_back( "." );
+   mrkers.push_back( "x" );
+   mrkers.push_back( "s" );
+   mrkers.push_back( "d" );
+   mrkers.push_back( "^" );
+   mrkers.push_back( "v" );
+   mrkers.push_back( ">" );
+   mrkers.push_back( "<" );
+   mrkers.push_back( "p" );
+   mrkers.push_back( "h" );
+
+   initDone = true;
+
+   return;
 }
 
 std::vector<double> cnvt::mapToDoubleVector( const std::map<std::string,double> & doubleMap ) {
-  std::vector<double> vec;
+   std::vector<double> vec;
 
-  std::map<std::string,double>::const_iterator it;
+   std::map<std::string,double>::const_iterator it;
 
-  for( it = doubleMap.begin(); it != doubleMap.end(); it++ ) {
-    vec.push_back( it->second );
-  }
+   for( it = doubleMap.begin(); it != doubleMap.end(); it++ ) {
+      vec.push_back( it->second );
+   }
 
-  assert( vec.size() == doubleMap.size() );
+   assert( vec.size() == doubleMap.size() );
 
-  return vec;
+   return vec;
 }
 
 ostream & cnvt::matlabPlotToOstream( ostream & os, const std::vector<std::string> & xnames, const std::vector<std::string> & ynames, bool marker ) {
-  assert( xnames.size() == ynames.size() );
-  initializeColorsStyles();
+   assert( xnames.size() == ynames.size() );
+   initializeColorsStyles();
 
-  os << "plot( ";
+   os << "plot( ";
 
-  for( std::vector<std::string>::size_type i = 0; i < xnames.size(); i++ )
-  {
-    size_t colorNum = i - ((size_t)(i/colors.size()))*colors.size();
-    size_t styleNum = i - ((size_t)(i/styles.size()))*styles.size();
-    size_t mrkerNum = i - ((size_t)(i/mrkers.size()))*mrkers.size();
-    
-    os << xnames[i] << ", " << ynames[i] << ", '";
-    os << colors[colorNum] << styles[styleNum];
-    if( marker ) os << mrkers[mrkerNum];
-    
-    if( i != xnames.size() - 1 ) os << "', ..." << endl;
-    else os << "');" << endl << endl;
-  }
-  
-  return os;
+   for( std::vector<std::string>::size_type i = 0; i < xnames.size(); i++ ) {
+      size_t colorNum = i - ( ( size_t )( i/colors.size() ) )*colors.size();
+      size_t styleNum = i - ( ( size_t )( i/styles.size() ) )*styles.size();
+      size_t mrkerNum = i - ( ( size_t )( i/mrkers.size() ) )*mrkers.size();
+
+      os << xnames[i] << ", " << ynames[i] << ", '";
+      os << colors[colorNum] << styles[styleNum];
+      if( marker ) os << mrkers[mrkerNum];
+
+      if( i != xnames.size() - 1 ) os << "', ..." << endl;
+      else os << "');" << endl << endl;
+   }
+
+   return os;
 }
 
 ostream & cnvt::matlabLegendToOstream( ostream & os, const std::vector<std::string> & vec ) {
-  os << "legend( ";
 
-  for( std::vector<std::string>::size_type i = 0; i < vec.size(); i ++ )
-  {
-    if( i != 0 ) os << ", ";
-    os << "'" << vec[i] << "'";
-  }
+   os << "legend( ";
 
-  os << " );" << endl;
+   for( std::vector<std::string>::size_type i = 0; i < vec.size(); i ++ ) {
+      if( i != 0 ) os << ", ";
+      os << "'" << vec[i] << "'";
+   }
 
-  return os;
+   os << " );" << endl;
+
+   return os;
 }
 
-double cnvt::interpolate
-( double xx, double x1, double y1, double x2, double y2 )
-{
-  assert( xx > x1 );
-  assert( x2 > xx );
+double cnvt::interpolate( double xx, double x1, double y1, double x2, double y2 ) {
 
-   double ic = (x2-x1);
-   double w1 = (x2-xx)/ic;
-   double w2 = (xx-x1)/ic;
+   assert( xx > x1 );
+   assert( x2 > xx );
 
-  return (w1 * y1 + w2 * y2 );
+   double ic = ( x2-x1 );
+   double w1 = ( x2-xx )/ic;
+   double w2 = ( xx-x1 )/ic;
+
+   return ( w1 * y1 + w2 * y2 );
 }
 
-std::vector<double> cnvt::linSpaceToVec( double s, double e, size_t num )
-{
-  assert( e > s );
+std::vector<double> cnvt::linSpaceToVec( double s, double e, size_t num ) {
 
-  std::vector<double> vec;
-  double inc = (e-s)/(double)num;
+   assert( e > s );
 
-  for( size_t i = 0; i < num; i ++ ) vec.push_back( s + inc * (double)i );
+   std::vector<double> vec;
+   double inc = ( e-s )/( double )num;
 
-  return vec;
+   for( size_t i = 0; i < num; i ++ ) vec.push_back( s + inc * ( double )i );
+
+   return vec;
 }
 
-double cnvt::getMean( const std::vector<double> & vec )
-{
-  double s = 0.0;
+double cnvt::getMean( const std::vector<double> & vec ) {
+
+   double s = 0.0;
    std::vector<double>::size_type num = vec.size();
 
-  for( std::vector<double>::size_type i = 0; i < num; i ++ )
-    s += vec[i];
+   for( std::vector<double>::size_type i = 0; i < num; i++ ) {
+      s += vec[i];
+   }
 
-  return s/(double)num;
+   return s/( double )num;
 }
 
-double cnvt::getSTD(const  std::vector<double> & vec, double mean )
-{
-  double s = 0.0;
+double cnvt::getSTD( const  std::vector<double> & vec, double mean ) {
+   double s = 0.0;
    std::vector<double>::size_type num = vec.size();
 
-  for( std::vector<double>::size_type i = 0; i < num; i ++ )
-    s += vec[i]*vec[i];
+   for( std::vector<double>::size_type i = 0; i < num; i ++ ) {
+      s += vec[i]*vec[i];
+   }
 
-  return sqrt(s/(double)num-mean*mean);
+   return sqrt( s/( double )num-mean*mean );
 }
