@@ -72,7 +72,7 @@ $(OBJDIR)/network.o: network.cpp network.hpp opt.hpp analyzer.hpp $(SHAREDSRCDIR
 $(OBJDIR)/symtab.o: $(GGPDIR)/symtab.cpp $(GGPDIR)/symtab.hpp $(SHAREDSRCDIR)/cnvt.hpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(GGPDIR)/symtab.cpp
 
-$(SHAREDOBJDIR)/gp.o: $(SHAREDSRCDIR)/gp.cpp $(SHAREDSRCDIR)/gp.hpp $(GGPDIR)/ggp.hpp $(SHAREDSRCDIR)/cnvt.hpp $(GGPDIR)/symtab.hpp
+$(SHAREDOBJDIR)/gp.o: $(SHAREDSRCDIR)/gp.cpp $(SHAREDSRCDIR)/gp.hpp $(SHAREDSRCDIR)/ggp.hpp $(SHAREDSRCDIR)/cnvt.hpp $(GGPDIR)/symtab.hpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/lex.ciropt.o: $(OBJDIR)/lex.ciropt.c $(OBJDIR)/ciropt.tab.hpp definerandomch

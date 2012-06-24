@@ -79,12 +79,16 @@ int symbol_table::makeAndGetIndexOfAuxLabel() {
 }
 
 const std::string symbol_table::getSymbol( const std::string & nodename, int ind, const std::string & searchS, const std::string & replaceS ) const {
-   //  cout << "string " << searchS << " string " <<  replaceS << " node " << nodename << " " << ind << endl;
+   // cout << "string " << searchS << " string " <<  replaceS << " node " << nodename << " " << ind << endl;
    assert( ind < vecString.size() );
 
-   //	std::string varname = vecString[ind];
-   if( nodename == "" ||  glbVars.find( vecString[ind] ) != glbVars.end() )
+   // std::string varname = vecString[ind];
+   //
+   // just vdd in ggpsolexp (why?)
+   // if( nodename == "" ||  vecString[ind] == "Vdd" ||  vecString[ind] == "vdd" ) {
+   if( nodename == "" ||  glbVars.find( vecString[ind] ) != glbVars.end() ) {
       return vecString[ind];
+   }
 
    if( vecString[ind] == searchS ) return replaceS;
    else return nodename + "." + vecString[ind];
