@@ -35,6 +35,7 @@ args = ' '.join( sys.argv[ 1: ] )
 make = ' '.join( [ 'make', '-j', str( params.numCPUs), args ] )
 
 for buildHome in params.buildHomes:
+   print '... os.chdir(', buildHome, ')'
    os.chdir( buildHome )
    jpsy.SystemWrapper( make, verbose = params.verbose, trial = False )
 
