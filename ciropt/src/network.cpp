@@ -27,16 +27,16 @@ extern double MAX_PATH_LENGTH;
  */
 
 network::~network() {
-   for( std::map<std::string, ccc *>::const_iterator itr = cccMap.begin(); itr != cccMap.end(); itr ++ )
-      delete itr->second;
-
-   for( std::map<std::string, node *>::const_iterator itr=nodeMap.begin(); itr != nodeMap.end(); itr ++ )
-      delete itr->second;
-
-   for( std::map<std::string, edge *>::const_iterator itr = edgeMap.begin(); itr != edgeMap.end(); itr ++ )
-      delete itr->second;
-
-   return;
+   
+   for( std::map<std::string, ccc * >::const_iterator it = cccMap.begin();  it != cccMap.end();  it++ ) {
+      delete it->second;
+   }
+   for( std::map<std::string, node *>::const_iterator it = nodeMap.begin(); it != nodeMap.end(); it++ ) {
+      delete it->second;
+   }
+   for( std::map<std::string, edge *>::const_iterator it = edgeMap.begin(); it != edgeMap.end(); it++ ) {
+      delete it->second;
+   }
 }
 
 bool network::isGNDorVDD( const std::string & name ) {

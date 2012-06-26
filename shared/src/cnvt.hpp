@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 #include <string>
-// -- TODO -- remove -- not necessary -- extern std::string EMPTY_STRING;
+
 // -- TODO -- remove -- not necessary -- static  size_t MAX_NUMBER_LENGTH = 20;
 // -- TODO -- remove -- not necessary -- static  size_t MAX_STRING_LENGTH = 20;
 // -- TODO -- remove -- not necessary -- static  unsigned PRECISION_NUMBER = 7;
@@ -81,7 +81,7 @@ public:
       return std::string( s );
    }
 
-   static inline std::string doubleToString( double d, unsigned prec,  int & numS ) {
+   static inline std::string doubleToString( const double d, const unsigned prec, const int & numS ) {
       std::string tmp = cnvt::doubleToString( d,prec );
       return cnvt::addSpaces( tmp, numS );
    }

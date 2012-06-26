@@ -7,6 +7,8 @@
 #include "ggp.hpp"
 #include "cnvt.hpp"
 
+std::map<std::string, int> glbVars;
+
 extern FILE * ggpin;
 extern int line_number;
 extern symbol_table symtab, labSymTab;

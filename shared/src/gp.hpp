@@ -7,7 +7,7 @@
 #include <iostream.h>
 #include <assert.h>
 #include "symtab.hpp"
-extern std::string EMPTY_STRING;
+
 extern std::map<std::string, int> glbVars;
 
 

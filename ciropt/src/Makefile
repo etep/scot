@@ -12,7 +12,7 @@ RANDOBJS   = stoc1.o          \
              mersenne.o       \
              userintf.o
 
-SHOBJS     = symtab.o         \
+SHOBJECTS  = symtab.o         \
              cnvt.o           \
              gp.o
 
@@ -36,15 +36,10 @@ YACC1     = bison -d -p ciropt
 LEX2      = flex -Pdio
 YACC2     = bison -d -p dio
 
-OBJS  = $(addprefix $(OBJDIR)/, $(OBJECTS) )
-SOBJS = $(addprefix $(SHOBJDIR)/, $(SHOBJS) )
+OBJS   = $(addprefix $(OBJDIR)/, $(OBJECTS) )
+SHOBJS = $(addprefix $(SHOBJDIR)/, $(SHOBJECTS) )
 
 default: dirs $(BIN)
-
-dirs:
-	mkdir -p $(BINDIR)
-	mkdir -p $(OBJDIR)
-	mkdir -p $(SHOBJDIR)
 
 $(SHOBJDIR)/%.o: $(SHSRCDIR)/%.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
@@ -65,8 +60,8 @@ $(OBJDIR)/%.o: %.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 
-$(BINDIR)/ciropt: $(OBJS) $(SOBJS)
-	$(CC) $(OBJS) $(SOBJS) $(LIBS) -o $@
+$(BINDIR)/ciropt: $(OBJS) $(SHOBJS)
+	$(CC) $(OBJS) $(SHOBJS) $(LIBS) -o $@
 
 $(OBJDIR)/lex.ciropt.c: ciropt.l
 	$(LEX1) ciropt.l
@@ -108,6 +103,12 @@ $(OBJDIR)/userintf.o: $(RANDDIR)/userintf.cpp
 $(SHOBJDIR)/cnvt.o:   $(SHSRCDIR)/cnvt.cpp   $(SHSRCDIR)/cnvt.hpp
 $(SHOBJDIR)/symtab.o: $(SHSRCDIR)/symtab.cpp $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/cnvt.hpp
 $(SHOBJDIR)/gp.o:     $(SHSRCDIR)/gp.cpp     $(SHSRCDIR)/gp.hpp     $(SHSRCDIR)/cnvt.hpp $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/ggp.hpp
+
+dirs:
+	mkdir -p $(BINDIR)
+	mkdir -p $(OBJDIR)
+	mkdir -p $(SHOBJDIR)
+
 
 clean:
 	rm -f $(OBJDIR)/*

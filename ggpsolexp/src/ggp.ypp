@@ -1,7 +1,7 @@
 %{
 #include <iostream.h>
 #include <vector>
-#include "symtab.h"
+#include "symtab.hpp"
 #include "gp.hpp"
 #include "ggp.hpp"
 

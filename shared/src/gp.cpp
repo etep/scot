@@ -1175,7 +1175,7 @@ double gposy::evaluate( const symbol_table & symtab, const std::string & nodenam
    std::vector<double> vals( symtab.size() );
    bool hasSTRappeared = false;
 
-   std::string ky;
+   std::string key;
    // Here the algorithm is to first find out the values of all the possible
    // symbols that can occur in the gposy. It might lead to something like
    // gatename._LOAD_F_ etc symbols that do not make sense, but they will be
@@ -1192,21 +1192,26 @@ double gposy::evaluate( const symbol_table & symtab, const std::string & nodenam
       // -- and from what I can see, ggpsolexp does not need symbolic
       // -- evaluation.
       // if( symtab[i] == "Vdd" || symtab[i] == "vdd" )
-      if( nodename == EMPTY_STRING || glbVars.find( symtab[i] ) != glbVars.end() )
-         ky = symtab[i];
-      else
-         ky = nodename+"."+symtab[i];
+      if( nodename == "" || glbVars.find( symtab[i] ) != glbVars.end() ) {
+         key = symtab[i];
+	   }
+      else {
+         key = nodename + "." + symtab[i];
+      }
 
-      //cout << ky << " is the variable and " << str << " is the string" << endl;
-      it = optVs.find( ky );
+      //cout << key << " is the variable and " << str << " is the string" << endl;
+      it = optVs.find( key );
+      
       if( it != optVs.end() ) {
          vals[i] = it->second;
-      } else if( symtab[i] == str ) {
+      }
+      else if( symtab[i] == str ) {
          // str is typically _LOAD_F_ or _LOAD_R_ to be replaced.
          assert( !hasSTRappeared );
          vals[i] = replacedValue;
          hasSTRappeared = true;
-      } else {
+      }
+      else {
          //cerr << "Warning : The value of " << symtab[i] << " is not found" << endl;
          //toOstream( cerr, symtab ) << ": " << symtab[i] << endl;
          vals[i] = 0.0;

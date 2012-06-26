@@ -1,71 +1,80 @@
-# makefile for the make command
-#COMPILER = CC
-#COMPILER = g++ -O
-BINDIR   = ../bin
-OBJDIR   = ../obj
-BIN      = $(BINDIR)/ggpsolexp
-INCLUDES = -I. -I$(OBJDIR)
-CC      = g++
-CFLAGS  = -c -O3 -Wno-deprecated
-OBJECTS = ggpsolexp.o gp.o ggp.o lex.ggp.o ggp.tab.o symtab.o d2p.o cnvt.o
-LEX     = flex -Pggp
-YACC    = bison -d -p ggp
+BINDIR     = ../bin
+OBJDIR     = ../obj
+SHDIR      = ../../shared
+SHSRCDIR   = $(SHDIR)/src
+SHOBJDIR   = $(SHDIR)/obj
+BIN        = $(BINDIR)/ggpsolexp
+INCLUDES   = -I. -I$(OBJDIR) -I$(SHSRCDIR)
+CC         = g++
+CFLAGS     = -O3 -Wno-deprecated
+LEX        = flex -Pggp
+YACC       = bison -d -p ggp
 CLEANFILES = lex.ggp.c ggp.tab.cpp ggp.tab.hpp
+OBJECTS    = ggpsolexp.o \
+             lex.ggp.o   \
+			 ggp.tab.o   \
+			 d2p.o
+SHOBJECTS  = gp.o        \
+             ggp.o       \
+			 symtab.o    \
+			 cnvt.o
 
-OBJS = $(addprefix $(OBJDIR)/, $(OBJECTS) )
+OBJS   = $(addprefix $(OBJDIR)/, $(OBJECTS) )
+SHOBJS = $(addprefix $(SHOBJDIR)/, $(SHOBJECTS) )
 
 #CLEANFILES = ggpsolexp *.o lex.ggp.c ggp.tab.cpp ggp.tab.hpp
 
-#MOSEKFLAG = -I$(HM)/mosek/2/tools/h
-#MOSEKLINK = $(HM)/mosek/2/tools/platform/linux/intel/dll/libmosek.so.2.0
-#MOSEKLINK = $(HM)/mosek/2/tools/platform/solaris/intel/dll/libmosek.so.2.0
 default: dirs $(BIN)
 
-dirs:
-	mkdir -p $(BINDIR)
-	mkdir -p $(OBJDIR)
+$(SHOBJDIR)/%.o: $(SHSRCDIR)/%.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/%.o: $(OBJDIR)/%.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/%.o: $(RANDDIR)/%.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/%.o: $(OBJDIR)/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/%.o: $(OBJDIR)/%.dio.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
    
-$(BIN): $(OBJS)
-	$(CC) $(OBJS) $(LIBS) $(MOSEKLINK) -o $@
+$(BIN): $(OBJS) $(SHOBJS)
+	$(CC) $(OBJS) $(SHOBJS) $(LIBS) -o $@
    
-$(OBJDIR)/ggpsolexp.o: ggpsolexp.hpp ggpsolexp.cpp gp.hpp ggp.hpp cnvt.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ ggpsolexp.cpp
+$(OBJDIR)/ggpsolexp.o: ggpsolexp.hpp ggpsolexp.cpp $(SHSRCDIR)/gp.hpp $(SHSRCDIR)/ggp.hpp $(SHSRCDIR)/cnvt.hpp
+$(OBJDIR)/d2p.o:       d2p.cpp d2p.h
 
-$(OBJDIR)/ggp.o: ggp.cpp ggp.hpp gp.hpp symtab.h cnvt.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ ggp.cpp
+$(OBJDIR)/lex.ggp.o: $(OBJDIR)/lex.ggp.c   $(OBJDIR)/ggp.tab.hpp  $(SHSRCDIR)/gp.hpp  $(SHSRCDIR)/ggp.hpp
+$(OBJDIR)/ggp.tab.o: $(OBJDIR)/ggp.tab.cpp $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/gp.hpp  $(SHSRCDIR)/ggp.hpp
+$(OBJDIR)/ggp.tab.cpp: $(OBJDIR)/ggp.tab.hpp
 
-$(OBJDIR)/gp.o: gp.cpp gp.hpp symtab.h cnvt.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ gp.cpp
-
-$(OBJDIR)/lex.ggp.o: $(OBJDIR)/lex.ggp.c $(OBJDIR)/ggp.tab.hpp gp.hpp ggp.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $<
+$(SHOBJDIR)/ggp.o:    $(SHSRCDIR)/ggp.cpp    $(SHSRCDIR)/gp.hpp  $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/cnvt.hpp $(SHSRCDIR)/ggp.hpp
+$(SHOBJDIR)/gp.o:     $(SHSRCDIR)/gp.cpp     $(SHSRCDIR)/gp.hpp  $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/cnvt.hpp
+$(SHOBJDIR)/cnvt.o:	  $(SHSRCDIR)/cnvt.cpp   $(SHSRCDIR)/cnvt.hpp
+$(SHOBJDIR)/symtab.o: $(SHSRCDIR)/symtab.cpp $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/cnvt.hpp
 
 $(OBJDIR)/lex.ggp.c: ggp.l
 	$(LEX) ggp.l
 	mv lex.ggp.c $(OBJDIR)
-
-$(OBJDIR)/ggp.tab.o: $(OBJDIR)/ggp.tab.cpp symtab.h gp.hpp ggp.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $<
 
 $(OBJDIR)/ggp.tab.hpp: ggp.ypp
 	$(YACC) ggp.ypp
 	mv ggp.tab.hpp $(OBJDIR)
 	mv ggp.tab.cpp $(OBJDIR)
 
-$(OBJDIR)/ggp.tab.cpp: $(OBJDIR)/ggp.tab.hpp
-
-$(OBJDIR)/symtab.o: symtab.cpp symtab.h cnvt.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ symtab.cpp
-
-$(OBJDIR)/d2p.o: d2p.cpp d2p.h
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ d2p.cpp
-
-$(OBJDIR)/cnvt.o:	cnvt.cpp cnvt.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ cnvt.cpp
+dirs:
+	mkdir -p $(BINDIR)
+	mkdir -p $(OBJDIR)
+	mkdir -p $(SHOBJDIR)
 
 clean:
-	rm -f ../obj/*
-	rm -f ../bin/*
+	rm -f $(BINDIR)/*
+	rm -f $(OBJDIR)/*
+	rm -f $(SHOBJDIR)/*
 
-backup: clean
-	tar cvfX bu/lbu.tar ex .
