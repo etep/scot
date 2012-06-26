@@ -17,13 +17,15 @@ class Params:
       self.scotHome = os.environ[ self.envname ]
       self.tempHome = os.environ[ self.envtemp ]
       self.perlHome = os.path.join( self.scotHome, 'lrep' )
+      self.pyHome   = os.path.join( self.scotHome, 'pys'  )
       
       self.gsfPerl = os.path.join( self.perlHome, 'gate_sub_flat.pl'    )
       self.suePerl = os.path.join( self.perlHome, 'sue_spice.pl'        )
       self.eehPerl = os.path.join( self.perlHome, 'endsendshack.pl'     )
       self.pafPerl = os.path.join( self.perlHome, 'putActFactInOpt.pl'  )
       self.pdfPerl = os.path.join( self.perlHome, 'putDutyFactInOpt.pl' )
-      self.psiPerl = os.path.join( self.perlHome, 'putSectionInOpt.pl'  )
+      self.psiPy   = os.path.join( self.pyHome,   'putSectionInOpt.py'  )
+      # self.psiPerl = os.path.join( self.perlHome, 'putSectionInOpt.pl'  )
       
       self.diogenBin = os.path.join( self.scotHome, 'diogen', 'bin', 'diogen' )
       self.ciroptBin = os.path.join( self.scotHome, 'ciropt', 'bin', 'ciropt' )
@@ -94,7 +96,7 @@ def DashScotSpiceOption( args, params ):
    # 1. run diogen
    # 2. run put section in (putSectionInOpt.pl)
    dioCmd = ' '.join( [ params.diogenBin, '-d', sspfile, tekfile, outfile ] )
-   psiCmd = ' '.join( [ params.psiPerl, sspfile, txgfile, 'TRANSMISSION' ] )
+   psiCmd = ' '.join( [ params.psiPy, sspfile, txgfile, 'TRANSMISSION' ] )
    #
    # call the commands:
    jpsy.SystemWrapper( dioCmd, verbose = params.verbose, trial = False )

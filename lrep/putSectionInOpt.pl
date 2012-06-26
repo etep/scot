@@ -31,29 +31,31 @@ if ($#ARGV != 2) { # $#ARGV is the number of command line arguments minus 1
     print STDERR "A dummy file called  dummySection_adder_64mod.sp will be used\n";
     exit;
 }
-$spfile = shift(@ARGV);
+$spfile   = shift(@ARGV);
 $datafile = shift(@ARGV);
-$section = shift(@ARGV);
-$dumfile = "dummySection_".$spfile;
+$section  = shift(@ARGV);
+$toks     = split( /\//, $spfile );
+$numtoks  = $#toks;
+$toks[ $numtoks - 1 ] = "dummySection_".$toks[ $numtoks - 1 ];
+$dumfile  = join( "/", @toks );
+# -- TODO -- remove -- $dumfile  = "dummySection_".$spfile;
 
 #delete the section from the Optfile and copy the rest in the dummy file.
-open (SP,"<$spfile") ||  die  ("Can't open $spfile : $!\n");
-open (DUM,">$dumfile") ||  die  ("Can't open $dumfile : $!\n");
+open(  SP, "<$spfile"  ) ||  die( "Can't open $spfile : $!\n"  );
+open( DUM, ">$dumfile" ) ||  die( "Can't open $dumfile : $!\n" );
+
 $print = 1;
-while(<SP>)
-{
-		 if(/\s*\.$section/)
-		 {
-					$print = 0;
-		 }
-		 if($print != 0)
-		 {
-					print DUM $_;
-		 }
-		 if(/\s*\.ENDS/)
-		 {
-					$print = 1;
-		 }
+
+while(<SP>) {
+   if(/\s*\.$section/) {
+      $print = 0;
+   }
+   if($print != 0) {
+      print DUM $_;
+   }
+   if(/\s*\.ENDS/) {
+      $print = 1;
+   }
 }
 #print DUM "\n* added section \n";
 close(SP);
