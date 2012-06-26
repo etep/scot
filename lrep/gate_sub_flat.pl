@@ -49,9 +49,9 @@ if ($#ARGV != 2) { # $#ARGV is the number of command line arguments minus 1
 print "Running gate_sub_flat.pl on $ARGV[0]\n";
 
 $datafile = $ARGV[0];
-$outfile = $ARGV[1];
-$level = $ARGV[2];
-$intfile = $outfile.".tmp";
+$outfile  = $ARGV[1];
+$level    = $ARGV[2];
+$intfile  = $outfile.".tmp";
 $delim = "__";
 
 
@@ -59,8 +59,8 @@ $delim = "__";
 
 #to remove the + line extensions used by spice to format the input if there its a long line.
 #uses the internal file called $outfile.".tmp"
-open (DATA,"<$datafile") ||  die  ("Can't open $datafile : $!\n");
-open (INT,">$intfile") ||  die  ("Can't open $intfile : $!\n");
+open (DATA, "<$datafile" ) ||  die  ("Can't open $datafile : $!\n");
+open (INT,  ">$intfile"  ) ||  die  ("Can't open $intfile : $!\n");
 $record = <DATA>; 
 while(<DATA>)
 {
@@ -569,7 +569,7 @@ while($not_expand == 0)
 ##################################################################################################
 ##PRINT THE NEW FILE WITH GATE FLAT NETLIST.........
 open (DATA,"<$datafile") ||  die  ("Can't open $datafile : $!\n");
-open (OUT,">$outfile") ||  die  ("Can't open $outfile : $!\n");
+open (OUT,">$outfile")   ||  die  ("Can't open $outfile : $!\n");
 
 $no_other_lines = 0; # This variable is 0 to print the beginning all the lines.
 # When subckt starts it is turned on so that its not used in the repeated 

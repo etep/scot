@@ -7,7 +7,10 @@
 #include <ostream>
 #include <fstream>
 
+#include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #define MAX_NUMBER_LENGTH 10
 //#define DEBUG
 
@@ -68,10 +71,16 @@ int main( int argc, char ** argv ) {
 
    #else
 
-   if ( argc < 2 ) displayHelp();
+   if( argc < 2 ) {
+      displayHelp();
+   }
 
-   if ( strchr( argv[1], 'd' ) ) generateDio = true;
-   if ( strchr( argv[1], 'p' ) ) generatePower = true;
+   if( strchr( argv[1], 'd' ) ) {
+      generateDio = true;
+   }
+   if( strchr( argv[1], 'p' ) ) {
+      generatePower = true;
+   }
 
    // the possible options for diogen are: generate just dio, or generate
    // both dio and power
@@ -177,11 +186,20 @@ void runDio( const char * modifiedSpiceFilename, const char * dioDataFilename, c
 
 void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFilename, const char * irsimTechFilename, int numRuns, const char * irsimInputCmdFilename, double defActFact, int maxSignalsOnALineInIrsim ) {
    
+   const char * scotHomePtr = getenv( "SCOT_HOME_DIR" );
+   const char * tempHomePtr = getenv( "SCOT_TEMP_DIR_OPTIM_DOT_PY" );
+   const string scotHome    = string( scotHomePtr );
+   const string tempHome    = string( tempHomePtr );
+   const string perlHome    = scotHome + "/lrep";
+   const string irsmHome    = scotHome + "/irsim/bin";
+   
    const string modifiedSpiceFilenameStr = string( modifiedSpiceFilename );
    const string originalSpiceFilenameStr = string( originalSpiceFilename );
    const string irsimTechFilenameStr     = string( irsimTechFilename );
 
-   string irsimCmdFilename = ( string( irsimInputCmdFilename ) == "" ) ? originalSpiceFilenameStr + ".cmd" : string( irsimInputCmdFilename );
+   const bool cmdFileSpecified = string( irsimInputCmdFilename ) != "";
+   
+   const string irsimCmdFilename = cmdFileSpecified ? string( irsimInputCmdFilename ) : tempHome + "/" + originalSpiceFilenameStr + ".cmd";
 
    ofstream irsimCmdFile;
    if ( string( irsimInputCmdFilename ) == "" ) {
@@ -191,20 +209,15 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
          exit( 1 );
       }
 
+      // generate IRSIM commadn file
       parser->generateIrsimInput( irsimCmdFile, originalSpiceFilenameStr, numRuns, defActFact );
-      // generate IRSIM input
    }
 
-   const string irsimInputFileName = originalSpiceFilenameStr + ".irsim";
-   const string irsimOutput        = originalSpiceFilenameStr + ".out";
+   const string irsimInputFileName = tempHome + "/" + originalSpiceFilenameStr + ".irsim";
+   const string irsimOutput        = tempHome + "/" + originalSpiceFilenameStr + ".out";
    const string powerFilenameStr   = modifiedSpiceFilenameStr + ".power";
    const string dutyFilenameStr    = modifiedSpiceFilenameStr + ".duty";
-   
-   const char * scotHomePtr = getenv( "SCOT_HOME_DIR" );
-   const string scotHome    = string( scotHomePtr );
-   const string perlHome    = scotHome + "/lrep";
-   const string irsmHome    = scotHome + "/irsim/bin";
-   
+      
    const string adjustIRSIMcmd = scotHome + "/lrep/limVectForDiogen.pl " + irsimCmdFilename +  " " + intToString( maxSignalsOnALineInIrsim );
    const string flattenerCmd   = perlHome + "/fasths2flat.pl "           + originalSpiceFilenameStr + " > " + irsimInputFileName;
    const string irsimCmd       = irsmHome + "/irsim "                    + irsimTechFilenameStr + " " + irsimInputFileName + " " + "-" + irsimCmdFilename;
@@ -212,36 +225,41 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    
    system( adjustIRSIMcmd.c_str() );
    
-   cout << "\n\nrunning irsim....\n\n" << endl;
-   cout << flattenerCmd << endl;
+   cout << "diogen: flattening netlist for irsim" << endl;
+   cout << "..." << flattenerCmd << endl;
    system( flattenerCmd.c_str() );
    
-   /*
-     if (irsimInputCmdFilename == "")
-       irsimCmd += originalSpiceFilenameStr + ".cmd";
-     else irsimCmd += irsimInputCmdFilename;
-   */
+   
+   // if (irsimInputCmdFilename == "") {
+   //    irsimCmd += originalSpiceFilenameStr + ".cmd";
+   // }
+   // else irsimCmd += irsimInputCmdFilename;
+   
+   // run irsim
+   // need to chdir so that the irsim .out file lands in the correct place
+   assert( chdir( tempHome.c_str() ) == 0 );
+   cout << "diogen: running irsim" << endl;
+   cout << "..." << flattenerCmd << endl;
    cout << irsimCmd << endl;
    system( irsimCmd.c_str() );
    
-   //will use a perl file to record the switching activity factors.
-   //yyin = openFile(irsimOutput.c_str(), "r");
+   // will use a perl file to record the switching activity factors.
+   // yyin = openFile(irsimOutput.c_str(), "r");
 
-   //yyparse();
+   // yyparse();
 
    // Dinesh wants the power outputs to another file and he will write a
    // perl script that combines that with the modifiled spice file
-   //ofstream spiceFile(modifiedSpiceFilename, ios_base::app);
+   //
+   // ofstream spiceFile(modifiedSpiceFilename, ios_base::app);
 
    ofstream powerFile( powerFilenameStr.c_str() );
-   //ofstream dioFile(outputDioFilename, ios_base::app);
-   //parser->generateActivityFactors(powerFile);
-   //cout << "number of iterations  are " << intToString(numRuns) << endl;
+   // ofstream dioFile(outputDioFilename, ios_base::app);
+   // parser->generateActivityFactors(powerFile);
+   // cout << "number of iterations  are " << intToString(numRuns) << endl;
    system( perlCmd.c_str() );
 
    powerFile.close();
-
-   return;
 }
 
 static inline const string intToString( int d ) {

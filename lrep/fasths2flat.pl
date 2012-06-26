@@ -32,7 +32,8 @@ $opt_v = 0;
 		unless ( -f $fileIn );
 
 	# $cmd = "spnet  -shortnames -width 5000 -emf -flat -noendcard -exp_notation $fileIn 1> $basename.flog 2>&1";
-	$cmd = "../pys/spnet.py $fileIn 1> $basename.f 2>&1";
+	$fileOut = $ENV{ "SCOT_TEMP_DIR_OPTIM_DOT_PY" } . "/" . "$basename.f";
+	$cmd = "../pys/spnet.py $fileIn 1> $fileOut 2>&1";
 	print STDERR "$prog: running\n\t$cmd\n" unless ( $opt_v );
 	system($cmd);
 	fsp2sim("$basename");
@@ -84,9 +85,9 @@ sub fsp2sim {
 	# }
 	# close(FPI);
 
-
-	die "$prog: Could not open $tmpFileI.f\n" 
-		unless open(FPI, "$tmpFileI.f");
+    $fileOut = $ENV{ "SCOT_TEMP_DIR_OPTIM_DOT_PY" } . "/" . "$tmpFileI.f";
+	die "$prog: Could not open $fileOut\n" 
+		unless open(FPI, "$fileOut" );
 
 	print STDERR "$prog: dumping sim netlist...\n"
 		unless ( $opt_v );

@@ -5,14 +5,17 @@ import sys, os, re, time, shutil, jpsy, argparse
 class Params:
    verbose = True
    envname = 'SCOT_HOME_DIR'
+   envtemp = 'SCOT_TEMP_DIR_OPTIM_DOT_PY'
    def __init__( self ):
       
-      if not self.envname in os.environ:
-         print 'Before using ' + sys.argv[0] + ', you need to set the environment variable "' + self.envname + '"'
-         print 'to point to the home directory for this project.'
+      if not ( self.envname in os.environ and self.envtemp in os.environ ):
+         ( progpath, progname ) = os.path.split( sys.argv[0] )
+         print 'Before using ' + progname + ', you need to set the environment variables "' + self.envname + '" and "' + self.envtemp + '"'
+         print 'to point to the home directory for this project and to a suitable place for temporary files.'
          sys.exit( -1 )
       
       self.scotHome = os.environ[ self.envname ]
+      self.tempHome = os.environ[ self.envtemp ]
       self.perlHome = os.path.join( self.scotHome, 'lrep' )
       
       self.gsfPerl = os.path.join( self.perlHome, 'gate_sub_flat.pl'    )
@@ -36,6 +39,8 @@ def DashHspiceOption( args, params ):
    outfile = args.hspice[2]
    rawfile = '.'.join( hspfile.split( '.' )[ :-1 ] )
    tmpfile = '.'.join([ rawfile, 'tmp', 'opt', 'sp' ])
+   tmpfile = os.path.join( params.tempHome, tmpfile )
+   outfile = os.path.join( params.tempHome, outfile )
    #
    # setup the command strings:
    # 1. run gate_sub_flat.pl
@@ -59,8 +64,10 @@ def DashIrsimOption( args, params ):
    numruns  = int( args.irsim[3] )
    actfile  = '.'.join( [ sspfile, 'power' ] )
    dutyfile = '.'.join( [ sspfile, 'duty'  ] )
-   rawfile = '.'.join( hspfile.split( '.' )[ :-1 ] )
-   tmpfile = '.'.join([ rawfile, 'tmp', 'opt', 'sp' ])
+   rawfile  = '.'.join( hspfile.split( '.' )[ :-1 ] )
+   tmpfile  = '.'.join([ rawfile, 'tmp', 'opt', 'sp' ])
+   actfile  = os.path.join( params.tempHome, actfile  )
+   dutyfile = os.path.join( params.tempHome, dutyfile )
    #
    # setup the command strings:
    # 1. run diogen
@@ -72,8 +79,8 @@ def DashIrsimOption( args, params ):
    #
    # call the commands:
    jpsy.SystemWrapper( dioCmd, verbose = params.verbose, trial = False )
-   jpsy.SystemWrapper( pafCmd, verbose = params.verbose, trial = False )
-   jpsy.SystemWrapper( pdfCmd, verbose = params.verbose, trial = False )
+   #jpsy.SystemWrapper( pafCmd, verbose = params.verbose, trial = False )
+   #jpsy.SystemWrapper( pdfCmd, verbose = params.verbose, trial = False )
 
 def DashScotSpiceOption( args, params ):
    #
