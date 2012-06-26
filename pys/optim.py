@@ -16,17 +16,16 @@ class Params:
       
       self.scotHome = os.environ[ self.envname ]
       self.tempHome = os.environ[ self.envtemp ]
-      self.perlHome = os.path.join( self.scotHome, 'lrep' )
+      self.plHome   = os.path.join( self.scotHome, 'lrep' )
       self.pyHome   = os.path.join( self.scotHome, 'pys'  )
       
-      self.gsfPerl = os.path.join( self.perlHome, 'gate_sub_flat.pl'    )
-      self.suePerl = os.path.join( self.perlHome, 'sue_spice.pl'        )
-      self.eehPerl = os.path.join( self.perlHome, 'endsendshack.pl'     )
-      self.pafPerl = os.path.join( self.perlHome, 'putActFactInOpt.pl'  )
-      self.pdfPerl = os.path.join( self.perlHome, 'putDutyFactInOpt.pl' )
-      self.psiPy   = os.path.join( self.pyHome,   'putSectionInOpt.py'  )
-      # self.psiPerl = os.path.join( self.perlHome, 'putSectionInOpt.pl'  )
-      
+      self.gsfPerl = os.path.join( self.plHome, 'gate_sub_flat.pl'    )
+      self.suePerl = os.path.join( self.plHome, 'sue_spice.pl'        )
+      self.eehPerl = os.path.join( self.plHome, 'endsendshack.pl'     )
+      self.pafPerl = os.path.join( self.plHome, 'putActFactInOpt.pl'  )
+      self.pdfPerl = os.path.join( self.plHome, 'putDutyFactInOpt.pl' )
+      self.psiPy   = os.path.join( self.pyHome, 'putSectionInOpt.py'  )
+            
       self.diogenBin = os.path.join( self.scotHome, 'diogen', 'bin', 'diogen' )
       self.ciroptBin = os.path.join( self.scotHome, 'ciropt', 'bin', 'ciropt' )
    
