@@ -1,10 +1,11 @@
 #ifndef _SH_GP_H_
 #define _SH_GP_H_
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <iostream.h>
+#include <iostream>
+
 #include <assert.h>
 #include "symtab.hpp"
 
@@ -34,7 +35,7 @@ extern std::map<std::string, int> glbVars;
 class monomial;
 class gposy;
 
-ostream & operator<< ( ostream &, const gposy & );
+std::ostream & operator<< ( std::ostream &, const gposy & );
 
 // this monomial class stands for monomial with coefficient 1
 
@@ -80,23 +81,23 @@ public:
       print( "x" );
    }
    void print( const std::string & x ) const {
-      toOstream( cout,x );
+      toOstream( std::cout, x );
    }
    void print( const symbol_table & st ) const {
-      toOstream( cout,st );
+      toOstream( std::cout, st );
    }
 
-   ostream & toOstream( ostream & os ) const {
-      return toOstream( os,"x" );
+   std::ostream & toOstream( std::ostream & os ) const {
+      return toOstream( os, "x" );
    }
-   ostream & toOstream( ostream &, const std::string & ) const;
-   ostream & toOstream( ostream &, const symbol_table & ) const;
+   std::ostream & toOstream( std::ostream &, const std::string & ) const;
+   std::ostream & toOstream( std::ostream &, const symbol_table & ) const;
 
    const std::string toString( const symbol_table & ) const;
    const std::string toString( const symbol_table &, const std::string &, const std::string &, const std::string & ) const;
 
-   ostream & matlabAbToOstream( ostream & os, int & rowNum ) const;
-   ostream & mpsFormatToOstream( ostream & os, int & monoNum, const symbol_table & symtab, bool inverse, bool obj ) const;
+   std::ostream & matlabAbToOstream( std::ostream & os, int & rowNum ) const;
+   std::ostream & mpsFormatToOstream( std::ostream & os, int & monoNum, const symbol_table & symtab, bool inverse, bool obj ) const;
 
    /*
    // tree drawing method
@@ -177,48 +178,48 @@ public:
       print( "x" );
    }
    void print( const std::string & x ) const {
-      toOstream( cout, x );
+      toOstream( std::cout, x );
    }
    void print( const std::string & x, const std::string & name ) const {
-      cout << name;
+      std::cout << name;
       print( x );
    }
 
    void print( const symbol_table & symtab ) const {
-      toOstream( cout,symtab );
+      toOstream( std::cout, symtab );
    }
    void print( const symbol_table & symtab, const std::string & name ) const {
-      cout << name;
+      std::cout << name;
       print( symtab );
    }
 
-   ostream & toOstream( ostream & os ) const {
+   std::ostream & toOstream( std::ostream & os ) const {
       return toOstream( os, "x" );
    }
-   ostream & toOstream( ostream &, const std::string & ) const;
-   ostream & toOstream( ostream &, const symbol_table & ) const;
+   std::ostream & toOstream( std::ostream &, const std::string & ) const;
+   std::ostream & toOstream( std::ostream &, const symbol_table & ) const;
 
    const std::string toString( const symbol_table & st ) const;
    const std::string toString( const symbol_table &, const std::string &, const std::string &, const std::string & ) const;
 
    // gp.m related methods
-   ostream & matlabAbToOstream( ostream & os, int & rowNum ) const;
+   std::ostream & matlabAbToOstream( std::ostream & os, int & rowNum ) const;
 
    // mosek related methods
-   ostream & mpsFormatToOstream( ostream & os, int & monoNum, const symbol_table & symtab ) const {
+   std::ostream & mpsFormatToOstream( std::ostream & os, int & monoNum, const symbol_table & symtab ) const {
       return mpsFormatToOstream( os, monoNum, symtab, false );
    }
 
-   ostream & mpsFormatToOstream( ostream & os, int & monoNum, const symbol_table & symtab, bool inverse ) const {
+   std::ostream & mpsFormatToOstream( std::ostream & os, int & monoNum, const symbol_table & symtab, bool inverse ) const {
       return mpsFormatToOstream( os, monoNum, symtab, inverse, false );
    }
 
-   ostream & mpsFormatToOstream( ostream & os, int & monoNum, const symbol_table & symtab, bool inverse, bool obj ) const;
+   std::ostream & mpsFormatToOstream( std::ostream & os, int & monoNum, const symbol_table & symtab, bool inverse, bool obj ) const;
 
-   ostream & coefficientsToOstream( ostream & os ) const {
+   std::ostream & coefficientsToOstream( std::ostream & os ) const {
       return coefficientsToOstream( os, false );
    }
-   ostream & coefficientsToOstream( ostream & os, bool inverse ) const;
+   std::ostream & coefficientsToOstream( std::ostream & os, bool inverse ) const;
 
    // mosek related methods
    // deprecated; see mpsFormatToOstream
