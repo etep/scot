@@ -1,6 +1,8 @@
 #include "mat.hpp"
 
-ostream & Mat::arrayToOstream( ostream & os, const double * a, unsigned n, const std::string & name ) {
+using namespace std;
+
+ostream & Mat::arrayToOstream( ostream & os, const double * a, unsigned n, const string & name ) {
    
    os << name << "=[";
    for( unsigned i = 0; i < n; i ++ ) {
@@ -12,7 +14,7 @@ ostream & Mat::arrayToOstream( ostream & os, const double * a, unsigned n, const
    return os;
 }
 
-ostream & Mat::vecToOstream( ostream & os, const std::vector<double> & dv, const std::string & name ) {
+ostream & Mat::vecToOstream( ostream & os, const vector<double> & dv, const string & name ) {
    os << name << "=[";
    for( unsigned i = 0; i < dv.size(); i ++ ) {
       os << dv[i] << ";";

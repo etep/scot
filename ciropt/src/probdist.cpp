@@ -8,6 +8,8 @@
 #include "mat.hpp"
 #include "cnvt.hpp"
 
+using namespace std;
+
 StochasticLib ProbDist::STO( 7601014 );
 
 const double ProbDist::ap[] = { .7, .75, .8, .85, .9, .95, .98 };
@@ -80,7 +82,7 @@ ProbDist::ProbDist( double * sm, unsigned n )
    std = sqrt( std/( double )N - mean*mean );
 }
 
-ProbDist::ProbDist( const std::string & detVal )
+ProbDist::ProbDist( const string & detVal )
    : byDist( true ), type( "fixed" ), hasEvaluated( false ), hasXPCAssigned( false ), N( 0 ) {
    mean = atof( detVal.c_str() );
    std  = 0.0;
@@ -96,13 +98,13 @@ ProbDist::ProbDist( double detVal )
    init();
 }
 
-ProbDist::ProbDist
-( const std::string & dist, unsigned n, double mn, double sd )
+ProbDist::ProbDist( const string & dist, unsigned n, double mn, double sd )
    : byDist( true ), type( dist ), N( n ), hasEvaluated( false ), hasXPCAssigned( false ) {
    if( type == "uniform" ) {
       mean = mn-sqrt( 3.0 )*sd;
       std  = mn+sqrt( 3.0 )*sd;
-   } else {
+   }
+   else {
       mean = mn;
       std  = sd;
    }
@@ -112,8 +114,7 @@ ProbDist::ProbDist
    init();
 }
 
-ProbDist::ProbDist
-( const ProbDist & pd, double mn, double sd )
+ProbDist::ProbDist( const ProbDist & pd, double mn, double sd )
    : byDist( pd.byDist ), type( pd.type ), N( pd.N ),
      hasEvaluated( pd.hasEvaluated ), hasXPCAssigned( pd.hasXPCAssigned ) {
    if( hasEvaluated ) {
@@ -193,35 +194,36 @@ double ProbDist::getPDF( double xx ) {
 
 ProbDist & ProbDist::operator+ ( const ProbDist & pd ) const {
    // if both are gaussian, it's easy to add
-   if( isByDist() && pd.isByDist()
-         && getDistType() == "normal" && pd.getDistType() == "normal" )
+   if( isByDist() && pd.isByDist() && getDistType() == "normal" && pd.getDistType() == "normal" )
 
-      return *( new ProbDist( "normal",getNumberOfSimPoints(),
-                              getMean()+pd.getMean(),
-                              sqrt( getSTD()*getSTD()+pd.getSTD()*pd.getSTD() ) ) );
+      return *( new ProbDist( "normal",getNumberOfSimPoints(), getMean()+pd.getMean(), sqrt( getSTD()*getSTD()+pd.getSTD()*pd.getSTD() ) ) );
 
-   assert( getNumberOfSimPoints() == 0 || pd.getNumberOfSimPoints() == 0
-           || getNumberOfSimPoints() == pd.getNumberOfSimPoints() );
+   assert( getNumberOfSimPoints() == 0 || pd.getNumberOfSimPoints() == 0 || getNumberOfSimPoints() == pd.getNumberOfSimPoints() );
 
    if( getNumberOfSimPoints() == 0 && pd.getNumberOfSimPoints() == 0 ) {
       return *( new ProbDist( getMean() + pd.getMean() ) );
-   } else if( getNumberOfSimPoints() == 0 ) {
+   }
+   else if( getNumberOfSimPoints() == 0 ) {
       if( pd.isByDist() )
          return *( new ProbDist( pd.getDistType(), pd.getNumberOfSimPoints(),
                                  pd.getMean()+getMean(), pd.getSTD() ) );
       else
          return *( new ProbDist( pd.getAddedSimCopy( getMean() ),
                                  pd.getNumberOfSimPoints() ) );
-   } else if( pd.getNumberOfSimPoints() == 0 ) {
+   }
+   else if( pd.getNumberOfSimPoints() == 0 ) {
       return ( pd + ( *this ) );
-   } else if( getNumberOfSimPoints() == pd.getNumberOfSimPoints() ) {
+   }
+   else if( getNumberOfSimPoints() == pd.getNumberOfSimPoints() ) {
       double * sm = new double[getNumberOfSimPoints()];
 
       for( unsigned i = 0; i < getNumberOfSimPoints(); i ++ )
          sm[i] = getSimPoint( i ) + pd.getSimPoint( i );
       return *( new ProbDist( sm,getNumberOfSimPoints() ) );
-   } else
+   }
+   else {
       assert( false );
+   }
 }
 
 ostream & ProbDist::xMatVecToOstream( ostream & os ) {
@@ -290,7 +292,7 @@ void ProbDist::montecarlo() {
    if( type == "normal" ) {
       
       for( size_t i = 0 ; i < N; i ++ ) {
-         sim[i] = STO.Normal( mean,std );
+         sim[i] = STO.Normal( mean, std );
       }
    }
    else if ( type == "uniform" ) {
@@ -347,7 +349,7 @@ void ProbDist::evalMSP() {
    }
 
    // sort
-   std::sort( sortedSim,sortedSim+N );
+   sort( sortedSim, sortedSim+N );
 
    pctl = new double[apSize];
 
@@ -420,12 +422,12 @@ void ProbDist::assignXPC() {
    return;
 }
 
-void ProbDist::doubleVectorToSmoothedPDF( std::vector<double> & x, std::vector<double> & y, const std::vector<double> & samples, double smFr ) {
+void ProbDist::doubleVectorToSmoothedPDF( vector<double> & x, vector<double> & y, const vector<double> & samples, double smFr ) {
    
    double mean = cnvt::getMean( samples );
    double std  = cnvt::getSTD( samples, mean );
    const double sF = smFr * std;
-   const std::vector<double>::size_type N = samples.size();
+   const vector<double>::size_type N = samples.size();
 
    assert( N > 0.0 );
 
@@ -435,7 +437,7 @@ void ProbDist::doubleVectorToSmoothedPDF( std::vector<double> & x, std::vector<d
       
       double v = 0.0;
       
-      for( std::vector<double>::size_type j = 0; j < N; j ++ ) {
+      for( vector<double>::size_type j = 0; j < N; j ++ ) {
          
          v += pdfSmoothing( ( x[i]-samples[j] )/sF )/sF;
       }
@@ -448,7 +450,7 @@ void ProbDist::doubleVectorToSmoothedPDF( std::vector<double> & x, std::vector<d
    return;
 }
 
-ProbDist & ProbDist::getEqualMixture( const std::vector<const ProbDist *> & ps ) {
+ProbDist & ProbDist::getEqualMixture( const vector<const ProbDist *> & ps ) {
    assert( ps.size() > 1 );
 
    const unsigned n = ps.size();
@@ -472,7 +474,7 @@ ProbDist & ProbDist::getEqualMixture( const std::vector<const ProbDist *> & ps )
    return *( new ProbDist( mixture,N*n ) );
 }
 
-ProbDist * ProbDist::createAddMaxProbDist( const std::vector<ProbDist *> & pds1, const std::vector<ProbDist *> & pds2, std::vector<ProbDist *> & sumpds ) {
+ProbDist * ProbDist::createAddMaxProbDist( const vector<ProbDist *> & pds1, const vector<ProbDist *> & pds2, vector<ProbDist *> & sumpds ) {
    assert( pds1.size() == pds2.size() );
    assert( sumpds.size() == 0 );
 
@@ -485,9 +487,9 @@ ProbDist * ProbDist::createAddMaxProbDist( const std::vector<ProbDist *> & pds1,
 }
 
 ProbDist * ProbDist::createMaxProbDist
-( std::vector<unsigned> & slctV, const std::vector<ProbDist *> & pds ) {
+( vector<unsigned> & slctV, const vector<ProbDist *> & pds ) {
    //assert( pds.size() > 1 );
-   assert( slctV.size() == ( std::vector<unsigned>::size_type )0 );
+   assert( slctV.size() == ( vector<unsigned>::size_type )0 );
 
    unsigned NN = pds[0]->getNumberOfSimPoints();
    double * tmp = new double[NN];
@@ -516,7 +518,7 @@ ProbDist * ProbDist::createMaxProbDist
 }
 
 ProbDist * ProbDist::createMaxProbDistwithCriticality
-( std::vector<double> & slctV, const std::vector<ProbDist *> & pds ) {
+( vector<double> & slctV, const vector<ProbDist *> & pds ) {
    //assert( pds.size() > 1 );
    assert( slctV.size() == pds.size() );
 
@@ -549,7 +551,7 @@ ProbDist * ProbDist::createMaxProbDistwithCriticality
 
 ProbDist * ProbDist::createLinCom
 ( const ProbDist * pd, double f1,
-  const std::vector<ProbDist *> & pds, double f2 ) {
+  const vector<ProbDist *> & pds, double f2 ) {
    const unsigned N = pd->getNumberOfSimPoints();
 
    for( unsigned i = 0; i < pds.size(); i ++ )
@@ -568,12 +570,12 @@ ProbDist * ProbDist::createLinCom
 }
 
 ostream & ProbDist::matlabToOstream
-( ostream & os, const std::vector<std::string> & names,
-  const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
-  const std::vector<ProbDist *> & ap1, const std::vector<ProbDist *> & ap2,
-  const std::vector<double> & ovs1, const std::vector<double> & ovs2,
-  const std::string & s1, const std::string & s2,
-  const std::string & kind, double kappa ) {
+( ostream & os, const vector<string> & names,
+  const vector<ProbDist *> & p1, const vector<ProbDist *> & p2,
+  const vector<ProbDist *> & ap1, const vector<ProbDist *> & ap2,
+  const vector<double> & ovs1, const vector<double> & ovs2,
+  const string & s1, const string & s2,
+  const string & kind, double kappa ) {
    if( kind == "first" )
       return matlabToOstreamFirstKind( os,names,p1,p2,ovs1,ovs2,s1,s2,kappa );
    if( kind == "second" )
@@ -586,11 +588,11 @@ ostream & ProbDist::matlabToOstream
 }
 
 ostream & ProbDist::matlabToOstream
-( ostream & os, const std::vector<std::string> & names,
-  const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
-  const std::vector<double> & ovs1, const std::vector<double> & ovs2,
-  const std::string & s1, const std::string & s2,
-  const std::string & kind, double kappa ) {
+( ostream & os, const vector<string> & names,
+  const vector<ProbDist *> & p1, const vector<ProbDist *> & p2,
+  const vector<double> & ovs1, const vector<double> & ovs2,
+  const string & s1, const string & s2,
+  const string & kind, double kappa ) {
    if( kind == "first" )
       return matlabToOstreamFirstKind( os,names,p1,p2,ovs1,ovs2,s1,s2,kappa );
    if( kind == "second" )
@@ -604,10 +606,10 @@ ostream & ProbDist::matlabToOstream
 }
 
 ostream & ProbDist::matlabToOstreamFirstKind
-( ostream & os, const std::vector<std::string> & names,
-  const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
-  const std::vector<double> & ov1, const std::vector<double> & ov2,
-  const std::string & s1, const std::string & s2, double kappa ) {
+( ostream & os, const vector<string> & names,
+  const vector<ProbDist *> & p1, const vector<ProbDist *> & p2,
+  const vector<double> & ov1, const vector<double> & ov2,
+  const string & s1, const string & s2, double kappa ) {
    unsigned n = names.size();
    assert( n == p1.size() && n == p2.size() );
    assert( n == ov1.size() && n == ov2.size() );
@@ -634,9 +636,9 @@ ostream & ProbDist::matlabToOstreamFirstKind
 }
 
 ostream & ProbDist::matlabToOstream
-( ostream & os, const std::string & name, ProbDist & p1, ProbDist & p2,
+( ostream & os, const string & name, ProbDist & p1, ProbDist & p2,
   double ov1, double ov2,
-  const std::string & s1, const std::string & s2, double kappa, bool cdf ) {
+  const string & s1, const string & s2, double kappa, bool cdf ) {
    os << "clear;" << endl;
 
    double xt1 = p1.getPercentilePoint( kappa );
@@ -694,10 +696,10 @@ ostream & ProbDist::matlabToOstream
 }
 
 ostream & ProbDist::matlabToOstreamSecondKind
-( ostream & os, const std::vector<std::string> & names,
-  const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
-  const std::vector<double> & ovs1, const std::vector<double> & ovs2,
-  const std::string & s1, const std::string & s2, double kappa ) {
+( ostream & os, const vector<string> & names,
+  const vector<ProbDist *> & p1, const vector<ProbDist *> & p2,
+  const vector<double> & ovs1, const vector<double> & ovs2,
+  const string & s1, const string & s2, double kappa ) {
    unsigned n = names.size();
    assert( n == p1.size() && n == p2.size() );
 
@@ -725,12 +727,12 @@ ostream & ProbDist::matlabToOstreamSecondKind
 
 ostream & ProbDist::matlabToOstream
 ( ostream & os,
-  const std::vector<std::string> & ns, const std::vector<ProbDist *> & ps,
+  const vector<string> & ns, const vector<ProbDist *> & ps,
   bool cdf, double aph ) {
    static const unsigned nc = 7;
-   static const std::string cls[] = { "b", "r", "k", "c", "m", "y", "g" };
+   static const string cls[] = { "b", "r", "k", "c", "m", "y", "g" };
    static const unsigned nl = 4;
-   static const std::string lss[] = { "-", "-.", "--", ":" };
+   static const string lss[] = { "-", "-.", "--", ":" };
 
    unsigned n = ns.size();
    assert( n > 0 );
@@ -756,7 +758,7 @@ ostream & ProbDist::matlabToOstream
 
 ostream & ProbDist::matlabToOstream
 ( ostream & os, ProbDist & p1, bool cdf, double kappa,
-  const std::string & clr, const std::string & ls, bool lineD ) {
+  const string & clr, const string & ls, bool lineD ) {
    os << "clear;" << endl;
 
    double xt1 = p1.getPercentilePoint( kappa );
@@ -785,11 +787,11 @@ ostream & ProbDist::matlabToOstream
 }
 
 ostream & ProbDist::matlabToOstreamThirdKind
-( ostream & os, const std::vector<std::string> & names,
-  const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
-  const std::vector<ProbDist *> & ap1, const std::vector<ProbDist *> & ap2,
-  const std::vector<double> & ovs1, const std::vector<double> & ovs2,
-  const std::string & s1, const std::string & s2, double p ) {
+( ostream & os, const vector<string> & names,
+  const vector<ProbDist *> & p1, const vector<ProbDist *> & p2,
+  const vector<ProbDist *> & ap1, const vector<ProbDist *> & ap2,
+  const vector<double> & ovs1, const vector<double> & ovs2,
+  const string & s1, const string & s2, double p ) {
    unsigned n = names.size();
    assert( n == p1.size() && n == p2.size() );
    assert( n == ap1.size() && n == ap2.size() );
@@ -823,9 +825,9 @@ ostream & ProbDist::matlabToOstreamThirdKind
 }
 
 ostream & ProbDist::matlabToOstream( ostream & os,
-                                     const std::vector<std::string> & names,
-                                     const std::vector<ProbDist *> & ps, const std::vector<ProbDist *> & aps,
-                                     const std::vector<double> & ovs, double p ) {
+                                     const vector<string> & names,
+                                     const vector<ProbDist *> & ps, const vector<ProbDist *> & aps,
+                                     const vector<double> & ovs, double p ) {
    const double xp = getNormInv( p );
    const unsigned n = names.size();
    double m, s, t, pm;
@@ -890,9 +892,9 @@ ostream & ProbDist::matlabToOstream( ostream & os,
 }
 
 ostream & ProbDist::matlabToOstream( ostream & os,
-                                     const std::vector<ProbDist *> & ps1, const std::vector<ProbDist *> & ps2,
-                                     const std::vector<ProbDist *> & aps1, const std::vector<ProbDist *> & aps2,
-                                     const std::string & s1, const std::string & s2 ) {
+                                     const vector<ProbDist *> & ps1, const vector<ProbDist *> & ps2,
+                                     const vector<ProbDist *> & aps1, const vector<ProbDist *> & aps2,
+                                     const string & s1, const string & s2 ) {
    const unsigned n = ps1.size();
    unsigned num = 0;
    bool wasA = true;
