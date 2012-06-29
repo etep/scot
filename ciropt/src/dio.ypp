@@ -1,39 +1,40 @@
 %{
-    #include "randomc.hpp"
-
-    #include <iostream.h>
-    #include <vector>
-    #include "gp.hpp"
-    #include "symtab.hpp"
-    #include "network.hpp"
-
-    class idPair { public: int i; double d; };
-
-    int diolex();
-    int dioerror( const std::string & em );
-    void errorBasedHalt();
-
-    extern network * nw;
-
-    extern unsigned dio_line_number;
-    extern std::string dio_filename;
-
-    static symbol_table * tst;
-    static ccc * cc;
-    static dio * meanDio, * stdDio;
-    static std::string cccName;
-    static std::string inoutName, inName, outName;
-    static int choose;
+   #include "randomc.hpp"
+   
+   #include <vector>
+   #include <iostream>
+   
+   #include "gp.hpp"
+   #include "symtab.hpp"
+   #include "network.hpp"
+   
+   class idPair { public: int i; double d; };
+   
+   int diolex();
+   int dioerror( const std::string & em );
+   void errorBasedHalt();
+   
+   extern network * nw;
+   
+   extern unsigned dio_line_number;
+   extern std::string dio_filename;
+   
+   static symbol_table * tst;
+   static ccc * cc;
+   static dio * meanDio, * stdDio;
+   static std::string cccName;
+   static std::string inoutName, inName, outName;
+   static int choose;
 %}
 
 
 %union
 {
-    double   doubleV;
-    char   * charpV;
-    gposy  * gposyV;
-
-    std::vector<gposy *> * gpvecV;
+   double   doubleV;
+   char   * charpV;
+   gposy  * gposyV;
+   
+   std::vector<gposy *> * gpvecV;
 }
 
 
@@ -67,39 +68,36 @@ main:   dio_desc
 
 dio_desc: IDENTIFIER
 {
-    const std::string cccin = $1;
-    unsigned dotPos = cccin.find('.');
-
-    cccName = cccin.substr(0,dotPos);
-    inoutName = cccin.substr(dotPos+1);
-
-    dotPos = inoutName.find('.');
-    inName = inoutName.substr(0,dotPos);
-    outName = inoutName.substr(dotPos+1);
-    cout << cccName << ": ";
-    const std::map<std::string,ccc *> & cccmap = nw->getCCCMap();
-    std::map<std::string,ccc *>::const_iterator itr;
-
-    itr = cccmap.find(cccName);
-    if( inName == "" || outName == "" )
-    {
-        dioerror( "Dio syntax not proper for " + cccName);
-    }
-
-    if( itr == cccmap.end())
-    {
-        dioerror( "ccc named " + cccName + " has not been defined" );
-    }
-    else
-    {
-        cc = itr->second;
-        tst = & cc->getSymbolTable();
-
-        meanDio = new dio();
-        stdDio  = new dio();
-    }
-
-    delete $1;
+   const std::string cccin = $1;
+   unsigned dotPos = cccin.find('.');
+   
+   cccName = cccin.substr(0,dotPos);
+   inoutName = cccin.substr(dotPos+1);
+   
+   dotPos = inoutName.find('.');
+   inName = inoutName.substr(0,dotPos);
+   outName = inoutName.substr(dotPos+1);
+   std::cout << cccName << ": ";
+   const std::map<std::string,ccc *> & cccmap = nw->getCCCMap();
+   std::map<std::string,ccc *>::const_iterator itr;
+   
+   itr = cccmap.find(cccName);
+   if( inName == "" || outName == "" ) {
+       dioerror( "Dio syntax not proper for " + cccName);
+   }
+   
+   if( itr == cccmap.end() ) {
+       dioerror( "ccc named " + cccName + " has not been defined" );
+   }
+   else {
+       cc = itr->second;
+       tst = & cc->getSymbolTable();
+   
+       meanDio = new dio();
+       stdDio  = new dio();
+   }
+   
+   delete $1;
 }
 
 
@@ -107,7 +105,7 @@ dios
 {
     cc->putMeanDio(*meanDio,inName,outName);
     cc->putSTDDio (*stdDio,inName,outName);
-    cout << "Recorded dio for " << inName << " to " << outName << endl;
+    std::cout << "Recorded dio for " << inName << " to " << outName << std::endl;
 }
 
 
@@ -181,7 +179,7 @@ IDENTIFIER COLON
     {
         dioerror( "ParCap / leakPow statement format error" );
     }
-    cout << cccName << ": ";
+    std::cout << cccName << ": ";
 
     delete $1;
 
@@ -192,38 +190,33 @@ IDENTIFIER COLON
 // 4       5
 genposy DELIMITER
 {
-    if(choose == 0)
-		{
-				cout << "Recorded wireCap for net " << outName << endl;
-        cc->putWireCap( $4, outName);
-		}
-		else if(choose == 1)
-		{
-				cout << "Recorded parCap for net " << outName << endl;
-        cc->putParCap( $4, outName);
-		}
-    else if(choose == 2)
-		{
-				cout << "Recorded LeakPowNmean for output " << outName << endl;
-        cc->putLeakPowNmean( $4, outName );
-		}
-    else if(choose == 3)
-		{
-				cout << "Recorded LeakPowPmean for output " << outName << endl;
-        cc->putLeakPowPmean( $4, outName );
-		}
-    else if(choose == 4)
-		{
-				cout << "Recorded LeakPowNstat for output " << outName << endl;
-        cc->putLeakPowNstat( $4, outName );
-		}
-    else if(choose == 5)
-		{
-				cout << "Recorded LeakPowPstat for output " << outName << endl;
-        cc->putLeakPowPstat( $4, outName );
-		}
-    else
-        dioerror(" Could not record Parasitic cap or leakage for" + cccName);
+   if(choose == 0) {
+      std::cout << "Recorded wireCap for net " << outName << std::endl;
+      cc->putWireCap( $4, outName);
+   }
+   else if(choose == 1) {
+      std::cout << "Recorded parCap for net " << outName << std::endl;
+      cc->putParCap( $4, outName);
+   }
+   else if(choose == 2) {
+      std::cout << "Recorded LeakPowNmean for output " << outName << std::endl;
+      cc->putLeakPowNmean( $4, outName );
+   }
+   else if(choose == 3) {
+      std::cout << "Recorded LeakPowPmean for output " << outName << std::endl;
+      cc->putLeakPowPmean( $4, outName );
+   }
+   else if(choose == 4) {
+      std::cout << "Recorded LeakPowNstat for output " << outName << std::endl;
+      cc->putLeakPowNstat( $4, outName );
+   }
+   else if(choose == 5) {
+      std::cout << "Recorded LeakPowPstat for output " << outName << std::endl;
+      cc->putLeakPowPstat( $4, outName );
+   }
+   else {
+      dioerror(" Could not record Parasitic cap or leakage for" + cccName );
+   }
 
 }
 
@@ -310,9 +303,8 @@ number  : PNUMBER       { $$ = $1; }
 | POPEN number PCLOSE   { $$ = $2; }
 ;
 %%
-int dioerror( const std::string & em )
-{
-    cerr << dio_filename << ":" << dio_line_number << ": " << em << endl;
+int dioerror( const std::string & em ) {
+    std::cerr << dio_filename << ":" << dio_line_number << ": " << em << std::endl;
 
     exit( -1 );
     return -1;
