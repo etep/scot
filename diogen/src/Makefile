@@ -26,7 +26,7 @@ SRCS = Type.cpp               \
        Input.cpp              \
        CircuitParser.cpp      \
        TransitionTable.cpp    \
-       main.cpp
+       diogen.cpp
 
 # .o versions of the c/cpp sources
 OBJS = $(OBJDIR)/y.tab.o  \
@@ -99,6 +99,6 @@ Subcircuit.o: Subcircuit.cpp Subcircuit.hpp Node.hpp Type.hpp utility.hpp Transi
 Input.o: Input.cpp Input.hpp Internal.hpp Node.hpp Type.hpp utility.hpp Subcircuit.hpp Transistor.hpp Vdd.hpp Gnd.hpp Path.hpp ModelPrefix.hpp
 CircuitParser.o: CircuitParser.cpp CircuitParser.hpp Subcircuit.hpp Node.hpp Type.hpp utility.hpp Transistor.hpp Input.hpp Internal.hpp
 Instance.o: Instance.cpp Instance.hpp Subcircuit.hpp Node.hpp Type.hpp utility.hpp Transistor.hpp Input.hpp Internal.hpp
-main.o: main.cpp utility.hpp scanner.hpp parser.hpp Transistor.hpp Node.hpp Type.hpp Subcircuit.hpp Input.hpp Internal.hpp y.tab.hpp CircuitParser.hpp
+diogen.o: diogen.cpp utility.hpp scanner.hpp parser.hpp Transistor.hpp Node.hpp Type.hpp Subcircuit.hpp Input.hpp Internal.hpp y.tab.hpp CircuitParser.hpp
 
 
