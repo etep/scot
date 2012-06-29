@@ -1,6 +1,7 @@
 %{
-#include <iostream.h>
 #include <vector>
+#include <iostream>
+
 #include "symtab.hpp"
 #include "gp.hpp"
 #include "ggp.hpp"
@@ -61,68 +62,72 @@ constraints: constraint
 
 constraint: DELIMITER
 	| genposy EQUALTO genposy DELIMITER
-        {
-	  int labNum = labSymTab.makeAndGetIndexOfAuxLabel();
+   {
+      int labNum = labSymTab.makeAndGetIndexOfAuxLabel();
 
-	  if( GGP->addEqConstraint(*$1,*$3,labSymTab.getSymbol(labNum) ) )
-	  {
-	    if(DBP)
-	      $3->toOstream($1->toOstream(cout,symtab) << " = ",symtab) << endl;
-	  }
-          else
-	     cerr << line_number << ": "
-	     << "either side of equality constraint statement is not monomial" << endl;
-        }
+      if( GGP->addEqConstraint(*$1,*$3,labSymTab.getSymbol( labNum ) ) ) {
+         if(DBP) {
+            $3->toOstream($1->toOstream( std::cout, symtab ) << " = ",symtab) << std::endl;
+         }
+      }
+      else {
+	     std::cerr << line_number << ": " << "either side of equality constraint statement is not monomial" << std::endl;
+      }
+   }
 	| VARIABLE COLON genposy EQUALTO genposy DELIMITER
-        {
-				if(labSymTab.find( $1 ) != -1)
-				cerr << line_number << ": " << "repeated name or something" << endl;
-	  assert( labSymTab.find( $1 ) == -1 );
-	  labSymTab.put( $1 );
+   {
+      if( labSymTab.find( $1 ) != -1 ) {
+         std::cerr << line_number << ": " << "repeated name or something" << std::endl;
+      }
+      assert( labSymTab.find( $1 ) == -1 );
+      labSymTab.put( $1 );
 
-	  if( GGP->addEqConstraint(*$3,*$5,$1) )
-	  {
-	    if(DBP)
-	      $5->toOstream($3->toOstream(cout,symtab) << " = ",symtab) << endl;
-	  }
-          else
-	     cerr << line_number << ": "
-	     << "either side of equality constraint statement is not monomial" << endl;
-
-	  delete $1;
+      if( GGP->addEqConstraint(*$3,*$5,$1) ) {
+        if(DBP) {
+          $5->toOstream( $3->toOstream( std::cout, symtab) << " = ",symtab) << std::endl;
         }
+	   }
+      else {
+	     std::cerr << line_number << ": " << "either side of equality constraint statement is not monomial" << std::endl;
+      }
+
+      delete $1;
+   }
 	| genposy LESSTHAN genposy DELIMITER
 	{
-	  int labNum = labSymTab.makeAndGetIndexOfAuxLabel();
-
-	  if( GGP->addInConstraint(*$1,*$3,labSymTab.getSymbol(labNum)) )
-	  {
-	    if(DBP)
-	      $3->toOstream($1->toOstream(cout,symtab) << " < ",symtab) << endl;
-	  }
-	  else
-	     cerr << line_number << ": "
-	     << "RHS of inequality constraint statement is not monomial" << endl;
-        }
+      int labNum = labSymTab.makeAndGetIndexOfAuxLabel();
+      
+      if( GGP->addInConstraint(*$1,*$3,labSymTab.getSymbol( labNum) ) ) {
+         if(DBP) {
+            $3->toOstream($1->toOstream( std::cout, symtab ) << " < ",symtab) << std::endl;
+         }
+      }
+      else {
+         std::cerr << line_number << ": " << "RHS of inequality constraint statement is not monomial" << std::endl;
+      }
+   }
 	| VARIABLE COLON genposy LESSTHAN genposy DELIMITER
 	{
-	  if(DBP) cout << $1 << endl;
-		if(labSymTab.find( $1 ) != -1)
-				cerr << line_number << ": " << "repeated name or something" << endl;
-	  assert( labSymTab.find($1) == -1 );
-	  labSymTab.put( $1 );
-
-	  if( GGP->addInConstraint(*$3,*$5,$1) )
-	  {
-	    if(DBP)
-	      $5->toOstream($3->toOstream(cout,symtab) << " < ",symtab) << endl;
-	  }
-	  else
-	     cerr << line_number << ": "
-	     << "RHS of inequality constraint statement is not monomial" << endl;
-
-          delete $1;
-        }
+      if( DBP ) {
+         std::cout << $1 << std::endl;
+      }
+		if(labSymTab.find( $1 ) != -1) {
+         std::cerr << line_number << ": " << "repeated name or something" << std::endl;
+      }
+      assert( labSymTab.find($1) == -1 );
+      labSymTab.put( $1 );
+      
+      if( GGP->addInConstraint(*$3,*$5,$1) ) {
+         if( DBP ) {
+            $5->toOstream($3->toOstream( std::cout, symtab ) << " < ", symtab ) << std::endl;
+         }
+      }
+      else {
+         std::cerr << line_number << ": " << "RHS of inequality constraint statement is not monomial" << std::endl;
+      }
+      
+      delete $1;
+   }
 	;
 
 genposy	: PNUMBER { $$ = new gposy( $1 ); }
@@ -176,11 +181,9 @@ exp:	exp PLUS exp
 */
 
 %%
-int
-ggperror( const char * s )
-{
-  cerr << "ggpsol: " << filename << ":" << line_number << ": " << s << endl;
-
-  exit(-1);
-  return -1;
+int ggperror( const char * s ) {
+   std::cerr << "ggpsol: " << filename << ":" << line_number << ": " << s << std::endl;
+   
+   exit( -1 );
+   return -1;
 }
