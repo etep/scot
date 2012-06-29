@@ -65,18 +65,12 @@ dirs:
 	mkdir -p $(BINDIR)
 	mkdir -p $(OBJDIR)
 
-# annoying rebuild happens when using archive libIrsim.a
-# not sure what black magic is needed to avoid cleanly,
-# but it is enough just to list the obj files individually;
-# old rules/dependencies in comments...
-$(BIN): user_stub.c $(OBJDIR)/spiketbl.c $(OBJDIR)/stables.c $(OBJS) $(ANA) #$(OBJDIR)/libIrsim.a
-	$(CC) $(LFLAGS) -o $(BIN) $(OBJS) $(ANA) $(LIBS)
-#	$(CC) $(LFLAGS) -o $(BIN) $(OBJDIR)/libIrsim.a user_stub.c $(LIBS)
+$(BIN): user_stub.c $(OBJDIR)/libIrsim.a
+	$(CC) -o $(BIN) $(LFLAGS) $(OBJDIR)/libIrsim.a user_stub.c $(LIBS)
 
 $(OBJDIR)/libIrsim.a: $(OBJDIR)/spiketbl.c $(OBJDIR)/stables.c $(OBJS) $(ANA)
 	ar rv  $(OBJDIR)/libIrsim.a $(OBJS) $(ANA)
 	ranlib $(OBJDIR)/libIrsim.a
-	touch $(OBJDIR)/libIrsim.a
 
 clean:
 	rm -f $(BINDIR)/*
@@ -97,16 +91,16 @@ $(OBJDIR)/stables.c: $(GENTBL)
 	mv stables.c $(OBJDIR)
 
 $(GENTBL): gentbl.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(GENTBL) gentbl.c
+	$(CC) $(CFLAGS) $(INCLUDES) gentbl.c -o $(GENTBL)
 
 $(GENSPK): genspktbl.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(GENSPK) genspktbl.c -lm
+	$(CC) $(CFLAGS) $(INCLUDES) genspktbl.c -lm -o $(GENSPK)
 
 $(OBJDIR)/spiketbl.c: $(GENSPK)
 	$(GENSPK) spiketbl.c
 	mv spiketbl.c $(OBJDIR)
 
-$(OBJDIR)/%.o: %.c dirs $(EXPORTS) $(GENTBL) $(GENSPK)
+$(OBJDIR)/%.o: %.c $(GENTBL) $(GENSPK) $(EXPORTS)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(ANA): $(EXPORT)
