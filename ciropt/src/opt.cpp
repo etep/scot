@@ -1,8 +1,8 @@
 #include <map>
 #include <vector>
-#include "randomc.hpp"
-#include <fstream.h>
+#include <fstream>
 
+#include "randomc.hpp"
 #include "cnvt.hpp"
 #include "opt.hpp"
 

@@ -2,7 +2,8 @@
 
 //#define DB
 
-#include <fstream.h>
+#include <fstream>
+
 #include <iomanip.h>
 #include "ggp.hpp"
 #include "cnvt.hpp"

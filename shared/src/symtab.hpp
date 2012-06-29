@@ -1,15 +1,17 @@
 #ifndef _SH_SYMTAB_H_
 #define _SH_SYMTAB_H_
 
+#include <assert.h>
+
 #include <map>
 #include <vector>
 #include <string>
-#include <assert.h>
-#include <iostream.h>
+#include <iostream>
+
 extern	std::map<std::string, int> glbVars;
 
 class symbol_table;
-ostream & operator<< ( ostream &, const symbol_table & );
+std::ostream & operator<< ( std::ostream &, const symbol_table & );
 
 class symbol_table {
 public:
@@ -97,15 +99,15 @@ public:
       print( "x" );
    }
    void print( const std::string & x ) const {
-      toOstream( cout,x );
+      toOstream( std::cout, x );
    }
 
-   ostream & toOstream( ostream & os ) const {
+   std::ostream & toOstream( std::ostream & os ) const {
       return toOstream( os,"x" );
    }
-   ostream & toOstream( ostream &, const std::string & x ) const;
+   std::ostream & toOstream( std::ostream &, const std::string & x ) const;
 
-   ostream & matlabSymbolNamesToOstream( ostream & os ) const;
+   std::ostream & matlabSymbolNamesToOstream( std::ostream & os ) const;
 };
 
 #endif
