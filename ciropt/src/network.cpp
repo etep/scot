@@ -1,25 +1,29 @@
 #include "randomc.hpp"
 
 #include <map>
-#include <iostream.h>
-#include "network.hpp"
-#include "cnvt.hpp"
-#include "opt.hpp"
+#include <cstring>
+#include <iostream>
+
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <cstring>
-#include <math.h>
+
+#include "opt.hpp"
+#include "cnvt.hpp"
+#include "network.hpp"
+
+using namespace std;
 
 #define EXPT true
 //extern unsigned ciropt_line_number;
 //extern unsigned dio_line_number;
-int ciropterror( const std::string & );
-int dioerror( const std::string & );
-int errorReport( const std::string & );
+int ciropterror( const string & );
+int dioerror( const string & );
+int errorReport( const string & );
 
-extern std::string ERROR_STRING;
-extern std::string EMPTY_STRING;
-extern std::string KEEPER_INPUT;
+extern string ERROR_STRING;
+extern string EMPTY_STRING;
+extern string KEEPER_INPUT;
 extern double MAX_PATH_LENGTH;
 
 /*
@@ -28,18 +32,18 @@ extern double MAX_PATH_LENGTH;
 
 network::~network() {
    
-   for( std::map<std::string, ccc * >::const_iterator it = cccMap.begin();  it != cccMap.end();  it++ ) {
+   for( map<string, ccc * >::const_iterator it = cccMap.begin();  it != cccMap.end();  it++ ) {
       delete it->second;
    }
-   for( std::map<std::string, node *>::const_iterator it = nodeMap.begin(); it != nodeMap.end(); it++ ) {
+   for( map<string, node *>::const_iterator it = nodeMap.begin(); it != nodeMap.end(); it++ ) {
       delete it->second;
    }
-   for( std::map<std::string, edge *>::const_iterator it = edgeMap.begin(); it != edgeMap.end(); it++ ) {
+   for( map<string, edge *>::const_iterator it = edgeMap.begin(); it != edgeMap.end(); it++ ) {
       delete it->second;
    }
 }
 
-bool network::isGNDorVDD( const std::string & name ) {
+bool network::isGNDorVDD( const string & name ) {
    return ( name == "GND"
             || name == "gnd"
             || name == "VDD"
@@ -54,7 +58,7 @@ bool network::isGNDorVDD( const std::string & name ) {
 //Insert the map of correlated MOS in a ccc in a map of CCCs
 //containing the correlated
 
-void network::putCorrMos( const std::string & ccc_name, std::map<std::string, std::string> & corr_mos ) {
+void network::putCorrMos( const string & ccc_name, map<string, string> & corr_mos ) {
    if( corr_mos_info.find( ccc_name ) != corr_mos_info.end() ) {
       ciropterror( "multiple definition of cccs with name \""+ccc_name+"\"" );
       return;
@@ -66,8 +70,8 @@ void network::putCorrMos( const std::string & ccc_name, std::map<std::string, st
 //From the MOS list, find the nets that are correlated and
 //make a table of them.
 void network::MakeCorrelatedEdgeTable() {
-   std::map<std::string, node *>::const_iterator nitr;
-   std::string ccName, in_name1, in_name2;
+   map<string, node *>::const_iterator nitr;
+   string ccName, in_name1, in_name2;
    int in_num1, in_num2;
    bool isPMOS1, isPMOS2;
    for( nitr = nodeMap.begin(); nitr != nodeMap.end(); nitr ++ ) {
@@ -75,8 +79,8 @@ void network::MakeCorrelatedEdgeTable() {
          continue;
       ccName = nitr->second->getCCC().getName();
       if( corr_mos_info.find( ccName ) != corr_mos_info.end() ) {
-         std::map<std::string, std::string>::const_iterator mitr;
-         std::map<std::string, std::string> & tmp = corr_mos_info[ccName];
+         map<string, string>::const_iterator mitr;
+         map<string, string> & tmp = corr_mos_info[ccName];
          for( mitr = tmp.begin(); mitr !=tmp.end(); mitr++ ) {
             in_num1 =   nitr->second->getCCC().get_gate_num( mitr->first );
             nitr->second->putCorrInputnum( in_num1 );
@@ -95,17 +99,17 @@ void network::MakeCorrelatedEdgeTable() {
    }
    cout<< "Made the Correlated nets table " <<endl;
    // The inclusion of the correlated nets is correct ...so below is commented.
-   //std::map<std::string, edge *>::const_iterator eitr;
+   //map<string, edge *>::const_iterator eitr;
    //for( eitr = edgeMap.begin(); eitr != edgeMap.end(); eitr ++ )
    //   eitr->second->print_corr_edges();
 }
 
 
-void network::putVRLC_info( const std::string name,const std::string net1, const std::string net2, std::string type, gposy & val,symbol_table & st ) {
+void network::putVRLC_info( const string name,const string net1, const string net2, string type, gposy & val,symbol_table & st ) {
    if( VRLC_info.find( name ) != VRLC_info.end() )
       ciropterror( "The element " + name + " of type " + type + " is defined more than once" );
-   std::map<std::string, std::string> tmp1;
-   std::map<std::string, gposy * > tmp2;
+   map<string, string> tmp1;
+   map<string, gposy * > tmp2;
    tmp1[net1] = net2;
    tmp2[type] = & val;
    VRLC_info[name] = tmp1;
@@ -124,13 +128,13 @@ void network::MakeVRLCnodes() {
    //at the end, a voltage source is connected to only one proper net and the
    //other is just dangling. But I expect that it will be captured when checking
    //the connections of all the edges.
-   std::map<std::string, std::map<std::string, std::string> >::iterator itr;
-   std::map<std::string, std::string> edgeInfo; // the second variable of itr
-   std::map<std::string, gposy * > attr; // the second variable of gtr
-   std::vector<std::string> done;
-   std::map<std::string, std::string>::iterator sitr;
-   std::map<std::string, gposy * >::iterator aitr;
-   std::string VRLname;
+   map<string, map<string, string> >::iterator itr;
+   map<string, string> edgeInfo; // the second variable of itr
+   map<string, gposy * > attr; // the second variable of gtr
+   vector<string> done;
+   map<string, string>::iterator sitr;
+   map<string, gposy * >::iterator aitr;
+   string VRLname;
    bool unconnect = false;
    bool madeNode = true;
    //first put only the VRL nodes since they are in series and need to instantiate edges
@@ -188,25 +192,25 @@ void network::MakeVRLCnodes() {
  *  No need for this now since all checks are done before this and we allow for consecutive VRL nodes.
   void network::CheckVRLnodes()
   {
-			 std::map<std::string, std::map<std::string, std::string> >::iterator itr;
-			 std::map<std::string, std::string >::iterator ttr;
+			 map<string, map<string, string> >::iterator itr;
+			 map<string, string >::iterator ttr;
 			 itr = VRLC_info.begin();
 			 ttr = VRLC_type.begin();
-			 std::map<std::string, std::string> tmp;
-			 std::map<std::string, std::string>::iterator sitr;
-			 std::map<std::string, edge *>::iterator eitr1, eitr2;
-			 std::string VRLname;
+			 map<string, string> tmp;
+			 map<string, string>::iterator sitr;
+			 map<string, edge *>::iterator eitr1, eitr2;
+			 string VRLname;
 			 while(itr != VRLC_info.end())
 			 {
 						VRLname = itr->first;
             tmp = itr->second;
 						for(sitr = tmp.begin(); sitr != tmp.end(); sitr++)
 						{
-								 std::string n1 = sitr->first;
+								 string n1 = sitr->first;
 								 eitr1 = edgeMap.find(n1);
 								 if(eitr1 == edgeMap.end())
 											errorReport("The edge " +  n1 + " of VRL node " + VRLname + " is unconnected");
-								 std::string n2 = sitr->second;
+								 string n2 = sitr->second;
 								 eitr2 = edgeMap.find(n2);
 								 if(eitr2 == edgeMap.end())
 											errorReport("The edge " +  n2 + " of VRL node " + VRLname + " is unconnected");
@@ -218,7 +222,7 @@ void network::MakeVRLCnodes() {
 			 }
 			 cout << "Checked the VRL nodes, if any " << endl;
 			 //checkForConsecutiveVRLnodes
-			 std::map<std::string, node *>::iterator nitr;
+			 map<string, node *>::iterator nitr;
 			 for(nitr = nodeMap.begin();nitr != nodeMap.end(); nitr ++)
 			 {
 						if((nitr->second)->isVRL())
@@ -226,8 +230,8 @@ void network::MakeVRLCnodes() {
 								 if(nitr->second->getOutEdge(0).getNumFanoutNodes() == 1
 													 && nitr->second->getOutEdge(0).getFanoutNode(0).isVRL())
 								 {
-											std::string n1 = nitr->first;
-											std::string n2 = nitr->second->getOutEdge(0).getFanoutNode(0).getName();
+											string n1 = nitr->first;
+											string n2 = nitr->second->getOutEdge(0).getFanoutNode(0).getName();
 											errorReport("Error :  VRL nodes " + n1 + " and " + n2 + " are consecutive");
 								 }
 						}
@@ -238,7 +242,7 @@ void network::MakeVRLCnodes() {
 
 
 void network::CheckConnectionsOfEdges() {
-   std::map<std::string, edge *>::iterator itr;
+   map<string, edge *>::iterator itr;
    for( itr = edgeMap.begin(); itr != edgeMap.end(); itr ++ ) {
       if( itr->second->isPI() ) continue;
       if( itr->second->getDriverNode() == ( node * ) NULL ) {
@@ -258,18 +262,18 @@ void network::put( ccc & c ) {
    cccMap[c.getName()] = &c;
 }
 
-void network::putNode( const  std::string & node_name,
-                       const std::string & ccc_name,
-                       std::vector<std::string> & out_edge_name_list,
-                       std::vector<std::string> & in_edge_name_list,
-                       const std::string & var_name ) {
+void network::putNode( const  string & node_name,
+                       const string & ccc_name,
+                       vector<string> & out_edge_name_list,
+                       vector<string> & in_edge_name_list,
+                       const string & var_name ) {
    if( nodeMap.find( node_name ) != nodeMap.end() ) {
       ciropterror( "multiple definition of gates with name \""+node_name+"\"" );
       return;
    }
 
    // find ccc type with name {ccc_name} reference it by {cc}
-   std::map<std::string, ccc *>::const_iterator cccitr;
+   map<string, ccc *>::const_iterator cccitr;
    if( ( cccitr = cccMap.find( ccc_name ) ) == cccMap.end() ) {
       ciropterror( "ccc type " +ccc_name +" is not defined in .SUBCKT section" );
       return;
@@ -280,11 +284,11 @@ void network::putNode( const  std::string & node_name,
    // reference it by {outEdge}
    //edge & outEdge = findOrAddEdge( out_edge_name );
 
-   std::vector<edge *> inEdgeVec;
-   std::vector<edge *> outEdgeVec;
+   vector<edge *> inEdgeVec;
+   vector<edge *> outEdgeVec;
 
-   std::vector<edge *> constInEdgeVec;
-   std::vector<edge *> constOutEdgeVec;
+   vector<edge *> constInEdgeVec;
+   vector<edge *> constOutEdgeVec;
 
    for( int i = 0; i < in_edge_name_list.size(); i ++ ) {
       edge & te = findOrAddEdge( in_edge_name_list[i] );
@@ -300,7 +304,7 @@ void network::putNode( const  std::string & node_name,
 
 
    // create a node and store it in the map
-   std::string n = node_name;
+   string n = node_name;
    node & newnode = *( new node( n, constOutEdgeVec, cc, constInEdgeVec,var_name ) );
 
    nodeMap[newnode.getName()] = & newnode;
@@ -319,9 +323,9 @@ void network::putNode( const  std::string & node_name,
 }
 
 void network::putCapNode
-(  const std::string & node_name,
-   const std::string & e1,  const std::string & e2, gposy & c,
-   symbol_table & st, const std::string & var_name ) {
+(  const string & node_name,
+   const string & e1,  const string & e2, gposy & c,
+   symbol_table & st, const string & var_name ) {
    if( nodeMap.find( node_name ) != nodeMap.end() ) {
       ciropterror( "multiple definition of subcircuit \"" + node_name + "\"" );
       return;
@@ -356,9 +360,9 @@ void network::putCapNode
 }
 
 
-void network::putVRLNode( const std::string & VRLname,
-                          const std::string & e1, const std::string & e2,
-                          const std::string & type, gposy & val, symbol_table & st ) {
+void network::putVRLNode( const string & VRLname,
+                          const string & e1, const string & e2,
+                          const string & type, gposy & val, symbol_table & st ) {
    if( nodeMap.find( VRLname ) != nodeMap.end() ) {
       ciropterror( "multiple definition of subcircuit \"" + VRLname + "\"" );
       return;
@@ -436,8 +440,8 @@ void network::putVRLNode( const std::string & VRLname,
 
 
 
-void network::putCorrNets( const std::string & netname, const bool risefall,  const std::string & corr_net, const bool corr_risefall ) {
-   std::map<std::string, edge *>::const_iterator itr;
+void network::putCorrNets( const string & netname, const bool risefall,  const string & corr_net, const bool corr_risefall ) {
+   map<string, edge *>::const_iterator itr;
 
    itr = edgeMap.find( netname );
 
@@ -453,8 +457,8 @@ void network::putCorrNets( const std::string & netname, const bool risefall,  co
 }
 
 void network::putSwitchingFactor
-( const std::string & netname, double sf ) {
-   std::map<std::string, edge *>::const_iterator itr;
+( const string & netname, double sf ) {
+   map<string, edge *>::const_iterator itr;
 
    itr = edgeMap.find( netname );
 
@@ -469,8 +473,8 @@ void network::putSwitchingFactor
 }
 
 void network::putSwitchingFactor
-( const std::string & gatename, const std::string & netname, double sf ) {
-   std::map<std::string, node *>::const_iterator itr;
+( const string & gatename, const string & netname, double sf ) {
+   map<string, node *>::const_iterator itr;
 
    itr = nodeMap.find( gatename );
 
@@ -489,8 +493,8 @@ void network::putSwitchingFactor
 
 
 void network::putDutyFactor
-( const std::string & nodename, double df,const std::string & out ) {
-   std::map<std::string, node *>::const_iterator itr;
+( const string & nodename, double df,const string & out ) {
+   map<string, node *>::const_iterator itr;
 
    itr = nodeMap.find( nodename );
 
@@ -507,12 +511,12 @@ void network::putDutyFactor
 
 void network::setPathLengthTables() {
    MAX_PATH_LENGTH = 0.0;
-   std::map<std::string, double> PLforward;
-   std::map<std::string, double> PLreverse;
-   std::map<std::string, edge *>::const_iterator eitr;
-   std::map<std::string, node *>::const_iterator nitr;
-   std::string in;
-   std::string out;
+   map<string, double> PLforward;
+   map<string, double> PLreverse;
+   map<string, edge *>::const_iterator eitr;
+   map<string, node *>::const_iterator nitr;
+   string in;
+   string out;
    //Initialize all the tables before the looping of
    //Bellman-Ford Algorithm to find the longest paths
    //from inputs and outputs. This is done basically by finding
@@ -568,8 +572,8 @@ void network::setPathLengthTables() {
 }
 
 
-ccc & network::findCCC( const std::string & ccc_name ) {
-   std::map<std::string, ccc *>::const_iterator
+ccc & network::findCCC( const string & ccc_name ) {
+   map<string, ccc *>::const_iterator
    itr = cccMap.find( ccc_name );
    assert( itr!=cccMap.end() );
 
@@ -577,8 +581,8 @@ ccc & network::findCCC( const std::string & ccc_name ) {
 }
 
 
-edge & network::findEdge( const std::string & edgeName ) {
-   std::map<std::string, edge *>::const_iterator
+edge & network::findEdge( const string & edgeName ) {
+   map<string, edge *>::const_iterator
    itr = edgeMap.find( edgeName );
 
    if( itr==edgeMap.end() )
@@ -587,7 +591,7 @@ edge & network::findEdge( const std::string & edgeName ) {
    return *( itr->second );
 }
 
-edge & network::findOrAddEdge( const std::string & edgeName ) {
+edge & network::findOrAddEdge( const string & edgeName ) {
    edge * te = edgeMap[edgeName];
    if( te==( edge * )NULL ) te = edgeMap[edgeName] = new edge( edgeName );
 
@@ -595,9 +599,9 @@ edge & network::findOrAddEdge( const std::string & edgeName ) {
 }
 
 void network::print() {
-   std::map<std::string,ccc *>::const_iterator itr1 = cccMap.begin();
-   std::map<std::string,node *>::const_iterator itr2 = nodeMap.begin();
-   std::map<std::string,edge *>::const_iterator itr3 = edgeMap.begin();
+   map<string,ccc *>::const_iterator itr1 = cccMap.begin();
+   map<string,node *>::const_iterator itr2 = nodeMap.begin();
+   map<string,edge *>::const_iterator itr3 = edgeMap.begin();
 
    for( ; itr1 != cccMap.end();  itr1 ++ ) itr1->second->print();
    for( ; itr2 != nodeMap.end(); itr2 ++ ) itr2->second->print();
@@ -605,31 +609,31 @@ void network::print() {
 }
 
 void network::montecarlo
-( std::map<std::string, ProbDist *> & mc,
-  std::map<std::string, std::vector<unsigned> > & netSelectVecMap,
+( map<string, ProbDist *> & mc,
+  map<string, vector<unsigned> > & netSelectVecMap,
   const monte_carlo & monte, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
-   const std::string & dist = monte.getDistribution();
+  map<string,double> & optVs, bool noTriseTfall ) {
+   const string & dist = monte.getDistribution();
    const size_t N = monte.getN();
 
    if( monte.isIndependent() ) {
       cout << "Independent distributions" << endl;
       montecarlo( mc, netSelectVecMap, dist, N, p, optVs, noTriseTfall );
    } else {
-      const std::string depType = monte.getDependencyType();
+      const string depType = monte.getDependencyType();
       if( depType == "type1" ) {
          cout << "Dependent distribution type1" << endl;
          // assign prob. dist. for each gate
-         std::map<std::string,ProbDist *> gatePDMap;
+         map<string,ProbDist *> gatePDMap;
 
-         std::map<std::string, node *>::const_iterator nitr;
+         map<string, node *>::const_iterator nitr;
          for( nitr = nodeMap.begin(); nitr != nodeMap.end(); nitr ++ )
             gatePDMap[nitr->first] = new ProbDist( dist, N, 0.0, 1.0 );
 
          // do montecarlo
          montecarlo( mc, netSelectVecMap, gatePDMap, monte, p, optVs, noTriseTfall );
 
-         std::map<std::string,ProbDist *>::const_iterator gitr;
+         map<string,ProbDist *>::const_iterator gitr;
          for( gitr = gatePDMap.begin(); gitr != gatePDMap.end(); gitr ++ )
             delete gitr->second;
       } else
@@ -640,12 +644,12 @@ void network::montecarlo
 }
 
 void network::montecarlo
-( std::map<std::string, ProbDist *> & mc,
-  std::map<std::string, std::vector<unsigned> > & netSelectVecMap,
-  const std::string & dist, unsigned N, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
-   assert( mc.size() == ( std::map<std::string,ProbDist*>::size_type )0 );
-   std::map<std::string, edge *>::const_iterator itr;
+( map<string, ProbDist *> & mc,
+  map<string, vector<unsigned> > & netSelectVecMap,
+  const string & dist, unsigned N, double p,
+  map<string,double> & optVs, bool noTriseTfall ) {
+   assert( mc.size() == ( map<string,ProbDist*>::size_type )0 );
+   map<string, edge *>::const_iterator itr;
 
    for( itr = edgeMap.begin(); itr != edgeMap.end(); itr ++ ) {
       itr->second->resetNumOfMCVisits();
@@ -656,13 +660,13 @@ void network::montecarlo
 }
 
 void network::montecarlo
-( std::map<std::string,ProbDist *> & mc,
-  std::map<std::string,std::vector<unsigned> > & netSelectMap,
-  std::map<std::string,ProbDist *> & gatePDMap,
+( map<string,ProbDist *> & mc,
+  map<string,vector<unsigned> > & netSelectMap,
+  map<string,ProbDist *> & gatePDMap,
   const monte_carlo & monte, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
-   assert( mc.size() == ( std::map<std::string,ProbDist *>::size_type )0 );
-   std::map<std::string, edge *>::const_iterator itr;
+  map<string,double> & optVs, bool noTriseTfall ) {
+   assert( mc.size() == ( map<string,ProbDist *>::size_type )0 );
+   map<string, edge *>::const_iterator itr;
 
    for( itr = edgeMap.begin(); itr != edgeMap.end(); itr ++ )
       itr->second->montecarlo( mc, netSelectMap, gatePDMap, monte, p, optVs,noTriseTfall );
@@ -671,12 +675,12 @@ void network::montecarlo
 }
 
 
-void network::nominalAnalysis( std::map<std::string,double> & nomAnlys, std::map<std::string,unsigned> & netSelectVec, std::map<std::string,std::vector<double> > & pathLengthMap, std::map<std::string,std::vector<double> > & pathVarianceMap, std::map<std::string,double > & gateDioMap, std::map<std::string,double> & optVs, const std::string cccName, bool noTriseTfall ) {
+void network::nominalAnalysis( map<string,double> & nomAnlys, map<string,unsigned> & netSelectVec, map<string,vector<double> > & pathLengthMap, map<string,vector<double> > & pathVarianceMap, map<string,double > & gateDioMap, map<string,double> & optVs, const string cccName, bool noTriseTfall ) {
 
-   assert( nomAnlys.size() == ( std::map<std::string,double>::size_type ) 0 );
+   assert( nomAnlys.size() == ( map<string,double>::size_type ) 0 );
    assert( netSelectVec.size() == 0 );
    assert( pathLengthMap.size() == 0 );
-   std::map<std::string, node *>::const_iterator nitr;
+   map<string, node *>::const_iterator nitr;
    
    if( cccName != "" ) {
       if( ( nitr=nodeMap.find( cccName ) ) == nodeMap.end() ) {
@@ -690,7 +694,7 @@ void network::nominalAnalysis( std::map<std::string,double> & nomAnlys, std::map
       return;
    }
 
-   std::map<std::string,edge *>::const_iterator itr;
+   map<string,edge *>::const_iterator itr;
 
    for( itr = edgeMap.begin(); itr != edgeMap.end(); itr ++ ) {
       cout << "Considering edge " << itr->second->getName() << endl;
@@ -699,13 +703,13 @@ void network::nominalAnalysis( std::map<std::string,double> & nomAnlys, std::map
    /*
    for( unsigned i = 0; i < poEdgeVec.size(); i ++ )
    {
-     std::vector<double> rPLs, fPLs;
+     vector<double> rPLs, fPLs;
      poEdgeVec[i]->nominalAnalysis( nomAnlys, netSelectVec, rPLs, fPLs, optVs );
 
-     pathLengths.insert<std::vector<double>::const_iterator>
+     pathLengths.insert<vector<double>::const_iterator>
        (pathLengths.end(),rPLs.begin(),rPLs.end());
 
-     pathLengths.insert<std::vector<double>::const_iterator>
+     pathLengths.insert<vector<double>::const_iterator>
        (pathLengths.end(),fPLs.begin(),fPLs.end());
 
      rPLs.clear(); fPLs.clear();
@@ -715,7 +719,7 @@ void network::nominalAnalysis( std::map<std::string,double> & nomAnlys, std::map
 }
 
 void network::setKappaBetaForAllNodes( double kappa, double beta ) {
-   std::map<std::string, edge *>::const_iterator itr;
+   map<string, edge *>::const_iterator itr;
 
    for( itr = edgeMap.begin(); itr != edgeMap.end(); itr ++ ) {
       if( !itr->second->isPI() )
@@ -729,12 +733,12 @@ void network::setKappaBetaForAllNodes( double kappa, double beta ) {
  * CLASS ccc MEMBER FUNCTION DEFINITIONS
  */
 
-std::string ccc::FCLOAD_NAME = "_LOAD_F_";
-std::string ccc::RCLOAD_NAME = "_LOAD_R_";
+string ccc::FCLOAD_NAME = "_LOAD_F_";
+string ccc::RCLOAD_NAME = "_LOAD_R_";
 
 ccc::ccc
-( const std::string & nm, std::vector<std::string> & outputnames,
-  std::vector<std::string> & inputnames )
+( const string & nm, vector<string> & outputnames,
+  vector<string> & inputnames )
    : name( nm ), outputNameVec( outputnames ) , inputNameVec( inputnames ) {
    numInputs = inputNameVec.size();
    numOutputs = outputNameVec.size();
@@ -772,7 +776,7 @@ ccc::ccc
    return;
 }
 
-void ccc::putMosList( std::vector<mos> & mos_list ) {
+void ccc::putMosList( vector<mos> & mos_list ) {
    devices = mos_list;
    for( unsigned i = 0; i < devices.size(); i ++ ) {
       mos & ms = devices[i];
@@ -823,7 +827,7 @@ ccc::~ccc() {
    }
 }
 
-void ccc::putMeanDio( dio & d, const std::string & in, const std::string & out ) {
+void ccc::putMeanDio( dio & d, const string & in, const string & out ) {
    for( unsigned i = 0; i < inputNameVec.size(); i ++ )
       for( unsigned j = 0; j < outputNameVec.size(); j ++ )
          if( inputNameVec[i] == in && outputNameVec[j] == out ) {
@@ -841,7 +845,7 @@ void ccc::putMeanDio( dio & d, const std::string & in, const std::string & out )
    return;
 }
 
-void ccc::putSTDDio( dio & d, const std::string & in, const std::string & out ) {
+void ccc::putSTDDio( dio & d, const string & in, const string & out ) {
    for( unsigned i = 0; i < inputNameVec.size(); i ++ )
       for( unsigned j = 0; j < outputNameVec.size(); j ++ )
          if( inputNameVec[i] == in && outputNameVec[j] == out ) {
@@ -859,7 +863,7 @@ void ccc::putSTDDio( dio & d, const std::string & in, const std::string & out ) 
    return;
 }
 
-void ccc::putParCap( gposy * parcap, const std::string & net ) {
+void ccc::putParCap( gposy * parcap, const string & net ) {
    for( unsigned j = 0; j < outputNameVec.size(); j ++ )
       if( outputNameVec[j] == net ) {
          if( parCap[net] != ( gposy * )NULL ) {
@@ -883,7 +887,7 @@ void ccc::putParCap( gposy * parcap, const std::string & net ) {
    return;
 }
 
-void ccc::putWireCap( gposy * wirecap, const std::string & net ) {
+void ccc::putWireCap( gposy * wirecap, const string & net ) {
    for( unsigned j = 0; j < outputNameVec.size(); j ++ )
       if( outputNameVec[j] == net ) {
          if( wireCap[net] != ( gposy * )NULL ) {
@@ -907,7 +911,7 @@ void ccc::putWireCap( gposy * wirecap, const std::string & net ) {
    return;
 }
 
-void ccc::putLeakPowNmean(  gposy * leakpow, const std::string & out ) {
+void ccc::putLeakPowNmean(  gposy * leakpow, const string & out ) {
    for( unsigned j = 0; j < outputNameVec.size(); j ++ )
       if( outputNameVec[j] == out ) {
          if( leakPowNmean[out] != ( const gposy * )NULL ) {
@@ -922,7 +926,7 @@ void ccc::putLeakPowNmean(  gposy * leakpow, const std::string & out ) {
 }
 
 
-void ccc::putLeakPowPmean(  gposy * leakpow, const std::string & out ) {
+void ccc::putLeakPowPmean(  gposy * leakpow, const string & out ) {
    for( unsigned j = 0; j < outputNameVec.size(); j ++ )
       if( outputNameVec[j] == out ) {
          if( leakPowPmean[out] != ( const gposy * )NULL ) {
@@ -937,7 +941,7 @@ void ccc::putLeakPowPmean(  gposy * leakpow, const std::string & out ) {
 }
 
 
-void ccc::putLeakPowNstat(  gposy * leakpow, const std::string & out ) {
+void ccc::putLeakPowNstat(  gposy * leakpow, const string & out ) {
    for( unsigned j = 0; j < outputNameVec.size(); j ++ )
       if( outputNameVec[j] == out ) {
          if( leakPowNstat[out] != ( const gposy * )NULL ) {
@@ -952,7 +956,7 @@ void ccc::putLeakPowNstat(  gposy * leakpow, const std::string & out ) {
 }
 
 
-void ccc::putLeakPowPstat(  gposy * leakpow, const std::string & out ) {
+void ccc::putLeakPowPstat(  gposy * leakpow, const string & out ) {
    for( unsigned j = 0; j < outputNameVec.size(); j ++ )
       if( outputNameVec[j] == out ) {
          if( leakPowPstat[out] != ( const gposy * )NULL ) {
@@ -966,9 +970,9 @@ void ccc::putLeakPowPstat(  gposy * leakpow, const std::string & out ) {
    return;
 }
 
-int ccc::get_gate_num( const std::string & mos_name ) {
-   std::vector<mos>::const_iterator mositr;
-   std::string gate_name;
+int ccc::get_gate_num( const string & mos_name ) {
+   vector<mos>::const_iterator mositr;
+   string gate_name;
    for( mositr = devices.begin(); mositr != devices.end(); mositr++ )
       if( mositr->getMosName() == mos_name ) {
          // return mositr->getGateName();
@@ -982,8 +986,8 @@ int ccc::get_gate_num( const std::string & mos_name ) {
 }
 
 
-bool ccc::isPMOS( const std::string & mos_name ) {
-   std::vector<mos>::const_iterator  mositr;
+bool ccc::isPMOS( const string & mos_name ) {
+   vector<mos>::const_iterator  mositr;
    for( mositr = devices.begin(); mositr != devices.end(); mositr++ )
       if( mositr->getMosName() == mos_name )
          return mositr->isPMOS();
@@ -992,27 +996,27 @@ bool ccc::isPMOS( const std::string & mos_name ) {
    return false;
 }
 
-std::string & ccc::getInputName( unsigned num ) {
+string & ccc::getInputName( unsigned num ) {
    //cout << "Number is " << num << " & total Inputs " <<getNumberOfInputs() << " for gate " << getName() << endl;
    assert( num < getNumberOfInputs() );
    return inputNameVec[num];
 }
 
-std::string & ccc::getOutputName( unsigned num ) {
+string & ccc::getOutputName( unsigned num ) {
    assert( num < getNumberOfOutputs() );
    return outputNameVec[num];
 }
 
-int ccc::getSymbolIndex( const std::string & s ) {
+int ccc::getSymbolIndex( const string & s ) {
    return symtab.index( s );
 }
 
-const std::string & ccc::getSymbol( unsigned i ) {
+const string & ccc::getSymbol( unsigned i ) {
    return symtab.getSymbol( i );
 }
 
 
-std::string ccc::getWPName( unsigned num ) {
+string ccc::getWPName( unsigned num ) {
 
    assert( num < numInputs );
 
@@ -1024,16 +1028,16 @@ std::string ccc::getWPName( unsigned num ) {
 
       return EMPTY_STRING;
    }
-   std::string PNames = "(" + wpVec[num].front()->toString( symtab );
+   string PNames = "(" + wpVec[num].front()->toString( symtab );
    for( int i = 1; i < wpVec[num].size(); i++ ) {
       PNames = PNames + " + " + wpVec[num][i]->toString( symtab );
    }
    PNames += ")";
-   const std::string PN = PNames;
+   const string PN = PNames;
    return PN;
 }
 
-std::string ccc::getWNName( unsigned num ) {
+string ccc::getWNName( unsigned num ) {
    assert( num < numInputs );
 
    if( wnVec[num].empty() ) {
@@ -1044,16 +1048,16 @@ std::string ccc::getWNName( unsigned num ) {
 
       return EMPTY_STRING;
    }
-   std::string NNames = "(" + wnVec[num].front()->toString( symtab );
+   string NNames = "(" + wnVec[num].front()->toString( symtab );
    for( int i = 1; i < wnVec[num].size(); i++ ) {
       NNames = NNames + wnVec[num][i]->toString( symtab );
    }
    NNames += ")";
-   const std::string NN = NNames;
+   const string NN = NNames;
    return NN;
 }
 
-std::vector<const gposy *>  ccc::getWPNameVec ( unsigned num ) {
+vector<const gposy *>  ccc::getWPNameVec ( unsigned num ) {
    assert( num < numInputs );
    if( wpVec[num].empty() ) {
       //					cout << "Input " << getInputName( num ) << " in ccc " << getName() << " is only NMOS connected" << endl;
@@ -1066,7 +1070,7 @@ std::vector<const gposy *>  ccc::getWPNameVec ( unsigned num ) {
 }
 
 
-std::vector<const gposy *> ccc::getWNNameVec ( unsigned num ) {
+vector<const gposy *> ccc::getWNNameVec ( unsigned num ) {
    assert( num < numInputs );
    if( wnVec[num].empty() ) {
       //					cout << "Input " << getInputName( num ) << " in ccc " << getName() << " is only PMOS connected" << endl;
@@ -1099,7 +1103,7 @@ bool ccc::isStatLeakPowAssigned( unsigned num ) {
 }
 
 
-std::string ccc::getLeakPowNnom( node & nd,  unsigned num ) {
+string ccc::getLeakPowNnom( node & nd,  unsigned num ) {
    assert( isMeanLeakPowAssigned( num ) ); //checks if leakP or N is there or not
    if( leakPowNmean[outputNameVec[num]] == ( gposy * )NULL )
       return EMPTY_STRING;
@@ -1108,7 +1112,7 @@ std::string ccc::getLeakPowNnom( node & nd,  unsigned num ) {
 }
 
 
-std::string ccc::getLeakPowPnom( node & nd, unsigned num ) {
+string ccc::getLeakPowPnom( node & nd, unsigned num ) {
    assert( isMeanLeakPowAssigned( num ) ); //checks if leakP or N is there or not
    if( leakPowPmean[outputNameVec[num]] == ( gposy * )NULL )
       return EMPTY_STRING;
@@ -1118,7 +1122,7 @@ std::string ccc::getLeakPowPnom( node & nd, unsigned num ) {
 
 
 
-std::string ccc::getLeakPowNstat( node & nd,  unsigned num ) {
+string ccc::getLeakPowNstat( node & nd,  unsigned num ) {
    assert( isStatLeakPowAssigned( num ) ); //checks if leakP or N is there or not
    if( leakPowNstat[outputNameVec[num]] == ( gposy * )NULL )
       return EMPTY_STRING;
@@ -1127,7 +1131,7 @@ std::string ccc::getLeakPowNstat( node & nd,  unsigned num ) {
 }
 
 
-std::string ccc::getLeakPowPstat( node & nd, unsigned num ) {
+string ccc::getLeakPowPstat( node & nd, unsigned num ) {
    assert( isStatLeakPowAssigned( num ) ); //checks if leakP or N is there or not
    if( leakPowPstat[outputNameVec[num]] == ( gposy * )NULL )
       return EMPTY_STRING;
@@ -1135,13 +1139,13 @@ std::string ccc::getLeakPowPstat( node & nd, unsigned num ) {
    return leakPowPstat[outputNameVec[num]]->toString( symtab,nd.getvName(),EMPTY_STRING,EMPTY_STRING );
 }
 
-std::string ccc::getParCap( node & nd,  unsigned num ) {
+string ccc::getParCap( node & nd,  unsigned num ) {
    assert( isParCapAssigned( num ) );
 
    return parCap[outputNameVec[num]]->toString( symtab,nd.getvName(),EMPTY_STRING,EMPTY_STRING );
 }
 
-std::string ccc::getParCap( node & nd, std::string intNet ) {
+string ccc::getParCap( node & nd, string intNet ) {
    //  assert( isParCapAssigned(num) );
 
    if( parCap[intNet] == ( gposy* )NULL )
@@ -1150,7 +1154,7 @@ std::string ccc::getParCap( node & nd, std::string intNet ) {
    return parCap[intNet]->toString( symtab,nd.getvName(),EMPTY_STRING,EMPTY_STRING );
 }
 
-std::string ccc::getWireCap( node & nd, std::string intNet ) {
+string ccc::getWireCap( node & nd, string intNet ) {
    //  assert( isParCapAssigned(num) );
 
    if( wireCap[intNet] == ( gposy* )NULL )
@@ -1159,9 +1163,9 @@ std::string ccc::getWireCap( node & nd, std::string intNet ) {
    return wireCap[intNet]->toString( symtab,nd.getvName(),EMPTY_STRING,EMPTY_STRING );
 }
 
-std::string ccc::getDioRF
+string ccc::getDioRF
 ( unsigned ni, unsigned no,
-  const std::string & nodename, const std::string & fload ) {
+  const string & nodename, const string & fload ) {
    if( dioVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "CCCgetRF 1: No mean dio model defined for the input "
                    + getInputName( ni ) + " to output " + outputNameVec[no] + " in ccc " + getName() );
@@ -1169,7 +1173,7 @@ std::string ccc::getDioRF
    }
 
    try {
-      return std::string( "(" )
+      return string( "(" )
              + dioVec[ni][outputNameVec[no]]->getRF().toString( symtab,nodename,FCLOAD_NAME,fload ) + ")";
    } catch( noRefException ) {
       errorReport( "no mean rf dio model defined for the input "
@@ -1178,9 +1182,9 @@ std::string ccc::getDioRF
    }
 }
 
-std::string ccc::getDioFR
+string ccc::getDioFR
 ( unsigned ni, unsigned no,
-  const std::string & nodename, const std::string & rload ) {
+  const string & nodename, const string & rload ) {
    if( dioVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "CCCgetFR 2: No mean dio model defined for the input "
                    + getInputName( ni ) + " to output " + getOutputName( no ) + " in ccc " + getName() );
@@ -1188,7 +1192,7 @@ std::string ccc::getDioFR
    }
 
    try {
-      return std::string( "(" )
+      return string( "(" )
              + dioVec[ni][outputNameVec[no]]->getFR().toString( symtab,nodename,RCLOAD_NAME,rload ) + ")";
    } catch( noRefException ) {
       cout << "no mean fr dio model defined for the input " <<
@@ -1199,9 +1203,9 @@ std::string ccc::getDioFR
    }
 }
 
-std::string ccc::getSTDRF
+string ccc::getSTDRF
 ( unsigned ni, unsigned no,
-  const std::string & nodename, const std::string & fload )
+  const string & nodename, const string & fload )
 throw( noRefException ) {
    if( stdVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "no std dio model defined for the input "
@@ -1209,13 +1213,13 @@ throw( noRefException ) {
       return ERROR_STRING;
    }
 
-   return std::string( "(" )
+   return string( "(" )
           + stdVec[ni][outputNameVec[no]]->getRF().toString( symtab,nodename,FCLOAD_NAME,fload ) + ")";
 }
 
-std::string ccc::getSTDFR
+string ccc::getSTDFR
 ( unsigned ni, unsigned no,
-  const std::string & nodename, const std::string & rload )
+  const string & nodename, const string & rload )
 throw( noRefException ) {
    if( stdVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "no std dio model defined for the input "
@@ -1223,70 +1227,70 @@ throw( noRefException ) {
       return ERROR_STRING;
    }
 
-   return std::string( "(" )
+   return string( "(" )
           + stdVec[ni][outputNameVec[no]]->getFR().toString( symtab,nodename,RCLOAD_NAME,rload ) + ")";
 }
 
-std::string ccc::getVARRF
+string ccc::getVARRF
 ( unsigned ni, unsigned no,
-  const std::string & gatename, const std::string & fload )
+  const string & gatename, const string & fload )
 throw( noRefException ) {
-   return std::string( "(" ) + getSTDRF( ni, no,gatename,fload ) + "^2)";
+   return string( "(" ) + getSTDRF( ni, no,gatename,fload ) + "^2)";
 }
 
-std::string ccc::getVARFR
+string ccc::getVARFR
 ( unsigned ni, unsigned no,
-  const std::string & gatename, const std::string & rload )
+  const string & gatename, const string & rload )
 throw( noRefException ) {
-   return std::string( "(" ) + getSTDFR( ni, no, gatename,rload ) + "^2)";
+   return string( "(" ) + getSTDFR( ni, no, gatename,rload ) + "^2)";
 }
 
 double ccc::meanDioRF( unsigned ni, unsigned no,
-                       const std::string & gatename,
-                       std::map<std::string,double> & optVs,
+                       const string & gatename,
+                       map<string,double> & optVs,
                        const edge & outedge ) {
    //cout << "Reached the CCC meanDioRF 1" << endl;
    return meanDioRF( ni, no, gatename, optVs, outedge.valFCLoad( optVs ) );
 }
 
 double ccc::meanDioFR( unsigned ni, unsigned no,
-                       const std::string & gatename,
-                       std::map<std::string,double> & optVs,
+                       const string & gatename,
+                       map<string,double> & optVs,
                        const edge & outedge ) {
    return meanDioFR( ni, no, gatename, optVs, outedge.valRCLoad( optVs ) );
 }
 
 double ccc::stdDioRF( unsigned ni, unsigned no,
-                      const std::string & gatename,
-                      std::map<std::string,double> & optVs,
+                      const string & gatename,
+                      map<string,double> & optVs,
                       const edge & outedge ) {
    return stdDioRF( ni, no, gatename, optVs, outedge.valFCLoad( optVs ) );
 }
 
 double ccc::stdDioFR( unsigned ni, unsigned no,
-                      const std::string & gatename,
-                      std::map<std::string,double> & optVs,
+                      const string & gatename,
+                      map<string,double> & optVs,
                       const edge & outedge ) {
    return stdDioFR( ni, no, gatename, optVs, outedge.valRCLoad( optVs ) );
 }
 
 double ccc::varDioRF( unsigned ni, unsigned no,
-                      const std::string & gatename,
-                      std::map<std::string,double> & optVs,
+                      const string & gatename,
+                      map<string,double> & optVs,
                       const edge & outedge ) {
    return varDioRF( ni, no, gatename, optVs, outedge.valFCLoad( optVs ) );
 }
 
 double ccc::varDioFR( unsigned ni, unsigned no,
-                      const std::string & gatename,
-                      std::map<std::string,double> & optVs,
+                      const string & gatename,
+                      map<string,double> & optVs,
                       const edge & outedge ) {
    return varDioFR( ni,no, gatename, optVs, outedge.valRCLoad( optVs ) );
 }
 
 double ccc::meanDioRF( unsigned ni, unsigned no,
-                       const std::string & gName,
-                       std::map<std::string,double> & optVs, double fload ) {
+                       const string & gName,
+                       map<string,double> & optVs, double fload ) {
    //cout << "Getting meanDioRF from ccc " << endl;
    if( dioVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "CCCRF 1: No mean dio model defined for the input "
@@ -1306,8 +1310,8 @@ double ccc::meanDioRF( unsigned ni, unsigned no,
 }
 
 double ccc::meanDioFR
-( unsigned ni, unsigned no, const std::string & gName,
-  std::map<std::string,double> & optVs, double rload ) {
+( unsigned ni, unsigned no, const string & gName,
+  map<string,double> & optVs, double rload ) {
    if( dioVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "CCC 1: No mean dio model defined for the input "
                    + getInputName( ni ) + " to " + getOutputName( no ) + " in ccc " + getName() );
@@ -1327,8 +1331,8 @@ double ccc::meanDioFR
 }
 
 double ccc::stdDioRF
-( unsigned ni, unsigned no, const std::string & gName,
-  std::map<std::string,double> & optVs, double fload ) {
+( unsigned ni, unsigned no, const string & gName,
+  map<string,double> & optVs, double fload ) {
    if( stdVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "no std dio model defined for the input "
                    + getInputName( ni ) + " to output "+ getOutputName( no ) + " in ccc " + getName() );
@@ -1345,8 +1349,8 @@ double ccc::stdDioRF
 }
 
 double ccc::stdDioFR
-( unsigned ni, unsigned no, const std::string & gName,
-  std::map<std::string,double> & optVs, double rload ) {
+( unsigned ni, unsigned no, const string & gName,
+  map<string,double> & optVs, double rload ) {
    if( stdVec[ni][outputNameVec[no]] == ( dio * )NULL ) {
       errorReport( "no std dio model defined for the input "
                    + getInputName( ni )+ " to " + getOutputName( no ) + " in ccc " + getName() );
@@ -1362,8 +1366,8 @@ double ccc::stdDioFR
    }
 }
 
-std::string ccc::getArea( const std::string & nodename ) {
-   std::string area;
+string ccc::getArea( const string & nodename ) {
+   string area;
    for( int i = 0; i < symtab.getNumberOfSymbols(); i ++ )
       if( symtab[i] != FCLOAD_NAME && symtab[i] != RCLOAD_NAME )
          if( area.length() == 0 ) area += nodename + "." + symtab[i];
@@ -1376,7 +1380,7 @@ void ccc::print() {
    cout << "ccc name = " << name
         << ", # of inputs = " << numInputs << endl;
 
-   std::map<std::string,dio *>::iterator ditr;
+   map<string,dio *>::iterator ditr;
    for( int i = 0; i < dioVec.size(); i ++ ) {
       ditr = dioVec[i].begin();
       for( ditr = dioVec[i].begin(); ditr != dioVec[i].end(); ditr++ )
@@ -1394,7 +1398,7 @@ void ccc::print( bool varName ) {
    cout << "ccc name = " << name
         << ", # of inputs = " << numInputs << endl;
 
-   std::map<std::string,dio *>::iterator ditr;
+   map<string,dio *>::iterator ditr;
    for( int i = 0; i < dioVec.size(); i ++ ) {
       ditr = dioVec[i].begin();
       for( ditr = dioVec[i].begin(); ditr != dioVec[i].end(); ditr++ )
@@ -1407,7 +1411,7 @@ void ccc::assignWidthToInput( mos & ms ) {
    unsigned inputNum = getInputNumber( ms.getGateName() );
    assert( inputNum < getNumberOfInputs() );
 
-   //  void putCorrNets( const std::string & netname, const std::string & risefall,  const std::string & corr_net, const std::string & corr_risefall );
+   //  void putCorrNets( const string & netname, const string & risefall,  const string & corr_net, const string & corr_risefall );
    if( ms.isPMOS() ) wpVec[inputNum].push_back( ms.getWidthName() );
    else wnVec[inputNum].push_back( ms.getWidthName() );
 
@@ -1436,7 +1440,7 @@ void ccc::checkWidthAssignment() { //
 
 /*
 void ccc::assignWidthToInput
-( const std::string & widthName, const std::string & inputName )
+( const string & widthName, const string & inputName )
 {
   int inputNum = getInputNumber( inputName );
   //int varNum = symtab.index(widthName);
@@ -1463,7 +1467,7 @@ void ccc::assignWidthToInput
 }
 */
 
-unsigned ccc::getInputNumber( const std::string & inputName ) {
+unsigned ccc::getInputNumber( const string & inputName ) {
    for( int i = 0; i < inputNameVec.size(); i ++ )
       if( inputNameVec[i] == inputName ) return i;
 
@@ -1573,11 +1577,11 @@ void dio::print( symbol_table & symtab ) {
  * CLASS edge MEMBER FUNCTION DEFINITIONS
  */
 
-edge::edge( const std::string & nm )
+edge::edge( const string & nm )
    : name( nm ),
-     tRiseName( nm + "." + std::string( "Trise" ) ),
-     tFallName( nm + "." + std::string( "Tfall" ) ),
-     tName( nm + "." + std::string( "T" ) ),
+     tRiseName( nm + "." + string( "Trise" ) ),
+     tFallName( nm + "." + string( "Tfall" ) ),
+     tName( nm + "." + string( "T" ) ),
      switching_factor( -1.0 ) {
    pi = ( piinfo * )NULL;
    po = ( poinfo * )NULL;
@@ -1664,8 +1668,8 @@ void edge::print_corr_edges() {
          cout << getName() << " fall has " << RiseFallTfall[i] << " of " << CorrEdgeTfall[i] << endl;
 }
 
-std::string edge::getCorrNets( const std::string & risefall ) {
-   std::string corrstr;
+string edge::getCorrNets( const string & risefall ) {
+   string corrstr;
    if( risefall == "rise" )
       for( unsigned i = 0; i < CorrEdgeTrise.size() ; i++ ) {
          if( corrstr.length() ==0 ) corrstr = CorrEdgeTrise[i]+".T"+RiseFallTrise[i];
@@ -1681,8 +1685,8 @@ std::string edge::getCorrNets( const std::string & risefall ) {
    return corrstr;
 }
 
-void edge::putCorrNetTrise( const std::string & in, const bool rf ) {
-   std::string risefall;
+void edge::putCorrNetTrise( const string & in, const bool rf ) {
+   string risefall;
    if( rf )risefall = "fall";
    else risefall = "rise";
    for( unsigned i = 0; i < CorrEdgeTrise.size(); i ++ )
@@ -1702,8 +1706,8 @@ node & edge::getFanoutNode( unsigned i ) {
 
 
 
-void edge::putCorrNetTfall( const std::string & in, const bool rf ) {
-   std::string risefall;
+void edge::putCorrNetTfall( const string & in, const bool rf ) {
+   string risefall;
    if( rf )risefall = "fall";
    else risefall = "rise";
    for( unsigned i = 0; i < CorrEdgeTfall.size(); i ++ )
@@ -1844,7 +1848,7 @@ double edge::getPreValue( bool rf ) {
 }
 
 
-std::string edge::getEnergy( bool noLoad, bool UseDefActFact ) {
+string edge::getEnergy( bool noLoad, bool UseDefActFact ) {
    //	cout << "Edge in question is " << getName() << endl;
    //  double vdd = opt_prob_generator::getVdd();
 
@@ -1860,7 +1864,7 @@ std::string edge::getEnergy( bool noLoad, bool UseDefActFact ) {
    } else if( sf <= min_sf )
       sf = min_sf;
 
-   std::string edgeEnergy;
+   string edgeEnergy;
    if( sf == 0.0 )
       edgeEnergy = EMPTY_STRING;
    else {
@@ -1879,7 +1883,7 @@ std::string edge::getEnergy( bool noLoad, bool UseDefActFact ) {
    return edgeEnergy;
 }
 
-std::string edge::getLogicEnergy( bool noLoad, bool UseDefActFact ) {
+string edge::getLogicEnergy( bool noLoad, bool UseDefActFact ) {
    //	cout << "Edge in question is " << getName() << endl;
    //  double vdd = opt_prob_generator::getVdd();
 
@@ -1895,7 +1899,7 @@ std::string edge::getLogicEnergy( bool noLoad, bool UseDefActFact ) {
    } else if( sf <= min_sf )
       sf = min_sf;
 
-   std::string edgeEnergy;
+   string edgeEnergy;
    if( sf == 0.0 )
       edgeEnergy = EMPTY_STRING;
    else {
@@ -1915,7 +1919,7 @@ std::string edge::getLogicEnergy( bool noLoad, bool UseDefActFact ) {
 }
 
 
-std::string edge::getWireEnergy( bool UseDefActFact ) {
+string edge::getWireEnergy( bool UseDefActFact ) {
    //	cout << "Edge in question is " << getName() << endl;
    //  double vdd = opt_prob_generator::getVdd();
 
@@ -1931,7 +1935,7 @@ std::string edge::getWireEnergy( bool UseDefActFact ) {
    } else if( sf <= min_sf )
       sf = min_sf;
 
-   std::string edgeEnergy;
+   string edgeEnergy;
    if( sf == 0.0  || ( ( edgeEnergy = getWireCap() ) == EMPTY_STRING ) )
       edgeEnergy = EMPTY_STRING;
    else {
@@ -1940,7 +1944,7 @@ std::string edge::getWireEnergy( bool UseDefActFact ) {
    return edgeEnergy;
 }
 
-std::string edge::getLoadEnergy( bool UseDefActFact ) {
+string edge::getLoadEnergy( bool UseDefActFact ) {
    assert( isPO() );
    double sf = getSwitchingFactor();
    // assert( sf >= 0.0 );
@@ -1957,7 +1961,7 @@ std::string edge::getLoadEnergy( bool UseDefActFact ) {
    if( sf == 0.0 )
       return EMPTY_STRING;
    else
-      return cnvt::doubleToString( sf )  + "*" + std::string( "(" ) + po->capToString() + ")";
+      return cnvt::doubleToString( sf )  + "*" + string( "(" ) + po->capToString() + ")";
 }
 
 
@@ -1965,15 +1969,15 @@ std::string edge::getLoadEnergy( bool UseDefActFact ) {
 
 
 
-std::string edge::getWidth() {
+string edge::getWidth() {
    if( fanoutNodeVec.size() == 0 && !isPO() ) {
       ciropterror( "net " + getName() + " is either fictious or contains no gates on its fanout for which areas has to be considered " );
       return EMPTY_STRING;
    }
    //else {this net is an input to some gate}
-   std::string fcl;
-   std::string WidthN;
-   std::string WidthP;
+   string fcl;
+   string WidthN;
+   string WidthP;
    for( unsigned i = 0; i < fanoutNodeVec.size(); i ++ ) {
       if ( fanoutNodeVec[i]->isCapacitor()
             || fanoutNodeVec[i]->isVRL() ) continue;
@@ -1999,7 +2003,7 @@ std::string edge::getWidth() {
    return fcl;
 }
 
-std::string edge::getRCLoad( opt_prob_generator & opt ) {
+string edge::getRCLoad( opt_prob_generator & opt ) {
    if( fanoutNodeVec.size() == 0 && !isPO() ) {
       errorReport( "net " + getName() + " is neither connected to an input"
                    " of a gate, nor is a primary output.\n"
@@ -2009,11 +2013,11 @@ std::string edge::getRCLoad( opt_prob_generator & opt ) {
 
    // if this is a primay output net
    if( fanoutNodeVec.size() == 0 )
-      return std::string( "(" ) + po->capToString() + ")";
+      return string( "(" ) + po->capToString() + ")";
 
    // if this net is an input to some gate
-   std::string rcl;
-   std::string tmp;
+   string rcl;
+   string tmp;
    for( unsigned i = 0; i < fanoutNodeVec.size(); i ++ ) {
       if( rcl == EMPTY_STRING ) {
          if( ( tmp = fanoutNodeVec[i]->getRCLoad( inNumVec[i],opt ) ) != EMPTY_STRING )
@@ -2033,7 +2037,7 @@ std::string edge::getRCLoad( opt_prob_generator & opt ) {
    return rcl;
 }
 
-std::string edge::getFCLoad( opt_prob_generator & opt ) {
+string edge::getFCLoad( opt_prob_generator & opt ) {
    if( fanoutNodeVec.size() == 0 && !isPO() ) {
       errorReport( "net " + getName() + " is neither connected to an input"
                    " of a gate, nor is a primary output.\n"
@@ -2043,11 +2047,11 @@ std::string edge::getFCLoad( opt_prob_generator & opt ) {
 
    // if this is a primay output net
    if( fanoutNodeVec.size() == 0 )
-      return std::string( "(" ) + po->capToString() + ")";
+      return string( "(" ) + po->capToString() + ")";
 
    // if this net is an input to some gate
-   std::string fcl;
-   std::string tmp;
+   string fcl;
+   string tmp;
    for( unsigned i = 0; i < fanoutNodeVec.size(); i ++ )
       if( fcl == EMPTY_STRING ) {
          if( ( tmp = fanoutNodeVec[i]->getFCLoad( inNumVec[i],opt ) ) != EMPTY_STRING )
@@ -2065,7 +2069,7 @@ std::string edge::getFCLoad( opt_prob_generator & opt ) {
    return fcl;
 }
 
-std::string edge::getEnergyCLoad( bool noLoad ) {
+string edge::getEnergyCLoad( bool noLoad ) {
    if( fanoutNodeVec.size() == 0 && !isPO() ) {
       errorReport( "net " + getName() + " is neither connected to an input"
                    " of a gate, nor is a primary output.\n"
@@ -2078,11 +2082,11 @@ std::string edge::getEnergyCLoad( bool noLoad ) {
       if( noLoad )
          return EMPTY_STRING;
       else
-         return std::string( "(" ) + po->capToString() + ")";
+         return string( "(" ) + po->capToString() + ")";
    }
    // if this net is an input to some gate
-   std::string tmp;
-   std::string fcl;
+   string tmp;
+   string fcl;
    //	= "( " + fanoutNodeVec[0]->getEnergyCLoad(inNumVec[0]);
    for( unsigned i = 0; i < fanoutNodeVec.size(); i ++ )
       if( ! fanoutNodeVec[i]->isCapacitor() && ! fanoutNodeVec[i]->isVRL() ) //account for only Logic energy
@@ -2102,7 +2106,7 @@ std::string edge::getEnergyCLoad( bool noLoad ) {
    return fcl;
 }
 
-std::string edge::getParCap() {
+string edge::getParCap() {
    if( isPI() || getDriverNode()->isVRL() )
       return EMPTY_STRING;
    // cout << "This edge has a problem : " << getName() <<  endl;
@@ -2116,8 +2120,8 @@ std::string edge::getParCap() {
    return ERROR_STRING;
 }
 
-std::string edge::getWireCap() {
-   std::string wirecap = EMPTY_STRING;
+string edge::getWireCap() {
+   string wirecap = EMPTY_STRING;
    for( unsigned i = 0; i < getNumFanoutNodes(); i ++ ) {
       //			 cout << "reached here for " << i << " while upper limit is " << getNumFanoutNodes() << endl;
       if ( getFanoutNode( i ).isCapacitor() ) { //only include capacitors
@@ -2131,7 +2135,7 @@ std::string edge::getWireCap() {
    return wirecap;
 }
 
-double edge::valRCLoad( std::map<std::string,double> & optVs )const {
+double edge::valRCLoad( map<string,double> & optVs )const {
    if( fanoutNodeVec.size() == 0 && !isPO() ) {
       errorReport( "net " + getName() + " is neither connected to an input"
                    " of a gate, nor is a primary output.\n"
@@ -2153,7 +2157,7 @@ double edge::valRCLoad( std::map<std::string,double> & optVs )const {
    return rcl;
 }
 
-double edge::valFCLoad( std::map<std::string,double> & optVs )const {
+double edge::valFCLoad( map<string,double> & optVs )const {
    if( fanoutNodeVec.size() == 0 && !isPO() ) {
       errorReport( "net " + getName() + " is neither connected to an input"
                    " of a gate, nor is a primary output.\n"
@@ -2183,9 +2187,9 @@ double edge::valFCLoad( std::map<std::string,double> & optVs )const {
    return fcl;
 }
 
-std::string edge::getTRiseName_Corr( const std::string & pre, bool isNoRiseFall ) {
-   std::string name ;
-   std::string corr_name;
+string edge::getTRiseName_Corr( const string & pre, bool isNoRiseFall ) {
+   string name ;
+   string corr_name;
    /*  if( isPI() )
      {
        if( pi->getT() == 0.0 ) return EMPTY_STRING;
@@ -2214,7 +2218,7 @@ std::string edge::getTRiseName_Corr( const std::string & pre, bool isNoRiseFall 
 }
 
 
-std::string edge::getTRiseName( const std::string & pre ) {
+string edge::getTRiseName( const string & pre ) {
    //  if( isPI() )
    //  {
    //    if( pi->getT() == 0.0 ) return EMPTY_STRING;
@@ -2229,8 +2233,8 @@ std::string edge::getTRiseName( const std::string & pre ) {
    //  return EMPTY_STRING;
 }
 
-std::string edge::getTRiseName
-( unsigned num, const std::string & pre ) {
+string edge::getTRiseName
+( unsigned num, const string & pre ) {
    /*
    	if( isPI() )
      {
@@ -2245,15 +2249,15 @@ std::string edge::getTRiseName
    //  return EMPTY_STRING;
 }
 
-std::string edge::getMonteTRiseName( const std::string & pre ) {
+string edge::getMonteTRiseName( const string & pre ) {
    return pre + tRiseName;
 
    assert( false );
    return EMPTY_STRING;
 }
 
-std::string edge::getTFallName_Corr( const std::string & pre ) {
-   std::string name ;
+string edge::getTFallName_Corr( const string & pre ) {
+   string name ;
    /*  if( isPI() )
      {
        if( pi->getT() == 0.0 ) return EMPTY_STRING;
@@ -2275,7 +2279,7 @@ std::string edge::getTFallName_Corr( const std::string & pre ) {
    //  return EMPTY_STRING;
 }
 
-std::string edge::getTFallName( const std::string & pre ) {
+string edge::getTFallName( const string & pre ) {
    //  if( isPI() )
    //  {
    //    if( pi->getT() == 0.0 ) return EMPTY_STRING;
@@ -2290,8 +2294,8 @@ std::string edge::getTFallName( const std::string & pre ) {
    //  return EMPTY_STRING;
 }
 
-std::string edge::getTFallName
-( unsigned num, const std::string & pre ) {
+string edge::getTFallName
+( unsigned num, const string & pre ) {
    if( isPI() ) {
       if( pi->getT() == 0.0 ) return EMPTY_STRING;
       else return pre + cnvt::doubleToString( pi->getT() );
@@ -2302,7 +2306,7 @@ std::string edge::getTFallName
    return EMPTY_STRING;
 }
 
-std::string edge::getMonteTFallName( const std::string & pre ) {
+string edge::getMonteTFallName( const string & pre ) {
    return pre + tFallName;
 
    assert( false );
@@ -2325,11 +2329,11 @@ void edge::print() {
 }
 
 void edge::montecarlo
-( std::map<std::string,ProbDist *> & mc,
-  std::map<std::string,std::vector<unsigned> > & netSelectMap,
-  const std::string & dist, unsigned N, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
-   std::map<std::string,ProbDist *>::iterator itr;
+( map<string,ProbDist *> & mc,
+  map<string,vector<unsigned> > & netSelectMap,
+  const string & dist, unsigned N, double p,
+  map<string,double> & optVs, bool noTriseTfall ) {
+   map<string,ProbDist *>::iterator itr;
    if( noTriseTfall ) {
       // if already visited, check if this is the last time this edge will be visited and  return.
       // This option is only available with noTriseFall
@@ -2381,12 +2385,12 @@ void edge::montecarlo
 }
 
 void edge::montecarlo
-( std::map<std::string,ProbDist *> & mc,
-  std::map<std::string,std::vector<unsigned> > & netSelectMap,
-  std::map<std::string,ProbDist *> & gatePDMap,
+( map<string,ProbDist *> & mc,
+  map<string,vector<unsigned> > & netSelectMap,
+  map<string,ProbDist *> & gatePDMap,
   const monte_carlo & monte, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
-   std::map<std::string,ProbDist *>::iterator itr;
+  map<string,double> & optVs, bool noTriseTfall ) {
+   map<string,ProbDist *>::iterator itr;
    if( noTriseTfall ) {
       // if already visited, just return
       if( ( itr =mc.find( getMonteTRiseName() ) ) != mc.end() ) {
@@ -2438,14 +2442,14 @@ void edge::montecarlo
 }
 
 void edge::nominalAnalysis
-( std::map<std::string,double> & nomAnlys,
-  std::map<std::string,unsigned> & netSelectVec,
-  std::map<std::string,std::vector<double> > & pathLengthMap,
-  std::map<std::string,std::vector<double> > & pathVarianceMap,
-  std::map<std::string,double > & gateDioMap,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
-   const std::string & risename = getMonteTRiseName();
-   const std::string & fallname = getMonteTFallName();
+( map<string,double> & nomAnlys,
+  map<string,unsigned> & netSelectVec,
+  map<string,vector<double> > & pathLengthMap,
+  map<string,vector<double> > & pathVarianceMap,
+  map<string,double > & gateDioMap,
+  map<string,double> & optVs, bool noTriseTfall ) {
+   const string & risename = getMonteTRiseName();
+   const string & fallname = getMonteTFallName();
 
    //cout << "Risename is " << risename << " and fall name is " << fallname << endl;
    // make sure that either nominal analysis has been done
@@ -2523,10 +2527,10 @@ void edge::nominalAnalysis
 }
 
 void edge::addOneToCriticalNets
-( std::map<std::string,double> & criticality,
-  std::map<std::string,unsigned> & netSelectMap, bool rf, bool noTriseTfall ) {
-   std::map<std::string,double>::iterator citr;
-   std::map<std::string,unsigned>::const_iterator smitr;
+( map<string,double> & criticality,
+  map<string,unsigned> & netSelectMap, bool rf, bool noTriseTfall ) {
+   map<string,double>::iterator citr;
+   map<string,unsigned>::const_iterator smitr;
    if( isPI() ) {
       //make a criticality chart for input edges as well.
       if( rf ) {
@@ -2574,7 +2578,7 @@ void edge::addOneToCriticalNets
  * CLASS piinfo MEMBER FUNCTION DEFINITIONS
  */
 
-void piinfo::put( const std::string & s, const std::string & nm ) {
+void piinfo::put( const string & s, const string & nm ) {
    if( s == "name" ) {
       if( nameB ) {
          ciropterror( "more than one name for a primary input" );
@@ -2589,7 +2593,7 @@ void piinfo::put( const std::string & s, const std::string & nm ) {
    return;
 }
 
-void piinfo::put( const std::string & s, double value ) {
+void piinfo::put( const string & s, double value ) {
    if ( s == "at" ) {
       if( tB ) {
          ciropterror( "more than one starting time for a primary input" );
@@ -2604,7 +2608,7 @@ void piinfo::put( const std::string & s, double value ) {
    return;
 }
 
-void piinfo::put( const std::string & s, double v1, double v2 ) {
+void piinfo::put( const string & s, double v1, double v2 ) {
    if( s == "s" ) {
       if( slopeB ) {
          ciropterror( "more than one slope value assignment for a primary input" );
@@ -2621,7 +2625,7 @@ void piinfo::put( const std::string & s, double v1, double v2 ) {
 }
 
 void piinfo::put
-( const std::string & s, gposy & cp,symbol_table & st ) {
+( const string & s, gposy & cp,symbol_table & st ) {
    if( s == "c" ) {
       if( capB ) {
          ciropterror( "more than one input capacitor constraint"
@@ -2643,7 +2647,7 @@ void piinfo::put
  * CLASS poinfo MEMBER FUNCTION DEFINITIONS
  */
 
-void poinfo::put( const std::string & s, const std::string & nm ) {
+void poinfo::put( const string & s, const string & nm ) {
    if( s == "name" ) {
       if( nameB ) {
          ciropterror( "more than one name for a primary output" );
@@ -2659,7 +2663,7 @@ void poinfo::put( const std::string & s, const std::string & nm ) {
 }
 
 void poinfo::put
-( const std::string & s, gposy & cp, symbol_table & st ) {
+( const string & s, gposy & cp, symbol_table & st ) {
    if( s == "c" ) {
       if( capB ) {
          ciropterror( "more than one primary output load capacitor" );
@@ -2676,12 +2680,12 @@ void poinfo::put
    return;
 }
 
-double poinfo::getCap( std::map<std::string,double> & vls ) {
+double poinfo::getCap( map<string,double> & vls ) {
    assert( capB );
-   std::vector<double> vvs;
+   vector<double> vvs;
 
    const unsigned n = symtab->size();
-   std::map<std::string,double>::const_iterator itr;
+   map<string,double>::const_iterator itr;
 
    for( unsigned i = 0; i < n; i ++ ) {
       assert( ( itr = vls.find( ( *symtab )[i] ) ) != vls.end() );
@@ -2718,13 +2722,13 @@ const double node::InitKappa = 1;
 const double node::MaxKappa = 1;
 const double node::MinCrit = 0.001;
 const double node::ZeroCrit = 0.0001;
-const std::string node::BETWEEN_NETS = "_and_";
+const string node::BETWEEN_NETS = "_and_";
 
 node::node
-( const std::string & nm,
-  std::vector<edge *> & outedgeVec, ccc & c,
-  std::vector<edge *> & inedgeVec,
-  const std::string & vnm )
+( const string & nm,
+  vector<edge *> & outedgeVec, ccc & c,
+  vector<edge *> & inedgeVec,
+  const string & vnm )
    : name( nm ), outEdgeVec( outedgeVec ), cc( &c ), inEdgeVec( inedgeVec ),  vname( vnm ) {
    cout << "Making a CCC node " << nm << endl;
    type = "g";
@@ -2784,9 +2788,9 @@ node::node
    return;
 }
 
-node::node( const std::string & nm, edge & ie,
+node::node( const string & nm, edge & ie,
             gposy & c , symbol_table & st,
-            const std::string & vnm )
+            const string & vnm )
    : name( nm ), cc( ( ccc * )NULL ), VRLCval( & c ) , symtab( st ), vname( vnm ),couple( false ) {
    cout << "Making a Capacitor node " << nm << endl;
    outEdgeVec.push_back( &ie );
@@ -2800,9 +2804,9 @@ node::node( const std::string & nm, edge & ie,
    RKappas = FKappas = ( double * ) NULL;
 }
 
-node::node( const std::string & nm, edge & ie1, edge & ie2,
+node::node( const string & nm, edge & ie1, edge & ie2,
             gposy & c , symbol_table & st,
-            const std::string & vnm, bool couple )
+            const string & vnm, bool couple )
    : name( nm ), cc( ( ccc * )NULL ), VRLCval( & c ) , symtab( st ), vname( vnm ),couple( couple ) {
    cout << "Making a Capacitor node " << nm << endl;
    //	outEdgeVec.push_back(&ie);
@@ -2817,8 +2821,8 @@ node::node( const std::string & nm, edge & ie1, edge & ie2,
    RKappas = FKappas = ( double * ) NULL;
 }
 
-node::node( const std::string & VRLname, edge & in,
-            edge & out, const std::string type ,gposy & val , symbol_table & st )
+node::node( const string & VRLname, edge & in,
+            edge & out, const string type ,gposy & val , symbol_table & st )
    : name( VRLname ), cc( ( ccc * )NULL ), type( type ), symtab( st ), VRLCval( & val ) {
    cout << "Making a VRL node " << VRLname << endl;
    outEdgeVec.push_back( &out );
@@ -2902,7 +2906,7 @@ void node::putCorrInputnum( unsigned int num ) {
    CorrInputnum.push_back( num );
 }
 
-void node::putDutyFactor( double df , const std::string & out ) {
+void node::putDutyFactor( double df , const string & out ) {
    assert( df >=0 && df <= 1 );
    for( unsigned i =0; i < getNumberOfOutputs(); i ++ ) {
       if( cc->getOutputName( i ) == out ) {
@@ -2920,7 +2924,7 @@ void node::put_path_length( unsigned ni, unsigned no, double pl ) {
    path_length_table[ni][no] = pl;
 }
 
-void node::putIntNetAF( std::string netName, double af ) {
+void node::putIntNetAF( string netName, double af ) {
    if( af < 0.0 )
       ciropterror( "The activity factor of internal net " + netName + " in cell " + getName() + " is negative" );
    capIntNetAFmap[netName] = af;
@@ -2942,12 +2946,12 @@ edge & node::getOutEdge( unsigned num ) {
    return * outEdgeVec[num];
 }
 
-std::string node::getWNName( unsigned num ) {
+string node::getWNName( unsigned num ) {
    assert( num < getNumberOfInputs() );
-   std::vector<const gposy *> Nnames =  cc->getWNNameVec( num );
+   vector<const gposy *> Nnames =  cc->getWNNameVec( num );
    if(	Nnames.size() == 0 )
       return EMPTY_STRING;
-   std::string list = Nnames.front()->toString( cc->getSymbolTable(),getvName(),EMPTY_STRING, EMPTY_STRING );
+   string list = Nnames.front()->toString( cc->getSymbolTable(),getvName(),EMPTY_STRING, EMPTY_STRING );
    for( int i = 1; i < Nnames.size(); i++ ) {
       list += " + " + Nnames[i]->toString( cc->getSymbolTable(),getvName(),EMPTY_STRING, EMPTY_STRING );
    }
@@ -2956,12 +2960,12 @@ std::string node::getWNName( unsigned num ) {
 
 }
 
-std::string node::getWPName( unsigned num ) {
+string node::getWPName( unsigned num ) {
    assert( num < getNumberOfInputs() );
-   std::vector<const gposy *> Pnames = cc->getWPNameVec( num );
+   vector<const gposy *> Pnames = cc->getWPNameVec( num );
    if( Pnames.size() == 0 )
       return EMPTY_STRING;
-   std::string list = Pnames.front()->toString( cc->getSymbolTable(),getvName(),EMPTY_STRING, EMPTY_STRING );
+   string list = Pnames.front()->toString( cc->getSymbolTable(),getvName(),EMPTY_STRING, EMPTY_STRING );
    for( int i = 1; i < Pnames.size(); i++ ) {
       list += " + " + Pnames[i]->toString( cc->getSymbolTable(),getvName(),EMPTY_STRING, EMPTY_STRING );
    }
@@ -2969,13 +2973,13 @@ std::string node::getWPName( unsigned num ) {
    return list;
 }
 
-std::string	node::getCapIntNetEnergyStt() {
-   std::string intEnergy = EMPTY_STRING;
-   std::map<std::string,double>::iterator itr;
-   std::map<std::string,double> tmp = getCapIntNetAFmap();
+string	node::getCapIntNetEnergyStt() {
+   string intEnergy = EMPTY_STRING;
+   map<string,double>::iterator itr;
+   map<string,double> tmp = getCapIntNetAFmap();
    for( itr = tmp.begin(); itr != tmp.end(); itr++ ) {
       double sf;
-      std::string nodeName = getName();
+      string nodeName = getName();
       //	 	cout << "Including energy for the internal net " << itr->first << endl;
       sf = itr->second;
       //	  cout << "Reached here1" << endl;
@@ -2992,14 +2996,14 @@ std::string	node::getCapIntNetEnergyStt() {
    return intEnergy;
 }
 
-std::string	node::getWireIntNetEnergyStt() {
+string	node::getWireIntNetEnergyStt() {
    //	cout << "reached here" << endl;
-   std::string intEnergy = EMPTY_STRING;
-   std::map<std::string,double>::iterator itr;
-   std::map<std::string,double> tmp = getWireIntNetAFmap();
+   string intEnergy = EMPTY_STRING;
+   map<string,double>::iterator itr;
+   map<string,double> tmp = getWireIntNetAFmap();
    for( itr = tmp.begin(); itr != tmp.end(); itr++ ) {
       double sf;
-      std::string nodeName = getName();
+      string nodeName = getName();
       //	 	cout << "Including energy for the internal net " << itr->first << endl;
       sf = itr->second;
       //	  cout << "Reached here1" << endl;
@@ -3017,14 +3021,14 @@ std::string	node::getWireIntNetEnergyStt() {
 }
 
 /* We do not use this function as we account sparately for all the internal parasitics
-std::string	node::getCapIntNetEnergy()
+string	node::getCapIntNetEnergy()
 {
 	double sf;
   double min_sf = atof((opt_prob_generator::getMinSF()).c_str());
 	//get energy in the internal net of the CCC driving this net.
-  std::string intEnergy = EMPTY_STRING;
-	std::map<std::string,double>::iterator itr;
-	std::map<std::string,double> tmp = getCapIntNetAFmap();
+  string intEnergy = EMPTY_STRING;
+	map<string,double>::iterator itr;
+	map<string,double> tmp = getCapIntNetAFmap();
 	for(itr = tmp.begin();itr != tmp.end(); itr++)
 	{
 //	 	cout << "Including energy for the internal net " << itr->first << endl;
@@ -3034,7 +3038,7 @@ std::string	node::getCapIntNetEnergy()
 	 			 continue;
 	 	if(sf < min_sf)
 	 			 sf = min_sf;
-		std::string tmpStt;
+		string tmpStt;
 		if((tmpStt = getCCC().getParCap(*this,itr->first)) == EMPTY_STRING)
 				 ciropterror("Warning: net " + itr->first + " in CCC " + getName() + " has an activity factor but not parasitic cap");
 		if(intEnergy == EMPTY_STRING)
@@ -3047,13 +3051,13 @@ std::string	node::getCapIntNetEnergy()
 }
 */
 
-void node::getCapIntNetEnergy( ostream &os, std::string Vdd ) {
+void node::getCapIntNetEnergy( ostream &os, string Vdd ) {
    double sf;
    double min_sf = atof( ( opt_prob_generator::getMinSF() ).c_str() );
    //get energy in the internal net of the CCC driving this net.
-   std::map<std::string,double>::iterator itr;
-   std::map<std::string,double> tmp = getCapIntNetAFmap();
-   std::string tmpStt;
+   map<string,double>::iterator itr;
+   map<string,double> tmp = getCapIntNetAFmap();
+   string tmpStt;
    for( itr = tmp.begin(); itr != tmp.end(); itr++ ) {
       //	 	cout << "Including energy for the internal net " << itr->first << endl;
       sf = itr->second;
@@ -3068,14 +3072,14 @@ void node::getCapIntNetEnergy( ostream &os, std::string Vdd ) {
    }
 }
 
-void node::getWireIntNetEnergy( ostream &os, std::string Vdd ) {
+void node::getWireIntNetEnergy( ostream &os, string Vdd ) {
    //	cout << "reached here 1" << endl;
    double sf;
    double min_sf = atof( ( opt_prob_generator::getMinSF() ).c_str() );
    //get energy in the internal net of the CCC driving this net.
-   std::map<std::string,double>::iterator itr;
-   std::map<std::string,double> tmp = getWireIntNetAFmap();
-   std::string tmpStt;
+   map<string,double>::iterator itr;
+   map<string,double> tmp = getWireIntNetAFmap();
+   string tmpStt;
    for( itr = tmp.begin(); itr != tmp.end(); itr++ ) {
       //	 	cout << "Including energy for the internal net " << itr->first << endl;
       sf = itr->second;
@@ -3090,7 +3094,7 @@ void node::getWireIntNetEnergy( ostream &os, std::string Vdd ) {
    }
 }
 
-std::string node::getRCLoad
+string node::getRCLoad
 ( unsigned num,opt_prob_generator & opt ) {
    if( isCapacitor() ) {
       return VRLCval->toString( symtab );
@@ -3103,21 +3107,21 @@ std::string node::getRCLoad
    assert( num < getNumberOfInputs() );
 
    // for paper
-   std::string WPName;
-   std::string WNName;
-   std::string RCL;
+   string WPName;
+   string WNName;
+   string RCL;
    WPName = opt.getCPrise() + " " + getWPName( num );
    WNName = opt.getCNrise() + " " + getWNName( num );
 
    if( getWPName( num ) == EMPTY_STRING )
-      return ( std::string( "(" ) + WNName + ")" );
+      return ( string( "(" ) + WNName + ")" );
    else if( getWNName( num ) == EMPTY_STRING )
-      return ( std::string( "(" ) + WPName + ")" );
+      return ( string( "(" ) + WPName + ")" );
    else
-      return ( std::string( "(" ) + WPName + " + " + WNName + ")" );
+      return ( string( "(" ) + WPName + " + " + WNName + ")" );
 }
 
-std::string node::getFCLoad
+string node::getFCLoad
 ( unsigned num, opt_prob_generator & opt ) {
    if( isCapacitor() ) {
       return  VRLCval->toString( symtab );;
@@ -3129,21 +3133,21 @@ std::string node::getFCLoad
    assert( num < getNumberOfInputs() );
 
    // for paper
-   std::string WPName;
-   std::string WNName;
-   std::string RCL;
+   string WPName;
+   string WNName;
+   string RCL;
    WPName = opt.getCPfall() + " " + getWPName( num );
    WNName = opt.getCNfall() + " " + getWNName( num );
    if( getWPName( num ) == EMPTY_STRING )
-      return ( std::string( "(" ) + WNName + ")" );
+      return ( string( "(" ) + WNName + ")" );
    else if( getWNName( num ) == EMPTY_STRING )
-      return ( std::string( "(" ) + WPName + ")" );
+      return ( string( "(" ) + WPName + ")" );
    else
-      return ( std::string( "(" ) + WPName + " + " + WNName + ")" );
+      return ( string( "(" ) + WPName + " + " + WNName + ")" );
 }
 
 double node::valRCLoad
-( unsigned num, std::map<std::string,double> & optVs ) {
+( unsigned num, map<string,double> & optVs ) {
    if( isCapacitor() ) {
       //			 cout << getName() << " is a cap with value :" << cap->toString(* symtab) << endl;
       double value = VRLCval->evaluate( symtab, EMPTY_STRING, optVs, EMPTY_STRING, 0.0 );
@@ -3162,12 +3166,12 @@ double node::valRCLoad
    double cprise = atof( ( opt_prob_generator::getCPrise() ).c_str() );
    double cnrise = atof( ( opt_prob_generator::getCNrise() ).c_str() );
 
-   std::vector<const gposy *> Pnames = cc->getWPNameVec( num );
+   vector<const gposy *> Pnames = cc->getWPNameVec( num );
    double valRCLoad =  0;
    for( int i = 0; i < Pnames.size(); i++ ) {
       valRCLoad  += cprise*Pnames[i]->evaluate( cc->getSymbolTable(),getvName(),optVs,EMPTY_STRING,0.0 );
    }
-   std::vector<const gposy *> Nnames = cc->getWNNameVec( num );
+   vector<const gposy *> Nnames = cc->getWNNameVec( num );
    for( int i = 0; i < Nnames.size(); i++ ) {
       valRCLoad  += cnrise*Nnames[i]->evaluate( cc->getSymbolTable(),getvName(),optVs,EMPTY_STRING,0.0 );
    }
@@ -3175,7 +3179,7 @@ double node::valRCLoad
 }
 
 double node::valFCLoad
-( unsigned num, std::map<std::string,double> & optVs ) {
+( unsigned num, map<string,double> & optVs ) {
    if( isCapacitor() ) {
       //			 cout << getName() << " is a cap with value :" << cap->toString(* symtab) << endl;
       double value = VRLCval->evaluate( symtab, EMPTY_STRING, optVs, EMPTY_STRING, 0.0 );
@@ -3194,20 +3198,20 @@ double node::valFCLoad
 
    double cpfall = atof( ( opt_prob_generator::getCPfall() ).c_str() );
    double cnfall = atof( ( opt_prob_generator::getCNfall() ).c_str() );
-   std::vector<const gposy *> Pnames = cc->getWPNameVec( num );
+   vector<const gposy *> Pnames = cc->getWPNameVec( num );
    double valFCLoad =  0;
 
    for( int i = 0; i < Pnames.size(); i++ ) {
       valFCLoad  += cpfall*Pnames[i]->evaluate( cc->getSymbolTable(),getvName(),optVs,EMPTY_STRING,0.0 );
    }
-   std::vector<const gposy *> Nnames = cc->getWNNameVec( num );
+   vector<const gposy *> Nnames = cc->getWNNameVec( num );
    for( int i = 0; i < Nnames.size(); i++ ) {
       valFCLoad  += cnfall*Nnames[i]->evaluate( cc->getSymbolTable(),getvName(),optVs,EMPTY_STRING,0.0 );
    }
    return valFCLoad;
 }
 
-std::string node::getEnergyCLoad( unsigned num ) {
+string node::getEnergyCLoad( unsigned num ) {
    if( isCapacitor() )
       return VRLCval->toString( symtab );
    if( isVRL() )
@@ -3215,22 +3219,22 @@ std::string node::getEnergyCLoad( unsigned num ) {
 
    assert( num < getNumberOfInputs() );
 
-   std::string WPName;
-   std::string WNName;
-   std::string RCL;
+   string WPName;
+   string WNName;
+   string RCL;
    unsigned int test = 0;
    WPName = opt_prob_generator::getEnergyCP() + " " + getWPName( num );
    WNName = opt_prob_generator::getEnergyCN() + " " + getWNName( num );
 
    if( getWPName( num ) == EMPTY_STRING )
-      return ( std::string( "(" ) + WNName + ")" );
+      return ( string( "(" ) + WNName + ")" );
    else if( getWNName( num ) == EMPTY_STRING )
-      return ( std::string( "(" ) + WPName + ")" );
+      return ( string( "(" ) + WPName + ")" );
    else
-      return ( std::string( "(" ) + WPName + " + " + WNName + ")" );
+      return ( string( "(" ) + WPName + " + " + WNName + ")" );
    /*
    	return
-       ( std::string("(")
+       ( string("(")
          + cnvt::doubleToString(opt_prob_generator::getEnergyCP())
          + " " + getWPName( num ) + " + "
          + cnvt::doubleToString(opt_prob_generator::getEnergyCN())
@@ -3238,7 +3242,7 @@ std::string node::getEnergyCLoad( unsigned num ) {
    */
 }
 
-std::string node::getParCap( unsigned num ) {
+string node::getParCap( unsigned num ) {
    if( isCapacitor() ) {
       errorReport( "Asking for Par Cap from a capacitor node" );
       return EMPTY_STRING;
@@ -3252,7 +3256,7 @@ std::string node::getParCap( unsigned num ) {
    return cc->getParCap( *this, num );
 }
 
-std::string node::getLeakPow( bool stat,unsigned num ) {
+string node::getLeakPow( bool stat,unsigned num ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to find the leakage of a capacitor node" );
    }
@@ -3282,11 +3286,11 @@ std::string node::getLeakPow( bool stat,unsigned num ) {
    }
 }
 
-std::string node::getArea() {
+string node::getArea() {
    return getArea( EMPTY_STRING );
 }
 
-std::string node::getArea( const std::string & pre ) {
+string node::getArea( const string & pre ) {
    if( isCapacitor() || isVRL() ) return EMPTY_STRING;
    return pre + cc->getArea( getName() );
 }
@@ -3311,7 +3315,7 @@ double node::getPathLength( unsigned ni, unsigned no ) {
    return path_length_table[ni][no];
 }
 
-std::string node::getDioRF( unsigned ni, unsigned no,  opt_prob_generator & opt ) {
+string node::getDioRF( unsigned ni, unsigned no,  opt_prob_generator & opt ) {
    //	cout << "reached here rf  for" << getName() << endl;
    if( isCapacitor() || isVRL() ) {
       errorReport( "Attempting to obtain RF Dio expressions for a Cap node" );
@@ -3329,7 +3333,7 @@ std::string node::getDioRF( unsigned ni, unsigned no,  opt_prob_generator & opt 
    }
 }
 
-std::string node::getDioFR( unsigned ni, unsigned no,  opt_prob_generator & opt ) {
+string node::getDioFR( unsigned ni, unsigned no,  opt_prob_generator & opt ) {
    //	cout << "reached here fr  for" << getName() << endl;
    if( isCapacitor() ) {
       errorReport( "Attempting to obain FR Dio from a cap node" );
@@ -3348,7 +3352,7 @@ std::string node::getDioFR( unsigned ni, unsigned no,  opt_prob_generator & opt 
    }
 }
 
-std::string node::getSTDRF( unsigned ni, unsigned no,  opt_prob_generator & opt )
+string node::getSTDRF( unsigned ni, unsigned no,  opt_prob_generator & opt )
 throw( noRefException ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get STDRF for a cap node" );
@@ -3362,7 +3366,7 @@ throw( noRefException ) {
    return cc->getSTDRF( ni, no, getvName(), outEdgeVec[no]->getFCLoad( opt ) );
 }
 
-std::string node::getSTDFR( unsigned ni, unsigned no,  opt_prob_generator & opt )
+string node::getSTDFR( unsigned ni, unsigned no,  opt_prob_generator & opt )
 throw( noRefException ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get STDFR for a cap node" );
@@ -3377,7 +3381,7 @@ throw( noRefException ) {
    return cc->getSTDFR( ni, no, getvName(), outEdgeVec[no]->getRCLoad( opt ) );
 }
 
-std::string node::getVARRF( unsigned ni, unsigned no,  opt_prob_generator & opt )
+string node::getVARRF( unsigned ni, unsigned no,  opt_prob_generator & opt )
 throw( noRefException ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get VARRF for a cap node" );
@@ -3392,7 +3396,7 @@ throw( noRefException ) {
    return cc->getVARRF( ni, no, getvName(), outEdgeVec[no]->getFCLoad( opt ) );
 }
 
-std::string node::getVARFR( unsigned ni, unsigned no,  opt_prob_generator & opt )
+string node::getVARFR( unsigned ni, unsigned no,  opt_prob_generator & opt )
 throw( noRefException ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get VARFR for a cap node" );
@@ -3408,7 +3412,7 @@ throw( noRefException ) {
 }
 
 double node::meanDioRF
-( unsigned ni, unsigned no,  std::map<std::string,double> & optVs ) {
+( unsigned ni, unsigned no,  map<string,double> & optVs ) {
    //cout << "Reached the node meanDioRF" << endl;
    if( isCapacitor() ) {
       errorReport( "Attempting to get meanDioRF value for a cap node" );
@@ -3429,7 +3433,7 @@ double node::meanDioRF
 }
 
 double node::meanDioFR
-( unsigned ni, unsigned no,  std::map<std::string,double> & optVs ) {
+( unsigned ni, unsigned no,  map<string,double> & optVs ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get meanDioFR value for a cap node" );
       return 0.0;
@@ -3449,7 +3453,7 @@ double node::meanDioFR
 }
 
 double node::stdDioRF
-( unsigned ni, unsigned no, std::map<std::string,double> & optVs ) {
+( unsigned ni, unsigned no, map<string,double> & optVs ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get stdDioRF value for a cap node" );
       return 0.0;
@@ -3464,7 +3468,7 @@ double node::stdDioRF
 }
 
 double node::stdDioFR
-( unsigned ni, unsigned no, std::map<std::string,double> & optVs ) {
+( unsigned ni, unsigned no, map<string,double> & optVs ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get stdDioFR value for a cap node" );
       return 0.0;
@@ -3477,7 +3481,7 @@ double node::stdDioFR
 }
 
 double node::varDioRF
-( unsigned ni, unsigned no, std::map<std::string,double> & optVs ) {
+( unsigned ni, unsigned no, map<string,double> & optVs ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get varDioRF value for a cap node" );
       return 0.0;
@@ -3490,7 +3494,7 @@ double node::varDioRF
 }
 
 double node::varDioFR
-( unsigned ni, unsigned no, std::map<std::string,double> & optVs ) {
+( unsigned ni, unsigned no, map<string,double> & optVs ) {
    if( isCapacitor() ) {
       errorReport( "Attempting to get varDioFR value for a cap node" );
       return 0.0;
@@ -3542,16 +3546,16 @@ void node::setKappaBeta( double kappa, double beta ) {
 }
 
 void node::montecarlo
-( std::map<std::string,ProbDist *> & mc,
-  std::map<std::string,std::vector<unsigned> > & netSlctMap,
-  const std::string & dist, unsigned N, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
+( map<string,ProbDist *> & mc,
+  map<string,vector<unsigned> > & netSlctMap,
+  const string & dist, unsigned N, double p,
+  map<string,double> & optVs, bool noTriseTfall ) {
    if( isCapacitor() ) assert( false );
 
-   std::map<std::string,ProbDist *>::const_iterator riseItr, fallItr;
-   std::vector<ProbDist *> riseDists, fallDists;
+   map<string,ProbDist *>::const_iterator riseItr, fallItr;
+   vector<ProbDist *> riseDists, fallDists;
    ProbDist * tmpPD;
-   std::vector<double> Rt90s, Ft90s;
+   vector<double> Rt90s, Ft90s;
 
    for( unsigned no = 0; no < outEdgeVec.size(); no ++ ) {
       for( unsigned ni = 0; ni < inEdgeVec.size(); ni ++ ) {
@@ -3560,7 +3564,7 @@ void node::montecarlo
 
          inEdgeVec[ni]->montecarlo( mc,netSlctMap,dist,N,p,optVs,noTriseTfall );
 
-         std::string rfname = getRFInternalNetName( ni, no );
+         string rfname = getRFInternalNetName( ni, no );
          if( mc.find( rfname ) != mc.end() )
             errorReport( "Monte carlo analysis for RF transition from input " + getCCC().getInputName( ni ) + " to " + getCCC().getOutputName( no ) + " in node " + getName() + " is repeated" );
 
@@ -3586,7 +3590,7 @@ void node::montecarlo
             continue;  //set as the Trise delay of the output. That is in this function below.
 
 
-         std::string frname = getFRInternalNetName( ni, no );
+         string frname = getFRInternalNetName( ni, no );
          if( mc.find( frname ) != mc.end() )
             errorReport( "Monte carlo analysis for FR transition from input " + getCCC().getInputName( ni ) + " to " + getCCC().getOutputName( no ) + " in node " + getName() + " is repeated" );
 
@@ -3607,16 +3611,16 @@ void node::montecarlo
       }
 
       // calculate distribution for falling output net
-      std::string ofName = outEdgeVec[no]->getMonteTFallName();
+      string ofName = outEdgeVec[no]->getMonteTFallName();
       if( noTriseTfall ) //In this case the convention is to label the timing of all nets as Trise
          ofName = outEdgeVec[no]->getMonteTRiseName();
       // assertions to check if these have been calculated already.
       assert( mc.find( ofName ) == mc.end() );
       assert( netSlctMap.find( ofName ) == netSlctMap.end() );
 
-      std::vector<unsigned> & fNSM = netSlctMap[ofName];
+      vector<unsigned> & fNSM = netSlctMap[ofName];
       tmpPD = ProbDist::createMaxProbDist( fNSM, fallDists );
-      std::vector<double> & fCrit = InputCritMapRF[outEdgeVec[no]->getName()];
+      vector<double> & fCrit = InputCritMapRF[outEdgeVec[no]->getName()];
       tmpPD = ProbDist::createMaxProbDistwithCriticality( fCrit, fallDists );
       mc[ofName] = tmpPD;
       // update beta
@@ -3626,14 +3630,14 @@ void node::montecarlo
          continue;
 
       // calculate distribution for rising output net
-      const std::string & orName = outEdgeVec[no]->getMonteTRiseName();
+      const string & orName = outEdgeVec[no]->getMonteTRiseName();
       // assertions to check if these have been calculated already.
       assert( mc.find( orName ) == mc.end() );
       assert( netSlctMap.find( orName ) == netSlctMap.end() );
 
-      std::vector<unsigned> & rNSM = netSlctMap[orName];
+      vector<unsigned> & rNSM = netSlctMap[orName];
       tmpPD = ProbDist::createMaxProbDist( rNSM, riseDists );
-      std::vector<double> & rCrit = InputCritMapFR[outEdgeVec[no]->getName()];
+      vector<double> & rCrit = InputCritMapFR[outEdgeVec[no]->getName()];
       tmpPD = ProbDist::createMaxProbDistwithCriticality( rCrit, riseDists );
       mc[orName] = tmpPD;
 
@@ -3644,28 +3648,28 @@ void node::montecarlo
 }
 
 void node::montecarlo
-( std::map<std::string,ProbDist *> & mc,
-  std::map<std::string,std::vector<unsigned> > & netSlctMap,
-  std::map<std::string,ProbDist *> & gatePDMap,
+( map<string,ProbDist *> & mc,
+  map<string,vector<unsigned> > & netSlctMap,
+  map<string,ProbDist *> & gatePDMap,
   const monte_carlo & monte, double p,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
+  map<string,double> & optVs, bool noTriseTfall ) {
    cout << "Warning: The noRiseFallTiming option is not available for this kind of monte carlo analysis. \n Please check to see that this is not what you want!" << endl;
    assert( !monte.isIndependent() );
 
    if( isCapacitor() ) assert( false );
 
-   std::map<std::string,ProbDist *>::const_iterator riseItr, fallItr;
-   std::vector<ProbDist *> riseDists, fallDists;
+   map<string,ProbDist *>::const_iterator riseItr, fallItr;
+   vector<ProbDist *> riseDists, fallDists;
    ProbDist * tmpPD;
-   std::vector<double> Rt90s, Ft90s;
+   vector<double> Rt90s, Ft90s;
 
    ProbDist * PD;
    double numRelGates, depFactor;
    for( unsigned no = 0; no < outEdgeVec.size(); no ++ ) {
       if( monte.getDependencyType() == "type1" ) {
          ProbDist * mainPD;
-         std::vector<ProbDist *> relPDs;
-         std::map<std::string,ProbDist *>::const_iterator gitr;
+         vector<ProbDist *> relPDs;
+         map<string,ProbDist *>::const_iterator gitr;
          depFactor = monte.getDependencyFactor();
 
          gitr = gatePDMap.find( getName() );
@@ -3704,8 +3708,8 @@ void node::montecarlo
 
          inEdgeVec[ni]->montecarlo( mc,netSlctMap,gatePDMap,monte,p,optVs,noTriseTfall );
 
-         std::string rfname = getRFInternalNetName( ni, no );
-         std::string frname = getFRInternalNetName( ni, no );
+         string rfname = getRFInternalNetName( ni, no );
+         string frname = getFRInternalNetName( ni, no );
 
          //    assert( mc.find(rfname) == mc.end() && mc.find(frname) == mc.end() );
          if( mc.find( rfname ) != mc.end() && mc.find( frname ) != mc.end() )
@@ -3747,8 +3751,8 @@ void node::montecarlo
          Ft90s.push_back( t90 );
       }
 
-      const std::string & orName = outEdgeVec[no]->getMonteTRiseName();
-      const std::string & ofName = outEdgeVec[no]->getMonteTFallName();
+      const string & orName = outEdgeVec[no]->getMonteTRiseName();
+      const string & ofName = outEdgeVec[no]->getMonteTFallName();
 
       // assertions
       assert( mc.find( orName ) == mc.end() );
@@ -3759,7 +3763,7 @@ void node::montecarlo
 
       // calculate distribution for falling output net
 
-      std::vector<unsigned> & fNSM = netSlctMap[ofName];
+      vector<unsigned> & fNSM = netSlctMap[ofName];
       tmpPD = ProbDist::createMaxProbDist( fNSM, fallDists );
       mc[ofName] = tmpPD;
 
@@ -3768,7 +3772,7 @@ void node::montecarlo
 
 
       // calculate distribution for rising output net
-      std::vector<unsigned> & rNSM = netSlctMap[orName];
+      vector<unsigned> & rNSM = netSlctMap[orName];
       tmpPD = ProbDist::createMaxProbDist( rNSM, riseDists );
       mc[orName] = tmpPD;
 
@@ -3783,35 +3787,35 @@ void node::montecarlo
 }
 
 void node::nominalAnalysis
-( std::map<std::string,double> & nomAnlys,
-  std::map<std::string,unsigned> & netSelectVec,
-  std::map<std::string,std::vector<double> > & pathLengthMap,
-  std::map<std::string,std::vector<double> > & pathVarianceMap,
-  std::map<std::string,double > & gateDioMap,
-  std::map<std::string,double> & optVs, bool noTriseTfall ) {
+( map<string,double> & nomAnlys,
+  map<string,unsigned> & netSelectVec,
+  map<string,vector<double> > & pathLengthMap,
+  map<string,vector<double> > & pathVarianceMap,
+  map<string,double > & gateDioMap,
+  map<string,double> & optVs, bool noTriseTfall ) {
    //cout << "Nominal Analysis on node " << getName() << endl;
    if( isCapacitor() ) assert( false );
 
    for( unsigned no=0; no < outEdgeVec.size(); no ++ ) {
-      std::map<std::string,double>::const_iterator riseItr, fallItr;
-      std::map<std::string,std::vector<double> >::const_iterator risePItr, fallPItr;
-      std::map<std::string,std::vector<double> >::const_iterator riseVItr, fallVItr;
-      std::vector<double> riseVals, fallVals;
+      map<string,double>::const_iterator riseItr, fallItr;
+      map<string,vector<double> >::const_iterator risePItr, fallPItr;
+      map<string,vector<double> >::const_iterator riseVItr, fallVItr;
+      vector<double> riseVals, fallVals;
 
-      const std::string nameRO = outEdgeVec[no]->getMonteTRiseName();
-      const std::string nameFO = outEdgeVec[no]->getMonteTFallName();
+      const string nameRO = outEdgeVec[no]->getMonteTRiseName();
+      const string nameFO = outEdgeVec[no]->getMonteTFallName();
       assert( pathLengthMap.find( nameRO ) == pathLengthMap.end() );
       assert( pathLengthMap.find( nameFO ) == pathLengthMap.end() );
 
       assert( pathVarianceMap.find( nameRO ) == pathVarianceMap.end() );
       assert( pathVarianceMap.find( nameFO ) == pathVarianceMap.end() );
 
-      std::vector<double> & riseOutPathLengths = pathLengthMap[nameRO];
-      std::vector<double> & riseOutPathVariances = pathVarianceMap[nameRO];
+      vector<double> & riseOutPathLengths = pathLengthMap[nameRO];
+      vector<double> & riseOutPathVariances = pathVarianceMap[nameRO];
 
 
-      std::vector<double> & fallOutPathLengths = pathLengthMap[nameFO];
-      std::vector<double> & fallOutPathVariances = pathVarianceMap[nameFO];
+      vector<double> & fallOutPathLengths = pathLengthMap[nameFO];
+      vector<double> & fallOutPathVariances = pathVarianceMap[nameFO];
       for( unsigned ni = 0; ni < inEdgeVec.size(); ni ++ ) {
          //check for dio availability but only for CCCs.
          if( !isVRL()  && !getCCC().isMeanDioAssigned( ni,no ) ) continue;
@@ -3822,8 +3826,8 @@ void node::nominalAnalysis
          inEdgeVec[ni]->nominalAnalysis
          ( nomAnlys,netSelectVec,pathLengthMap,pathVarianceMap,gateDioMap,optVs,noTriseTfall );
 
-         std::string dioRF;
-         std::string dioFR;
+         string dioRF;
+         string dioFR;
          if( getType() == "v" || getType() == "l"
                || ( getType() == "r"
                     && VRLCval->isConstant()
@@ -3842,8 +3846,8 @@ void node::nominalAnalysis
           * "rise to fall"
           */
 
-         const std::string nameRI = inEdgeVec[ni]->getMonteTRiseName();
-         const std::string rfname = getRFInternalNetName( ni, no );
+         const string nameRI = inEdgeVec[ni]->getMonteTRiseName();
+         const string rfname = getRFInternalNetName( ni, no );
 
          // make sure that NO nominal analysis has been done for this dio
          // of the current gate (node).
@@ -3860,7 +3864,7 @@ void node::nominalAnalysis
          fallVals.push_back( ( nomAnlys[rfname] = ( riseItr->second ) + dly ) );
 
          // add mean and variance of the delay to corresponding element of
-         // the std::map
+         // the map
          assert( ( risePItr=pathLengthMap.find( nameRI ) )   != pathLengthMap.end() );
          assert( ( riseVItr=pathVarianceMap.find( nameRI ) ) != pathVarianceMap.end() );
          assert( risePItr->second.size() == riseVItr->second.size() );
@@ -3882,8 +3886,8 @@ void node::nominalAnalysis
           * "fall to rise"
           */
 
-         const std::string nameFI = inEdgeVec[ni]->getMonteTFallName();
-         const std::string frname = getFRInternalNetName( ni, no );
+         const string nameFI = inEdgeVec[ni]->getMonteTFallName();
+         const string frname = getFRInternalNetName( ni, no );
 
          // make sure that NO nominal analysis has been done for this dio
          // of the current gate (node).
@@ -3901,7 +3905,7 @@ void node::nominalAnalysis
          riseVals.push_back( ( nomAnlys[frname] = ( fallItr->second ) + dly ) );
 
          // add mean and variance of the delay to corresponding element of
-         // the std::map
+         // the map
          assert( ( fallPItr=pathLengthMap.find( nameFI ) )   != pathLengthMap.end() );
          assert( ( fallVItr=pathVarianceMap.find( nameFI ) ) != pathVarianceMap.end() );
          assert( fallPItr->second.size() == fallVItr->second.size() );
@@ -3931,17 +3935,17 @@ void node::nominalAnalysis
    return;
 }
 
-void node::dioAnalysis( std::map<std::string,double > & gateDioMap,
-                        std::map<std::string,double> & optVs, bool noTriseTfall ) {
+void node::dioAnalysis( map<string,double > & gateDioMap,
+                        map<string,double> & optVs, bool noTriseTfall ) {
    cout <<  "Not using the noTriseFall option yet" << endl;
    //cout << "Dio Analysis on node " << getName() << endl;
    if( isCapacitor() ) assert( false );
 
    for( unsigned no=0; no < outEdgeVec.size(); no ++ ) {
-      std::map<std::string,double>::const_iterator riseItr, fallItr;
-      std::map<std::string,std::vector<double> >::const_iterator risePItr, fallPItr;
-      std::map<std::string,std::vector<double> >::const_iterator riseVItr, fallVItr;
-      std::vector<double> riseVals, fallVals;
+      map<string,double>::const_iterator riseItr, fallItr;
+      map<string,vector<double> >::const_iterator risePItr, fallPItr;
+      map<string,vector<double> >::const_iterator riseVItr, fallVItr;
+      vector<double> riseVals, fallVals;
 
       for( unsigned ni = 0; ni < inEdgeVec.size(); ni ++ ) {
          //check for dio availability but only for CCCs.
@@ -3950,8 +3954,8 @@ void node::dioAnalysis( std::map<std::string,double > & gateDioMap,
          double dly;
          double var;
 
-         std::string dioRF;
-         std::string dioFR;
+         string dioRF;
+         string dioFR;
          if( getType() == "v" || getType() == "l"
                || ( getType() == "r"
                     && VRLCval->isConstant()
@@ -4003,8 +4007,8 @@ void node::dioAnalysis( std::map<std::string,double > & gateDioMap,
 }
 
 
-void node::addOneToCriticalNets( std::map<std::string,double> & criticality,
-                                 std::map<std::string,unsigned> & netSelectMap,
+void node::addOneToCriticalNets( map<string,double> & criticality,
+                                 map<string,unsigned> & netSelectMap,
                                  unsigned n, bool rf, bool noTriseTfall ) {
    assert( n < getNumberOfInputs() );
 
@@ -4087,7 +4091,7 @@ ostream & node::delayConstraintToOstream
 
    // cout << "this delay constraint generator is used in nominal case\n" << endl;
    // normal behavior
-   std::string delay;
+   string delay;
    for( unsigned i = 0; i < getNumberOfInputs(); i ++ ) {
       // If this CCC has a keeper input, dont include that delay.
       if( getCCC().getInputName( i ).substr( 0,3 ) == KEEPER_INPUT ) {
@@ -4180,14 +4184,14 @@ ostream & node::delayConstraintToOstream( ostream & os,
    assert( ni < getNumberOfInputs() );
 
    //  double val = inEdgeVec[ni]->getPreValue(rf);
-   std::string stdRF;
-   std::string stdRFcnstr;
-   std::string stdFR;
-   std::string stdFRcnstr;
-   std::string meanRF;
-   std::string meanRFcnstr;
-   std::string meanFR;
-   std::string meanFRcnstr;
+   string stdRF;
+   string stdRFcnstr;
+   string stdFR;
+   string stdFRcnstr;
+   string meanRF;
+   string meanRFcnstr;
+   string meanFR;
+   string meanFRcnstr;
 
    // if( val != 0.0 ) os << cnvt::doubleToString(val) << " + ";
    //STANDARD MEAN AND STD DEFINITIONS THAT GO FOR EACH GATE, And the corresponging constraints.///
@@ -4250,7 +4254,7 @@ ostream & node::delayConstraintToOstream( ostream & os,
                   assert( false );
             } catch( noRefException ) {
                errorReport(
-                  std::string( "attempt to do statistical optimization with no " )
+                  string( "attempt to do statistical optimization with no " )
                   + "std dio function for the input " + cc->getInputName( ni )
                   + " of ccc " + cc->getName() );
                os << ERROR_STRING;
@@ -4273,7 +4277,7 @@ ostream & node::delayConstraintToOstream( ostream & os,
                   assert( false );
             } catch( noRefException ) {
                errorReport(
-                  std::string( "attempt to do statistical optimization with no " )
+                  string( "attempt to do statistical optimization with no " )
                   + "std dio function for the input "
                   + cc->getInputName( ni )
                   + " of ccc " + cc->getName() );
@@ -4298,7 +4302,7 @@ ostream & node::delayConstraintToOstream( ostream & os,
                   assert( false );
             } catch( noRefException ) {
                errorReport(
-                  std::string( "attempt to do statistical optimization with no " )
+                  string( "attempt to do statistical optimization with no " )
                   + "std dio function for the input " + cc->getInputName( ni )
                   + " of ccc " + cc->getName() );
                os << ERROR_STRING;
@@ -4320,7 +4324,7 @@ ostream & node::delayConstraintToOstream( ostream & os,
                   assert( false );
             } catch( noRefException ) {
                errorReport(
-                  std::string( "attempt to do statistical optimization with no " )
+                  string( "attempt to do statistical optimization with no " )
                   + "std dio function for the input " + cc->getInputName( ni )
                   + " of ccc " + cc->getName() );
                os << ERROR_STRING;
@@ -4389,7 +4393,7 @@ ostream & node::delayConstraintToOstream( ostream & os, unsigned ni,
    assert( ni < getNumberOfInputs() );
 
    double val = inEdgeVec[ni]->getPreValue( rf );
-   const std::string preS = ( val!=0.0 )? cnvt::doubleToString( val ) + " + ":EMPTY_STRING;
+   const string preS = ( val!=0.0 )? cnvt::doubleToString( val ) + " + ":EMPTY_STRING;
 
    const unsigned M = osp.getM();
    const prob_dist & u_dist = osp.getU();
@@ -4490,7 +4494,7 @@ void node::updateKappa
    return;
 }
 
-void node::updateCritKappa( bool rf, unsigned num, double criticality, std::string & obj, double kmax, double maxCrit ) {
+void node::updateCritKappa( bool rf, unsigned num, double criticality, string & obj, double kmax, double maxCrit ) {
    //there is no update needed for a VRL node
    if( isVRL() ) return;
    assert( num < getNumberOfOutputs() );
@@ -4565,7 +4569,7 @@ void node::updateBeta
    return;
 }
 
-std::string node::getRFInternalNetName( unsigned ni, unsigned no ) {
+string node::getRFInternalNetName( unsigned ni, unsigned no ) {
    assert( ni < getNumberOfInputs() );
    assert( no < getNumberOfOutputs() );
    return
@@ -4573,7 +4577,7 @@ std::string node::getRFInternalNetName( unsigned ni, unsigned no ) {
       + cnvt::addTH( ni+1 )+ "to" + cnvt::addTH( no+1 ) + "_RFDELAY_OF_" + getName();
 }
 
-std::string node::getFRInternalNetName( unsigned ni, unsigned no ) {
+string node::getFRInternalNetName( unsigned ni, unsigned no ) {
    assert( ni < getNumberOfInputs() );
    assert( no < getNumberOfOutputs() );
 
@@ -4588,7 +4592,7 @@ std::string node::getFRInternalNetName( unsigned ni, unsigned no ) {
 
 
 mos::mos
-( std::vector<std::string> & strings, std::map<std::string, gposy * > par_names ) {
+( vector<string> & strings, map<string, gposy * > par_names ) {
    assert( strings.size() > 4 );
 
    mosName = strings.front();
@@ -4604,7 +4608,7 @@ mos::mos
       ciropterror( "The width is not found for " + mosName );
    }
    //  cout << strings.back() << " this is the name" << endl;
-   const std::string & npmos =  strings.back();
+   const string & npmos =  strings.back();
 
    if( npmos == "pmos" || npmos == "PMOS" )
       isPMos = true;
@@ -4618,20 +4622,20 @@ mos::mos
 }
 
 mos::mos
-( const std::string & CapName, std::vector<std::string> & strings, const gposy * value ) {
+( const string & CapName, vector<string> & strings, const gposy * value ) {
    assert( strings.size() == 3 );
 
    mosName = CapName;
    gateName = strings.front();
    widthName = value;
    //  cout << strings.back() << " this is the name" << endl;
-   const std::string & npmos =  strings.back();
+   const string & npmos =  strings.back();
    isCap = true;
    return;
 }
 
 
-bool mos::isGNDorVDD( std::string name ) const {
+bool mos::isGNDorVDD( string name ) const {
    return ( name=="gnd"
             || name == "GND"
             || name == "Gnd"
