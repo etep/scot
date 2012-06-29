@@ -1,5 +1,5 @@
 #include "cnvt.hpp"
-#include <stdlib.h>
+
 using namespace std;
 
 vector< string > cnvt::colors, cnvt::styles, cnvt::mrkers;
