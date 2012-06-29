@@ -64,7 +64,7 @@ YACCFLAGS = -dvty
 LIBS = -lc -lm -ll
 
 $(BIN): $(OBJS)
-	$(LD) $(LIBS) $(OBJS) -o $@
+	$(LD) $(OBJS) $(LIBS) -o $@
 
 $(OBJDIR)/lex.yy.c: scanner.l parser.y $(OBJDIR)/y.tab.c 
 	$(LEX) $(LEXFLAGS) -o $@ scanner.l
