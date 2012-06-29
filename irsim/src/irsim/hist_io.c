@@ -16,6 +16,7 @@
  *	Routines to write and read history dump files
  */
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
 #ifdef OS2
 #include <xfuncs.h>
