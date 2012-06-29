@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "Subcircuit.hpp"
 #include "ModelPrefix.hpp"
 #include <iostream>

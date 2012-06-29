@@ -1,3 +1,4 @@
+#include <string.h>
 #include <string>
 #include "utility.hpp"
 #include "scanner.h"

@@ -1,3 +1,4 @@
+#include <string.h>
 #include "Type.hpp"
 
 Type *Type::nmosType       = new Type( "nmos"       );

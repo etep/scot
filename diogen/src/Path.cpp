@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "Path.hpp"
 #include "Node.hpp"
 #include "ModelPrefix.hpp"

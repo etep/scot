@@ -1,6 +1,8 @@
 #ifndef _H_node
 #define _H_node
 
+#include <strings.h>
+
 #include <string>
 #include <vector>
 

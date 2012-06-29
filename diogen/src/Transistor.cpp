@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "Transistor.hpp"
 #include <iostream>
 #include "Vdd.hpp"
