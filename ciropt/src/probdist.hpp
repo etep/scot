@@ -5,9 +5,9 @@
 
 #include "stocc.hpp"
 
-#include <iostream.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
 class ProbDist;
 
@@ -148,10 +148,10 @@ public:
    ProbDist & operator+ ( const ProbDist & pd ) const;
 
    // ostream methods
-   ostream &   xMatVecToOstream( ostream & os );
-   ostream & pdfMatVecToOstream( ostream & os );
-   ostream & cdfMatVecToOstream( ostream & os );
-   ostream & cdfMatlabToOstream( ostream & os );
+   std::ostream &   xMatVecToOstream( std::ostream & os );
+   std::ostream & pdfMatVecToOstream( std::ostream & os );
+   std::ostream & cdfMatVecToOstream( std::ostream & os );
+   std::ostream & cdfMatlabToOstream( std::ostream & os );
 
 private:
    void montecarlo();
@@ -161,9 +161,7 @@ private:
 
 public:
    // public static methods
-   static void doubleVectorToSmoothedPDF
-   ( std::vector<double> & x, std::vector<double> & y,
-     const std::vector<double> & samples ) {
+   static void doubleVectorToSmoothedPDF( std::vector<double> & x, std::vector<double> & y, const std::vector<double> & samples ) {
       doubleVectorToSmoothedPDF( x, y, samples, plottingSmoothingFactor );
    }
 
@@ -210,7 +208,7 @@ public:
    ( const ProbDist * pd, double f1,
      const std::vector<ProbDist *> & pds, double f2 );
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<std::string> & ns,
                                      const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
                                      const std::vector<ProbDist *> &ap1, const std::vector<ProbDist *> &ap2,
@@ -219,7 +217,7 @@ public:
       return matlabToOstream( os,ns,p1,p2,ap1,ap2,ov1,ov2,s1,s2,"first" );
    }
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<std::string> & nms,
                                      const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
                                      const std::vector<ProbDist *> &ap1, const std::vector<ProbDist *> &ap2,
@@ -229,7 +227,7 @@ public:
       return matlabToOstream( os,nms,p1,p2,ap1,ap2,ov1,ov2,s1,s2,kind,0.9 );
    }
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<std::string> & nms,
                                      const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
                                      const std::vector<ProbDist *> &ap1, const std::vector<ProbDist *> &ap2,
@@ -237,7 +235,7 @@ public:
                                      const std::string & s1, const std::string & s2,
                                      const std::string & kind, double ap );
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<std::string> & nms,
                                      const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
                                      const std::vector<double> & ov1, const std::vector<double> & ov2,
@@ -245,51 +243,49 @@ public:
                                      const std::string & kind, double ap );
 
 private:
-   static ostream & matlabToOstreamFirstKind( ostream & os,
+   static std::ostream & matlabToOstreamFirstKind( std::ostream & os,
          const std::vector<std::string> & nms,
          const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
          const std::vector<double> & ov1, const std::vector<double> & ov2,
          const std::string & s1, const std::string & s2, double p );
 
-   static ostream & matlabToOstream( ostream &,
+   static std::ostream & matlabToOstream( std::ostream &,
                                      const std::string &, ProbDist &, ProbDist &,
                                      double ov1, double ov2,
                                      const std::string &, const std::string &, double, bool cdf );
 
-   static ostream & matlabToOstreamSecondKind( ostream &,
+   static std::ostream & matlabToOstreamSecondKind( std::ostream &,
          const std::vector<std::string> &,
          const std::vector<ProbDist *> &, const std::vector<ProbDist *> &,
          const std::vector<double> & ov1, const std::vector<double> & ov2,
          const std::string &, const std::string &, double kappa );
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<std::string> & ns, const std::vector<ProbDist *> & ps,
                                      bool cdf, double kappa );
 
-   static ostream & matlabToOstream( ostream & os, ProbDist & p1,
+   static std::ostream & matlabToOstream( std::ostream & os, ProbDist & p1,
                                      bool cdf, double kappa,
                                      const std::string & clr, const std::string & ls, bool lineD );
 
-   static ostream & matlabToOstreamThirdKind( ostream & os,
+   static std::ostream & matlabToOstreamThirdKind( std::ostream & os,
          const std::vector<std::string> & nms,
          const std::vector<ProbDist *> & p1, const std::vector<ProbDist *> & p2,
          const std::vector<ProbDist *> &ap1, const std::vector<ProbDist *> &ap2,
          const std::vector<double> & ov1, const std::vector<double> & ov2,
          const std::string & s1, const std::string & s2, double kappa );
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<std::string>& ns,
                                      const std::vector<ProbDist*>& ps, const std::vector<ProbDist*>& aps,
                                      const std::vector<double> & ovs, double kappa );
 
-   static ostream & matlabToOstream( ostream & os,
+   static std::ostream & matlabToOstream( std::ostream & os,
                                      const std::vector<ProbDist*>& ps1, const std::vector<ProbDist*>& ps2,
                                      const std::vector<ProbDist*>&aps1, const std::vector<ProbDist*>&aps2,
                                      const std::string & s1, const std::string & s2 );
 
-   static void getPDFCDF
-   ( double * pdf, double * cdf, const double * x, unsigned num,
-     const double * sim, unsigned N, double std );
+   static void getPDFCDF( double * pdf, double * cdf, const double * x, unsigned num, const double * sim, unsigned N, double std );
 
    static inline double pdfSmoothing( double xx ) {
       return getNormPDF( xx );
