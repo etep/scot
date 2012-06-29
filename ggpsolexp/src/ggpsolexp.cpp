@@ -1,18 +1,22 @@
 // ggp_parser.cpp : generalized GP Parser
 
 #include <string>
+#include <iostream>
+
 #include <stdio.h>
-#include <iostream.h>
+
 #include "ggpsolexp.hpp"
 #include "ggp.hpp"
 #include "cnvt.hpp"
 
-std::map<std::string, int> glbVars;
+using namespace std;
+
+map< string, int > glbVars;
 
 extern FILE * ggpin;
 extern int line_number;
 extern symbol_table symtab, labSymTab;
-extern std::string filename;
+extern string filename;
 
 ggp * GGP;
 
@@ -22,8 +26,8 @@ int main( int argc, char* argv[] ) {
    
    argAnalyzer aa( argc,argv );
 
-   const std::string executableName = argv[0];
-   const std::string executablePrompt = executableName + ": ";
+   const string executableName = argv[0];
+   const string executablePrompt = executableName + ": ";
 
    if( aa.hasAnyErrorOccurred() ) {
       cerr << executablePrompt << aa.getErrorMessage() << endl;
@@ -36,7 +40,7 @@ int main( int argc, char* argv[] ) {
       return 0;
    }
 
-   const std::vector<std::string> & vecString = aa.getInputFileNames();
+   const vector<string> & vecString = aa.getInputFileNames();
 
    unsigned numberOfProcessedFiles = 0;
 
@@ -109,9 +113,9 @@ int main( int argc, char* argv[] ) {
 // static member initialization
 const int argAnalyzer::defaultFlag = 1;
 
-const std::string argAnalyzer::flags = "hpcfgd";
+const string argAnalyzer::flags = "hpcfgd";
 
-const std::string argAnalyzer::helpMessage =
+const string argAnalyzer::helpMessage =
    " -h  show the usage of ggpsol.\n"
    " -p  print the generalized GP (GGP) to the standard output. (default flag)\n"
    " -c  print the equivalent GP (EGP) to the standard output.\n"
@@ -129,7 +133,7 @@ const std::string argAnalyzer::helpMessage =
 
 // class member definitions
 // private members
-argAnalyzer::argAnalyzer( int argc, char * argv [] ) : executableName( argv[0] ), executablePrompt( executableName + ": " ), isOn( std::vector<bool> ( flags.length() ) ) {
+argAnalyzer::argAnalyzer( int argc, char * argv [] ) : executableName( argv[0] ), executablePrompt( executableName + ": " ), isOn( vector<bool> ( flags.length() ) ) {
    
    isThereError = false;
 
@@ -160,7 +164,7 @@ argAnalyzer::argAnalyzer( int argc, char * argv [] ) : executableName( argv[0] )
    isOn[argAnalyzer::defaultFlag] = true;
 }
 
-void argAnalyzer::analyzeFlag( const std::string & s ) {
+void argAnalyzer::analyzeFlag( const string & s ) {
    
    if( s.length() <= 1 ) {
       isThereError = true;

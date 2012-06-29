@@ -5,18 +5,21 @@
 #include <fstream>
 
 #include <iomanip.h>
+
 #include "ggp.hpp"
 #include "cnvt.hpp"
 //#include "dgopt.h"
 #include "d2p.h"
+
+using namespace std;
 
 #define MAX(x,y) (((x)>(y))? x:y)
 
 #define WRITETOM false
 
 const unsigned ggp::GP_TRANSFORM_NUMBER = 0;
-const std::string ggp::OBJECTIVE_LABEL = " obj";
-const std::string ggp::AUX_INEQ_LABEL_CONJ = "-";
+const string ggp::OBJECTIVE_LABEL = " obj";
+const string ggp::AUX_INEQ_LABEL_CONJ = "-";
 
 ostream & operator<< ( ostream & os, const ggp & g ) {
    return g.toOstream( os,0 );
@@ -40,8 +43,7 @@ void ggp::updateCnstPosys() {
    hasCnstPosysUpToDate = true;
 }
 
-bool ggp::addInConstraint
-( const gposy & left, const gposy & right, const std::string & label ) {
+bool ggp::addInConstraint( const gposy & left, const gposy & right, const string & label ) {
    if( !right.isMonomial() ) return false;
 
    hasInSizeVecBeenMade = false;
@@ -60,8 +62,7 @@ bool ggp::addInConstraint
    return true;
 }
 
-bool ggp::addEqConstraint
-( const gposy & left, const gposy & right, const std::string & label ) {
+bool ggp::addEqConstraint( const gposy & left, const gposy & right, const string & label ) {
    if( !( left.isMonomial() && right.isMonomial() ) ) return false;
 
    hasInSizeVecBeenMade = false;
@@ -78,27 +79,21 @@ bool ggp::addEqConstraint
    return true;
 }
 
-void ggp::addInConstraints
-( const std::vector<const gposy *> & lefts,
-  const std::vector<const gposy *> & rights,
-  const std::vector<std::string> & labels ) {
+void ggp::addInConstraints( const vector<const gposy *> & lefts, const vector<const gposy *> & rights, const vector<string> & labels ) {
    assert( lefts.size() == labels.size() && rights.size() == labels.size() );
 
    for( int i = 0; i < lefts.size(); i++ )
       addInConstraint( *lefts[i], *rights[i], labels[i] );
 }
 
-void ggp::addEqConstraints
-( const std::vector<const gposy *> & lefts,
-  const std::vector<const gposy *> & rights,
-  const std::vector<std::string> & labels ) {
+void ggp::addEqConstraints( const vector<const gposy *> & lefts, const vector<const gposy *> & rights, const vector<string> & labels ) {
    assert( lefts.size() == labels.size() && rights.size() == labels.size() );
 
    for( int i = 0; i < lefts.size(); i ++ )
       addEqConstraint( *lefts[i], *rights[i], labels[i] );
 }
 
-bool ggp::toFile( const std::string & filename ) {
+bool ggp::toFile( const string & filename ) {
    ofstream fout( filename.c_str(), ios::out );
 
    if( !fout.is_open() ) {
@@ -164,7 +159,7 @@ ostream & ggp::toOstream( ostream & os, int num, bool sorted ) const {
    if( inCnstLeft.size() != 0 ) {
       os << "Inequality Constraints:" << endl << endl;
 
-      std::map<std::string,int>::const_iterator itr;
+      map<string,int>::const_iterator itr;
       int ind, i;
       for( itr = inCnstMap.begin(), ind = 0; itr != inCnstMap.end(); itr ++, ind ++ ) {
          i = sorted? itr->second:ind;
@@ -183,7 +178,7 @@ ostream & ggp::toOstream( ostream & os, int num, bool sorted ) const {
    if( eqCnstLeft.size() != 0 ) {
       os << "Equality Constraints:" << endl << endl;
 
-      std::map<std::string,int>::const_iterator itr;
+      map<string,int>::const_iterator itr;
       int i, ind;
       for( itr = eqCnstMap.begin(), ind = 0; itr != eqCnstMap.end(); itr ++, ind ++ ) {
          i = sorted? itr->second:ind;
@@ -203,7 +198,7 @@ ostream & ggp::toOstream( ostream & os, int num, bool sorted ) const {
 }
 
 /*
-ostream & ggp::toOstream( ostream & os, const std::string & x, int num ) const
+ostream & ggp::toOstream( ostream & os, const string & x, int num ) const
 {
   assert( hasInMaxLabelLengthUpToDate );
   assert( hasEqMaxLabelLengthUpToDate );
@@ -291,8 +286,8 @@ ostream & ggp::toOstream( ostream & os, const std::string & x, int num ) const
 */
 
 ggp & ggp::toGP() {
-   std::vector<const gposy *> lefts, rights;
-   std::vector<std::string> newLabels;
+   vector<const gposy *> lefts, rights;
+   vector<string> newLabels;
    symbol_table & newSymtab = * ( new symbol_table( symtab ) );
 
    const gposy & newObj = objFunc.toGP( newSymtab, newLabels, lefts, rights );
@@ -321,7 +316,7 @@ ggp & ggp::toGP() {
    return gp;
 }
 
-bool ggp::toMatlabFile( const std::string & fileName ) {
+bool ggp::toMatlabFile( const string & fileName ) {
    
    assert( isGP() );
 
@@ -366,30 +361,30 @@ bool ggp::toMatlabFile( const std::string & fileName ) {
    return true;
 }
 
-void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
+void ggp::solveUsingMOSEKdgopt( const string & fileName, ggp & GGP ) {
    assert( isGP() );
    updateCnstPosys();
 
-   const std::string mpsFileName  = cnvt::changeExtension( fileName, "mps" );
-   const std::string fFileName    = cnvt::changeExtension( fileName, "f"   );
-   const std::string eoFileName   = cnvt::changeExtension( fileName, "eo"  );
-   const std::string solFileName  = cnvt::changeExtension( fileName, "sol" );
-   const std::string outFile      = cnvt::changeExtension( fileName, "out" );
+   const string mpsFileName  = cnvt::changeExtension( fileName, "mps" );
+   const string fFileName    = cnvt::changeExtension( fileName, "f"   );
+   const string eoFileName   = cnvt::changeExtension( fileName, "eo"  );
+   const string solFileName  = cnvt::changeExtension( fileName, "sol" );
+   const string outFile      = cnvt::changeExtension( fileName, "out" );
 
    writeDgoptFormat( fileName );
    
-   // const std::string TOLERANCE = "1e-4";
+   // const string TOLERANCE = "1e-4";
    // system( ("dgopt " + mpsFileName + " " + fFileName + " " + TOLERANCE).c_str() );
    
    const char * scotHomePtr    = getenv( "SCOT_HOME_DIR" );
-   const std::string scotHome  = std::string( scotHomePtr );
-   const std::string mpsToEo   = scotHome + "/lrep/mpsToEo.pl";
-   const std::string priToDual = scotHome + "/lrep/fakePriToDual.pl";
-   const std::string paramFile = scotHome + "/mosekparams/paramFile";
+   const string scotHome  = string( scotHomePtr );
+   const string mpsToEo   = scotHome + "/lrep/mpsToEo.pl";
+   const string priToDual = scotHome + "/lrep/fakePriToDual.pl";
+   const string paramFile = scotHome + "/mosekparams/paramFile";
    
-   const std::string mpsToEoCmd = mpsToEo + " " + mpsFileName + " " + fFileName + " " + eoFileName;
-   const std::string rmMpsCmd   = "rm " + mpsFileName + " " + fFileName;
-   const std::string mosekCmd   = "mskexpopt " + eoFileName + " -primal" + " -p " + paramFile + " -sol " + solFileName;
+   const string mpsToEoCmd = mpsToEo + " " + mpsFileName + " " + fFileName + " " + eoFileName;
+   const string rmMpsCmd   = "rm " + mpsFileName + " " + fFileName;
+   const string mosekCmd   = "mskexpopt " + eoFileName + " -primal" + " -p " + paramFile + " -sol " + solFileName;
    
    system( mpsToEoCmd.c_str() );
    system( rmMpsCmd.c_str()   );
@@ -402,8 +397,8 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
    int numVar = symtab.getNumberOfSymbols();
    int numCon = getNumberOfMonomials();
 
-   const std::string priToDualCmd = priToDual + " " + solFileName + " PrimalToDual.sol " + cnvt::toString( numCon );
-   const std::string rmSolFileCmd = "rm " + solFileName;
+   const string priToDualCmd = priToDual + " " + solFileName + " PrimalToDual.sol " + cnvt::toString( numCon );
+   const string rmSolFileCmd = "rm " + solFileName;
 
    system( priToDualCmd.c_str() );
    system( rmSolFileCmd.c_str() );
@@ -419,7 +414,7 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
 
    int status = dual2primal( "PrimalToDual.sol", numVar, numCon, primal_solution, at_act, u_lower, &p_obj, &d_obj );
 
-   const std::string outFileName = cnvt::changeExtension( fileName, "out" );
+   const string outFileName = cnvt::changeExtension( fileName, "out" );
 
    ofstream wrt( outFileName.c_str(), ios::out );
    
@@ -460,7 +455,7 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
 
    // when optimum achieved, write the solution to .m file
    if( status == 1 && WRITETOM ) {
-      const std::string mFileName = cnvt::changeExtension( fileName,"m" );
+      const string mFileName = cnvt::changeExtension( fileName,"m" );
       ofstream wrtm( mFileName.c_str(), ios::out );
       if( !wrtm.is_open() ) assert( false );
       dgoptOptimalVarMatlabToOstream( wrtm, p_obj, d_obj, GGP );
@@ -476,7 +471,7 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
    delete u_lower;
 }
 
-void ggp::writeDgoptFormat( const std::string & filename ) const {
+void ggp::writeDgoptFormat( const string & filename ) const {
    static const unsigned WIDTH = 10;
 
    ofstream wrt( cnvt::changeExtension( filename,"mps" ).c_str(), ios::out );
@@ -504,7 +499,7 @@ void ggp::writeDgoptFormat( const std::string & filename ) const {
 
    wrt << "RHS" << endl;
    wrt << "    " << cnvt::addSpaces( "rhs", WIDTH )
-       << cnvt::addSpaces( std::string( "c" )
+       << cnvt::addSpaces( string( "c" )
                            + cnvt::intToString( symtab.getNumberOfSymbols()+1 ),WIDTH )
        << "1" << endl;
 
@@ -561,7 +556,7 @@ ostream & ggp::dgoptOptimalOutputToOstream( ostream & os, double p_obj, double d
       << cnvt::doubleToString( GGP.objValue,PREC ) << endl << endl;
 
    os << "Optimal Variable Values: " << endl;
-   std::map<std::string,int>::const_iterator itr;
+   map<string,int>::const_iterator itr;
    int i, ind;
    for( itr = GGP.symtab.getConstMapBegin(), ind = 0;
          itr != GGP.symtab.getConstMapEnd(); itr ++, ind ++ ) {
@@ -581,7 +576,7 @@ ostream & ggp::dgoptOptimalOutputToOstream( ostream & os, double p_obj, double d
          << cnvt::addSpaces( "DUALMUL",numMargin )
          << endl;
 
-      std::map<std::string,int>::const_iterator itr;
+      map<string,int>::const_iterator itr;
       int i;
       for( itr = GGP.inCnstMap.begin(), ind = 0;
             itr != GGP.inCnstMap.end(); itr ++, ind ++ ) {
@@ -609,7 +604,7 @@ ostream & ggp::dgoptOptimalOutputToOstream( ostream & os, double p_obj, double d
          << cnvt::addSpaces( "DUALMUL",numMargin )
          << endl;
 
-      std::map<std::string,int>::const_iterator itr;
+      map<string,int>::const_iterator itr;
       int i;
       for( itr = GGP.eqCnstMap.begin(), ind = 0;
             itr != GGP.eqCnstMap.end(); itr ++, ind ++ ) {
@@ -638,7 +633,7 @@ ostream & ggp::dgoptOptimalVarMatlabToOstream( ostream & os, double p_obj, doubl
 
    os << "% Optimal Variable Values: " << endl;
 
-   std::map<std::string,int>::const_iterator itr;
+   map<string,int>::const_iterator itr;
 
    for( itr = GGP.symtab.getConstMapBegin();
          itr != GGP.symtab.getConstMapEnd(); itr ++ ) {
@@ -688,7 +683,7 @@ void ggp::evaluateCnstValues( const double * primals, unsigned size ) {
    eqRights.clear();
    eqMargins.clear();
 
-   std::vector<double> pms;
+   vector<double> pms;
 
    for( unsigned i = 0; i < size; i ++ ) pms.push_back( primals[i] );
 
@@ -709,7 +704,7 @@ void ggp::evaluateCnstValues( const double * primals, unsigned size ) {
 }
 
 /*
-void ggp::writeMSKgpoptFormat( const std::string & filename, int cs )
+void ggp::writeMSKgpoptFormat( const string & filename, int cs )
 {
   maxElimination( cs );
 
