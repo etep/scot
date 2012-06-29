@@ -62,7 +62,7 @@ using namespace std;
   vector<string> * strVector;
   vector<pair<string,double> > * strPairVector;
   pair<string,double> * pairStrDouble;
-  pair<string, string> * pair;
+  pair<string, string> * pairStrStr;
   map<string, string, less<string> > * symTable;
 
   vector<Transistor *> * transistorVector;
@@ -101,11 +101,11 @@ using namespace std;
 
 
 %type <symTable> ConstExprList;
-%type <pair> ConstExpr;
+%type <pairStrStr> ConstExpr;
 
 %type <strVector> PortList;
 %type <symTable> ParameterList;
-%type <pair> Parameter;
+%type <pairStrStr> Parameter;
 
 
 %type <transistorVector> TransistorList;
@@ -341,14 +341,12 @@ T_IDENTIFIER
 
 InstanceList : InstanceList Instance
 {
-  ( $$ = $1 )->insert(pair<string, Node *>
-		      ($2->getName(), $2));
+  ( $$ = $1 )->insert(pair<string, Node *>( $2->getName(), $2) );
 }
 | Instance
 {
   $$ = new map<string, Node *>();
-  $$->insert(pair<string, Node *>
-	     ($1->getName(), $1));
+  $$->insert(pair<string, Node *>( $1->getName(), $1) );
 }
 ;
 
