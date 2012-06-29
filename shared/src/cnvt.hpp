@@ -4,11 +4,12 @@
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
-#include <ostream.h>
+
 
 #include <map>
 #include <vector>
 #include <string>
+#include <ostream>
 
 // -- TODO -- remove -- not necessary -- static  size_t MAX_NUMBER_LENGTH = 20;
 // -- TODO -- remove -- not necessary -- static  size_t MAX_STRING_LENGTH = 20;
@@ -249,7 +250,7 @@ public:
       return addToStringVecFromDelimitedString( strVec, dstr, "," );
    }
 
-   static inline ostream & doubleVectorToOstream( ostream & os, const std::vector<double> & dvec ) {
+   static inline std::ostream & doubleVectorToOstream( std::ostream & os, const std::vector<double> & dvec ) {
       for( unsigned i = 0; i < dvec.size(); i ++ ) {
          if( i == 0 ) os << dvec[i];
          else os << " " << dvec[i];
@@ -258,37 +259,37 @@ public:
       return os;
    }
 
-   static inline ostream & doubleVectorToMatlabOstream( ostream & os, const std::vector<double> & dv ) {
+   static inline std::ostream & doubleVectorToMatlabOstream( std::ostream & os, const std::vector<double> & dv ) {
       return doubleVectorToMatlabOstream( os, dv, "" );
    }
 
-   static inline ostream & doubleVectorToMatlabOstream( ostream & os, const std::vector<double> & dv, const std::string & name ) {
+   static inline std::ostream & doubleVectorToMatlabOstream( std::ostream & os, const std::vector<double> & dv, const std::string & name ) {
       if( name.length() != 0 ) os << name << " = ";
 
-      os << "[ ..." << endl;
+      os << "[ ..." << std::endl;
 
       for( std::vector<double>::size_type i = 0; i < dv.size(); i++ ) {
-         os << dv[i] << ";" << endl;
+         os << dv[i] << ";" << std::endl;
       }
 
-      os << "];" << endl;
+      os << "];" << std::endl;
 
       return os;
    }
 
-   static inline ostream & toOstream( ostream & os, const std::map<std::string,double> & strDblMap ) {
+   static inline std::ostream & toOstream( std::ostream & os, const std::map<std::string,double> & strDblMap ) {
 
       std::map<std::string,double>::const_iterator it;
 
       for( it = strDblMap.begin(); it != strDblMap.end(); it++ ) {
 
-         os << addSpaces( it->first,MAX_STRING_LENGTH ) << " " << doubleToString( it->second,PRECISION_NUMBER ) << endl;
+         os << addSpaces( it->first,MAX_STRING_LENGTH ) << " " << doubleToString( it->second,PRECISION_NUMBER ) << std::endl;
       }
 
       return os;
    }
 
-   static inline ostream & toOstream( ostream & os, const std::map<std::string,double> & strDblMap, const std::string & fS, const std::string & sS ) {
+   static inline std::ostream & toOstream( std::ostream & os, const std::map<std::string,double> & strDblMap, const std::string & fS, const std::string & sS ) {
 
       std::map<std::string,double>::const_iterator it;
 
@@ -296,7 +297,7 @@ public:
       
          if( it->first.find( fS ) >= it->first.length() && it->first.find( sS ) >= it->first.length() ) {
             
-            os << addSpaces( it->first,MAX_STRING_LENGTH ) << " " << doubleToString( it->second,PRECISION_NUMBER ) << endl;
+            os << addSpaces( it->first,MAX_STRING_LENGTH ) << " " << doubleToString( it->second,PRECISION_NUMBER ) << std::endl;
          }
       }
 
@@ -339,13 +340,13 @@ public:
 
    static std::vector<double> mapToDoubleVector( const std::map<std::string,double> & doubleMap );
 
-   static ostream & matlabPlotToOstream( ostream & os, const std::vector<std::string> & xnames, const std::vector<std::string> & ynames ) {
+   static std::ostream & matlabPlotToOstream( std::ostream & os, const std::vector<std::string> & xnames, const std::vector<std::string> & ynames ) {
       return matlabPlotToOstream( os, xnames, ynames, false );
    }
 
-   static ostream & matlabPlotToOstream( ostream & os, const std::vector<std::string> & xnames, const std::vector<std::string> & ynames, bool marker );
+   static std::ostream & matlabPlotToOstream( std::ostream & os, const std::vector<std::string> & xnames, const std::vector<std::string> & ynames, bool marker );
 
-   static ostream & matlabLegendToOstream( ostream & os, const std::vector<std::string> & );
+   static std::ostream & matlabLegendToOstream( std::ostream & os, const std::vector<std::string> & );
 
    static double interpolate( double xx, double x1, double y1, double x2, double y2 );
 

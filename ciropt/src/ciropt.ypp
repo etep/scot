@@ -1205,7 +1205,7 @@ glbparam_section:
 **/
 GLBPARAM param_assignment_list ENDS
 {
-    cout << "Recorded the global parameters" <<endl;
+    std::cout << "Recorded the global parameters" << std::endl;
 }
 
 
@@ -2922,27 +2922,23 @@ number  : PNUMBER       { $$ = $1; }
 ;
 
 %%
-int ciropterror( const std::string & em )
-{
-    cerr << ciropt_filename << ":" << ciropt_line_number << ": " << em << endl;
+int ciropterror( const std::string & em ) {
+    std::cerr << ciropt_filename << ":" << ciropt_line_number << ": " << em << std::endl;
 
     exit(-1);
     return -1;
 }
 
 
-int ciropterror( const std::string & errMessage, bool dep )
-{
+int ciropterror( const std::string & errMessage, bool dep ) {
     ciroptMessage( errMessage );
 
     return -1;
 }
 
 
-void ciroptMessage( const std::string & message )
-{
-    cout << ciropt_filename << ":" << ciropt_line_number
-        << ": " << message << endl;
+void ciroptMessage( const std::string & message ) {
+    std::cout << ciropt_filename << ":" << ciropt_line_number << ": " << message << std::endl;
 }
 
 

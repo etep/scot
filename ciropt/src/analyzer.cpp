@@ -65,7 +65,7 @@ bool monte_carlo::operator < ( const monte_carlo & monte ) const {
             && getN()                <  monte.getN() );
 }
 
-ostream & operator << ( ostream & os, monte_carlo	& monte ) {
+std::ostream & operator << ( std::ostream & os, monte_carlo & monte ) {
    os << monte.getN() << " MONTECARLOs with " << monte.getDistribution();
 
    if( !monte.isIndependent() ) {
@@ -88,7 +88,7 @@ mvec::mvec( const std::string & kd, const std::string & nm, opt_dscr & od, monte
    return;
 }
 
-ostream & mvec::toOstream( ostream & os, opt_prob_generator & opg ) {
+std::ostream & mvec::toOstream( std::ostream & os, opt_prob_generator & opg ) {
    
    opt_dscr    & oD = getOptDscr();
    monte_carlo & mC = getMonte();
@@ -313,7 +313,7 @@ std::vector<double> opt_spec::getOptWidthVector( size_t num ) {
       if( isWidthName( it->first ) ) vec.push_back( it->second );
    }
 
-   cout << "# of optimal widths in opt(" << getOptName() << "," << ( num+1 ) << ") is " << vec.size() << endl;
+   std::cout << "# of optimal widths in opt(" << getOptName() << "," << ( num+1 ) << ") is " << vec.size() << std::endl;
 
    return vec;
 }
@@ -679,25 +679,25 @@ subplot::subplot( const std::string & kd, const std::string & dist, unsigned NN,
    assert( getKind() == "CRCALDIST" );
 }
 
-ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
+std::ostream & subplot::toOstream( std::ostream & os, opt_prob_generator & opt ) {
 
-   os << "hold on;" << endl;
+   os << "hold on;" << std::endl;
 
    if( getKind() == "pdf" || getKind() == "cdf" ) {
       unsigned colorNum, styleNum;
       for( unsigned i = 0; i < netspecs.size(); i ++ ) {
          ProbDist & pd = opt.getProbDist( netspecs[i],getMonte(),p );
-         pd.xMatVecToOstream( os << "x" << i << " = [" ) << "];" << endl;
+         pd.xMatVecToOstream( os << "x" << i << " = [" ) << "];" << std::endl;
 
          if( getKind() == "pdf" ) {
-            pd.pdfMatVecToOstream( os << "y" << i << " = [" ) << "];" << endl;
+            pd.pdfMatVecToOstream( os << "y" << i << " = [" ) << "];" << std::endl;
          }
          else {
-            pd.cdfMatVecToOstream( os << "y" << i << " = [" ) << "];" << endl;
+            pd.cdfMatVecToOstream( os << "y" << i << " = [" ) << "];" << std::endl;
          }
       }
 
-      os << "plot( ..." << endl;
+      os << "plot( ..." << std::endl;
       for( unsigned i = 0; i < netspecs.size(); i ++ ) {
          colorNum = i - ( ( unsigned )( i/colors.size() ) )*colors.size();
          styleNum = i - ( ( unsigned )( i/styles.size() ) )*styles.size();
@@ -705,22 +705,23 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
          os << "  x" << i << ",y" << i << ",'";
          os << colors[colorNum] << styles[styleNum];
 
-         if( i != netspecs.size() - 1 ) os << "', ..." << endl;
-         else os << "');" << endl << endl;
+         if( i != netspecs.size() - 1 ) os << "', ..." << std::endl;
+         else os << "');" << std::endl << std::endl;
       }
 
       os << "legend(";
       for( unsigned i = 0; i < netspecs.size(); i ++ ) {
          os << "'" << netspecs[i].getLegend( opt ) << "'";
 
-         if( i != netspecs.size() - 1 )
+         if( i != netspecs.size() - 1 ) {
             os << ",";
+         }
       }
-      os << ");" << endl;
+      os << ");" << std::endl;
 
-      if( xlabel.length() != 0 ) os << "xlabel('" << xlabel << "');" << endl;
-      if( ylabel.length() != 0 ) os << "ylabel('" << ylabel << "');" << endl;
-      if( title.length() != 0 ) os << "title('" << title << "');" << endl;
+      if( xlabel.length() != 0 ) os << "xlabel('" << xlabel << "');" << std::endl;
+      if( ylabel.length() != 0 ) os << "ylabel('" << ylabel << "');" << std::endl;
+      if( title.length() != 0 ) os << "title('"   << title  << "');" << std::endl;
 
       if( p != 0.0 ) {
          for( unsigned i = 0; i < netspecs.size(); i ++ ) {
@@ -732,7 +733,7 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
             os << "line( " << qp << " * [1 1], [ 0, ";
             os << ( ( kind=="pdf" )?pd.getPDF( qp ):p ) << "],";
             os << "'Color','" << colors[colorNum];
-            os << "','LineStyle','" << styles[styleNum] << "');" << endl << endl;
+            os << "','LineStyle','" << styles[styleNum] << "');" << std::endl << std::endl;
          }
       }
    }
@@ -751,7 +752,7 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
          }
 
          cnvt::doubleVectorToOstream( os << "monte" << i << " = [", points );
-         os << "];" << endl;
+         os << "];" << std::endl;
       }
 
       std::vector<double> nums;
@@ -762,15 +763,15 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
          nums.push_back( osp.getNumber( j ) );
       }
 
-      cnvt::doubleVectorToOstream( os << "optvals = [", points ) << "];" << endl;
-      cnvt::doubleVectorToOstream( os << "nums = [", nums ) << "];" << endl;
+      cnvt::doubleVectorToOstream( os << "optvals = [", points ) << "];" << std::endl;
+      cnvt::doubleVectorToOstream( os << "nums = [",    nums   ) << "];" << std::endl;
 
       // plot
       if( PLOT_OPTIMAL_VALUES ) {
-         os << "plot( nums, optvals, '" << colors[0] << styles[0] << mrkers[0] << "', ..." << endl;
+         os << "plot( nums, optvals, '" << colors[0] << styles[0] << mrkers[0] << "', ..." << std::endl;
       }
       else {
-         os << "plot( ..." << endl;
+         os << "plot( ..." << std::endl;
       }
 
       for( unsigned i = 0; i < quantiles.size(); i ++ ) {
@@ -782,8 +783,8 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
          os << "  nums, monte" << i << ",'";
          os << colors[colorNum] << styles[styleNum] << mrkers[mrkerNum];
 
-         if( i != quantiles.size() - 1 ) os << "', ..." << endl;
-         else os << "');" << endl << endl;
+         if( i != quantiles.size() - 1 ) os << "', ..." << std::endl;
+         else os << "');" << std::endl << std::endl;
       }
 
       // legend
@@ -797,11 +798,11 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
       for( unsigned i = 0; i < quantiles.size(); i ++ ) {
          os << ( ( i==0 )? "'":",'" ) << quantiles[i] << "'";
       }
-      os << ");" << endl;
+      os << ");" << std::endl;
 
-      if( xlabel.length() != 0 ) os << "xlabel('" << xlabel << "');" << endl;
-      if( ylabel.length() != 0 ) os << "ylabel('" << ylabel << "');" << endl;
-      if( title.length() != 0 )  os << "title('" << title << "');" << endl;
+      if( xlabel.length() != 0 ) os << "xlabel('" << xlabel << "');" << std::endl;
+      if( ylabel.length() != 0 ) os << "ylabel('" << ylabel << "');" << std::endl;
+      if( title.length() != 0 )  os << "title('"  << title  << "');" << std::endl;
 
    }
    else if( getKind() == "WIDTHDIST" ) {
@@ -837,9 +838,9 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
       cnvt::matlabPlotToOstream( os, xnames, ynames );
       cnvt::matlabLegendToOstream( os, legends );
 
-      os << "xlabel('" << xlabel << "');" << endl;
-      os << "ylabel('" << ylabel << "');" << endl;
-      os << "title('" << title << "');" << endl;
+      os << "xlabel('" << xlabel << "');" << std::endl;
+      os << "ylabel('" << ylabel << "');" << std::endl;
+      os << "title('"  << title  << "');" << std::endl;
    }
    else if( getKind() == "CRCALDIST" ) {
       
@@ -860,14 +861,14 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
             = opt.getOptSpec( name ).getCrtcMap( getMonte(),opt,num, p );
 
          std::map<std::string,double>::iterator cmItr = cm.begin();
-         os << "% Net Criticalities by name and in a vector" << endl;
-         os << "netcrit = [" << endl;
+         os << "% Net Criticalities by name and in a vector" << std::endl;
+         os << "netcrit = [" << std::endl;
 
          for ( cmItr = cm.begin(); cmItr != cm.end(); cmItr++ ) {
-            os << "%" << cmItr->first << "\t\t" << cmItr->second << endl;
-            os << cmItr->second << ";" << endl;
+            os << "%" << cmItr->first << "\t\t" << cmItr->second << std::endl;
+            os << cmItr->second << ";" << std::endl;
          }
-         os << "];" << endl;
+         os << "];" << std::endl;
 
          std::vector<double> x, y;
 
@@ -884,15 +885,15 @@ ostream & subplot::toOstream( ostream & os, opt_prob_generator & opt ) {
       cnvt::matlabPlotToOstream( os, xnames, ynames );
       cnvt::matlabLegendToOstream( os, legends );
 
-      os << "xlabel('" << xlabel << "');" << endl;
-      os << "ylabel('" << ylabel << "');" << endl;
-      os << "title('" << title << "');" << endl;
+      os << "xlabel('" << xlabel << "');" << std::endl;
+      os << "ylabel('" << ylabel << "');" << std::endl;
+      os << "title('"  << title  << "');" << std::endl;
    }
    else {
       assert( false );
    }
 
-   os << "hold off;" << endl;
+   os << "hold off;" << std::endl;
 
    return os;
 }

@@ -13,7 +13,7 @@
 
 class ggp;
 
-ostream & operator<<( ostream & os, const ggp & );
+std::ostream & operator << ( std::ostream & os, const ggp & );
 
 class ggp {
 private:
@@ -168,7 +168,7 @@ public:
    }
    void print( int num ) {
       updateMaxLabelLengths();
-      toOstream( cout, num );
+      toOstream( std::cout, num );
    }
 
    void print( const std::string & x ) {
@@ -176,24 +176,24 @@ public:
    }
    void print( const std::string & x, int num ) {
       updateMaxLabelLengths();
-      toOstream( cout, x, num );
+      toOstream( std::cout, x, num );
    }
 
    bool toFile( const std::string & );
 
-   ostream & toOstream( ostream & os ) {
+   std::ostream & toOstream( std::ostream & os ) {
       updateMaxLabelLengths();
       return toOstream( os,0 );
    }
 
-   ostream & toOstream( ostream & os, int num ) const {
+   std::ostream & toOstream( std::ostream & os, int num ) const {
       return toOstream( os, num, true );
    }
 
-   ostream & toOstream( ostream & os, int num, bool sorted ) const;
+   std::ostream & toOstream( std::ostream & os, int num, bool sorted ) const;
 
    // deprecated
-   ostream & toOstream( ostream & os, const std::string & x, int num ) const;
+   std::ostream & toOstream( std::ostream & os, const std::string & x, int num ) const;
 
    // askers
    bool isGP() const {
@@ -209,15 +209,11 @@ public:
    // mosek related methods
    void solveUsingMOSEKdgopt( const std::string &, ggp & );
    void writeDgoptFormat( const std::string & ) const;
-   ostream & dgoptOptimalOutputToOstream
-   ( ostream & os, double p_obj, double d_obj, const ggp & GGP ) const {
-      return dgoptOptimalOutputToOstream( os,p_obj,d_obj,GGP,true );
+   std::ostream & dgoptOptimalOutputToOstream( std::ostream & os, double p_obj, double d_obj, const ggp & GGP ) const {
+      return dgoptOptimalOutputToOstream( os, p_obj, d_obj, GGP, true );
    }
-   ostream & dgoptOptimalOutputToOstream
-   ( ostream & os, double p_obj, double d_obj, const ggp & GGP, bool sorted )
-   const;
-   ostream & dgoptOptimalVarMatlabToOstream
-   ( ostream & os, double p_obj, double d_obj, const ggp & GGP ) const;
+   std::ostream & dgoptOptimalOutputToOstream    ( std::ostream & os, double p_obj, double d_obj, const ggp & GGP, bool sorted ) const;
+   std::ostream & dgoptOptimalVarMatlabToOstream ( std::ostream & os, double p_obj, double d_obj, const ggp & GGP ) const;
 
    void assignPrimalValues( const double * );
    void assignDualValues( const double * );

@@ -5,7 +5,7 @@
 const std::string symbol_table::AUX_SYMBOL_NAME_PREFIX( "T#" );
 const std::string symbol_table::AUX_LABEL_NAME_PREFIX ( "~L" );
 
-ostream & operator << ( ostream & os, const symbol_table & st ) {
+std::ostream & operator << ( std::ostream & os, const symbol_table & st ) {
    return st.toOstream( os );
 }
 
@@ -109,15 +109,15 @@ unsigned symbol_table::getMaxSymbolLength() const {
    return ml;
 }
 
-ostream & symbol_table::toOstream( ostream & os, const std::string & x ) const {
+std::ostream & symbol_table::toOstream( std::ostream & os, const std::string & x ) const {
    unsigned maxSL = cnvt::max( getMaxSymbolLength(),10 );
 
    os << cnvt::addSpaces( "Symbols",maxSL+INTER_SYMBOL_MARGIN )
       << cnvt::addSpaces( "Variables",MAX_VARIABLE_LENGTH )
       << cnvt::addSpaces( "Variables",MAX_VARIABLE_LENGTH+INTER_SYMBOL_MARGIN )
-      << cnvt::addSpaces( "Symbols",maxSL ) << endl;
+      << cnvt::addSpaces( "Symbols",maxSL ) << std::endl;
    os << std::string( 2*( maxSL+INTER_SYMBOL_MARGIN ),'-' )
-      << std::string( 2*( MAX_VARIABLE_LENGTH ),'-' ) << endl;
+      << std::string( 2*( MAX_VARIABLE_LENGTH ),'-' ) << std::endl;
 
    std::map<std::string,int>::const_iterator itr;
    int i;
@@ -128,16 +128,16 @@ ostream & symbol_table::toOstream( ostream & os, const std::string & x ) const {
       os << cnvt::addSpaces( x+cnvt::intToString( itr->second+1 ),MAX_VARIABLE_LENGTH );
       os << cnvt::addSpaces( x+cnvt::intToString( i+1 ),MAX_VARIABLE_LENGTH );
       os << " <-> ";
-      os << cnvt::addSpaces( ( *this )[i],maxSL ) << endl;
+      os << cnvt::addSpaces( ( *this )[i],maxSL ) << std::endl;
    }
 
    return os;
 }
 
-ostream & symbol_table::matlabSymbolNamesToOstream( ostream & os ) const {
+std::ostream & symbol_table::matlabSymbolNamesToOstream( std::ostream & os ) const {
    for( int i = 0; i < getNumberOfSymbols(); i++ ) {
       
-      os << "vn(" << ( i+1 ) << ").name = '" << getSymbol( i ) << "';" << endl;
+      os << "vn(" << ( i+1 ) << ").name = '" << getSymbol( i ) << "';" << std::endl;
    }
 
    return os;

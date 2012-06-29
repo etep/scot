@@ -4,6 +4,7 @@
 #include "cnvt.hpp"
 #include "ggp.hpp"
 
+using namespace std;
 
 #define DB1 false
 #define DB2 false

@@ -12,6 +12,8 @@
 
 #include <map>
 #include <vector>
+#include <ostream>
+
 #include "symtab.hpp"
 #include "gp.hpp"
 #include "probdist.hpp"
@@ -1152,8 +1154,8 @@ public:
 
    ccc & getCCC() {
       if( cc == ( ccc * )NULL ) {
-         cout <<"Failed to get the CCC of the node " << getName() << endl;
-         cout <<"Returning (ccc *) NULL" << endl;
+         std::cout <<"Failed to get the CCC of the node " << getName() << std::endl;
+         std::cout <<"Returning (ccc *) NULL" << std::endl;
          //exit(-1);
       }
       return *cc;
@@ -1237,8 +1239,8 @@ public:
    std::string getCapIntNetEnergyStt();
    std::string getWireIntNetEnergyStt();
    //  std::string getCapIntNetEnergy();
-   void getCapIntNetEnergy( ostream & os, std::string Vdd );
-   void getWireIntNetEnergy( ostream & os, std::string Vdd );
+   void getCapIntNetEnergy( std::ostream & os, std::string Vdd );
+   void getWireIntNetEnergy( std::ostream & os, std::string Vdd );
 
    /*
     * get the rise/fall load capacitance
@@ -1246,8 +1248,8 @@ public:
    std::string getRCLoad( unsigned num,opt_prob_generator & ) ;
    std::string getFCLoad( unsigned num,opt_prob_generator & ) ;
 
-   double valRCLoad( unsigned num,std::map<std::string,double>& ) ;
-   double valFCLoad( unsigned num,std::map<std::string,double>& ) ;
+   double valRCLoad( unsigned num, std::map<std::string,double>& ) ;
+   double valFCLoad( unsigned num, std::map<std::string,double>& ) ;
 
    // get cap for energy calculation
    std::string getEnergyCLoad( unsigned num ) ; //for a capacitor anynumber will do.
@@ -1353,46 +1355,33 @@ public:
                               unsigned n, bool rf, bool noTriseTfall );
 
    bool skipDelayExpression( unsigned num );
-   ostream & delayConstraintToOstream ( ostream & os,opt_prob_generator & opt, bool stt );
+   std::ostream & delayConstraintToOstream ( std::ostream & os,opt_prob_generator & opt, bool stt );
 
-   ostream & delayConstraintToOstream( ostream & os,opt_prob_generator & opt,opt_spec & osp )
-   ;
+   std::ostream & delayConstraintToOstream( std::ostream & os,opt_prob_generator & opt,opt_spec & osp );
 
-   void updateKappa( double & kappa, double quantile1, double quantile2,
-                     double mean, double std );
+   void updateKappa( double & kappa, double quantile1, double quantile2, double mean, double std );
 
    //update the kappas based on criticality.
    void updateCritKappa( bool rf, unsigned num,double criticality, std::string & obj, double kmax, double maxCrit );
 
-   void updateBeta( double & beta, double quantile,
-                    double max_quantile );
+   void updateBeta( double & beta, double quantile, double max_quantile );
 
 
 private:
-   ostream & rfDelayConstraintToOstream( ostream & os,
-                                         unsigned ni, unsigned no, opt_prob_generator & opt, bool stt ) {
+   std::ostream & rfDelayConstraintToOstream( std::ostream & os, unsigned ni, unsigned no, opt_prob_generator & opt, bool stt ) {
       return delayConstraintToOstream( os,ni,no,opt,true,stt );
    }
 
-   ostream & frDelayConstraintToOstream( ostream & os,
-                                         unsigned ni, unsigned no,opt_prob_generator & opt, bool stt ) {
+   std::ostream & frDelayConstraintToOstream( std::ostream & os, unsigned ni, unsigned no,opt_prob_generator & opt, bool stt ) {
       return delayConstraintToOstream( os,ni,no,opt,false,stt );
    }
 
-   ostream & delayConstraintToOstream( ostream & os,
-                                       unsigned ni,unsigned no,opt_prob_generator & opt, bool rf ) {
+   std::ostream & delayConstraintToOstream( std::ostream & os, unsigned ni,unsigned no,opt_prob_generator & opt, bool rf ) {
       return delayConstraintToOstream( os,ni,no,opt,rf,false );
    }
 
-   ostream & delayConstraintToOstream( ostream & os,
-                                       unsigned ni,unsigned no,opt_prob_generator & opt,
-                                       bool rf, bool stt );
-
-   ostream & delayConstraintToOstream( ostream & os,
-                                       unsigned ni,unsigned no,opt_prob_generator & opt,
-                                       bool rf,opt_spec & );
-
-
+   std::ostream & delayConstraintToOstream( std::ostream & os, unsigned ni, unsigned no, opt_prob_generator & opt, bool rf, bool stt );
+   std::ostream & delayConstraintToOstream( std::ostream & os, unsigned ni, unsigned no, opt_prob_generator & opt, bool rf, opt_spec & );
 
    std::string getRFInternalNetName( unsigned ni, unsigned no );
    std::string getFRInternalNetName( unsigned ni, unsigned no );

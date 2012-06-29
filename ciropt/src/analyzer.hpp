@@ -142,7 +142,7 @@ public:
    bool operator < ( const monte_carlo & monte )const  ;
 };
 
-ostream & operator<< ( ostream &, monte_carlo & );
+std::ostream & operator<< ( std::ostream &, monte_carlo & );
 
 class mvec {
 private:
@@ -182,7 +182,7 @@ public:
       getOptDscr().putOptSpec( opg );
    }
 
-   ostream & toOstream( ostream & os, opt_prob_generator & opg ) ;
+   std::ostream & toOstream( std::ostream & os, opt_prob_generator & opg ) ;
 };
 
 class prob_dist {
@@ -686,11 +686,10 @@ public:
       */
 
    // to ostream
-   ostream & toOstream( ostream & os, opt_prob_generator & opt ) ;
+   std::ostream & toOstream( std::ostream & os, opt_prob_generator & opt ) ;
 
    // checkers
-   void checkLegitimacyOfReferencesToOptimizations
-   ( std::map<std::string, opt_spec *> & optSps );
+   void checkLegitimacyOfReferencesToOptimizations( std::map<std::string, opt_spec *> & optSps );
 
    // others
    void putOptSpec( opt_prob_generator & opg ) ;

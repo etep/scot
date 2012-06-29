@@ -502,15 +502,15 @@ private:
    std::string getEnergy();
    //   std::string getCircuitEnergy();
    std::string getLogicEnergyStt();
-   void getLogicEnergy( ostream &os );
+   void getLogicEnergy( std::ostream & os );
    std::string getWireEnergyStt();
-   void getWireEnergy( ostream & os );
+   void getWireEnergy( std::ostream & os );
    std::string getInputEnergyStt();
    //   std::string getInputEnergy();
-   void getInputEnergy( ostream &os );
+   void getInputEnergy( std::ostream & os );
    std::string getLoadEnergyStt();
    //   std::string getLoadEnergy();
-   void getLoadEnergy( ostream &os );
+   void getLoadEnergy( std::ostream & os );
    std::string getLeakage( bool stat );
    std::string getMaxPODelay();
    std::string getMaxPODelay( unsigned i );
@@ -543,40 +543,37 @@ private:
    /*
    * objective statement to {os}
    */
-   ostream & objectiveStatementToOstream( ostream & os, opt_spec & osp , bool stat );
+   std::ostream & objectiveStatementToOstream( std::ostream & os, opt_spec & osp , bool stat );
    // make max(all net times ) < POMAX ...used in dynamic logic for constraining
    // timings of the inuts to the domino nodes.
 
-   ostream & allEdgesLessThanMaxConstraint( ostream & os );
+   std::ostream & allEdgesLessThanMaxConstraint( std::ostream & os );
    std::string getEdgeTimes(  const std::string & delim );
 
    /*
     * area constraint and energy constraint to {os}
     * if any of them is assigned
     */
-   ostream & theThreeConstraintsToOstream( ostream & os, bool stat );
+   std::ostream & theThreeConstraintsToOstream( std::ostream & os, bool stat );
    void leakPowConstraintsToOstream();
 
 
    // add recursive constraints (or formula) to the opt. problem
    // traveling through each gate (node).
-   ostream & recursiveConstraintsToOstream( ostream & os, opt_spec & );
+   std::ostream & recursiveConstraintsToOstream( std::ostream & os, opt_spec & );
 
    // write constraints for the primary input nets
-   ostream & PICConstraintsToOstream( ostream & os );
-   ostream & PITimingConstraintsToOstream( ostream & os );
+   std::ostream & PICConstraintsToOstream      ( std::ostream & os );
+   std::ostream & PITimingConstraintsToOstream ( std::ostream & os );
 
    // write global constraints
-   ostream & globalConstraintsToOstream( ostream & os );
-
    // write width constraints
-   ostream & widthConstraintsToOstream( ostream & os );
-
-   //write the vth Vdd constraints
-   ostream & vthConstraintsToOstream( ostream & os );
-
-   //write the vth Vdd constraints
-   ostream & vddConstraintsToOstream( ostream & os );
+   // write the vth Vdd constraints
+   // write the vth Vdd constraints
+   std::ostream & globalConstraintsToOstream ( std::ostream & os );
+   std::ostream & widthConstraintsToOstream  ( std::ostream & os );
+   std::ostream & vthConstraintsToOstream    ( std::ostream & os );
+   std::ostream & vddConstraintsToOstream    ( std::ostream & os );
 
    // gate delay constraints
    /*
@@ -585,25 +582,14 @@ private:
     * Type III : D( {gate name} or all, {quantile} ) < {pnumber} ;
     * Type IV  : D( {gate name}, rf or fr, {quantile} ) < {pnumber} ;
     */
-   ostream & gateDelayConstraintsToOstream( ostream & os ) ;
+   std::ostream & gateDelayConstraintsToOstream             ( std::ostream & os );
+   std::ostream & gateDelayConstraintsTypeIandIIToOstream   ( std::ostream & os );
+   std::ostream & gateDelayConstraintsTypeIIIandIVToOstream ( std::ostream & os );
 
-   ostream & gateDelayConstraintsTypeIandIIToOstream( ostream & os ) ;
-
-   ostream & gateDelayConstraintsTypeIIIandIVToOstream( ostream & os ) ;
-
-   ostream & gateDelayConstraintsTypeIAllToOstream
-   ( ostream & os,   node & nd, const std::string & val ) ;
-
-   ostream & gateDelayConstraintsTypeIToOstream
-   ( ostream & os,  const std::string & gatename, const std::string & val );
-
-   ostream & gateDelayConstraintsTypeIIAllToOstream
-   ( ostream & os, node & nd,
-     std::map<std::string,std::string> & rfvals );
-
-   ostream & gateDelayConstraintsTypeIIToOstream
-   ( ostream & os, const std::string & gatename,
-     std::map<std::string,std::string> & rfvals );
+   std::ostream & gateDelayConstraintsTypeIAllToOstream  ( std::ostream & os, node & nd, const std::string & val ) ;
+   std::ostream & gateDelayConstraintsTypeIIAllToOstream ( std::ostream & os, node & nd, std::map<std::string,std::string> & rfvals );
+   std::ostream & gateDelayConstraintsTypeIToOstream     ( std::ostream & os, const std::string & gatename, const std::string & val );
+   std::ostream & gateDelayConstraintsTypeIIToOstream    ( std::ostream & os, const std::string & gatename, std::map<std::string,std::string> & rfvals );
 
    /*
        ostream & gateDelayConstraintsTypeIIIAllToOstream
@@ -630,19 +616,12 @@ private:
    void solve( const std::string & name, opt_spec & osp );
 
    // iterative statistical formulation
-   void solve( const std::string & name, unsigned numIter,
-               const monte_carlo & monte, double p, double kmax, opt_spec & osp );
-
-   void solve( const std::string & name,
-               const monte_carlo & monte, double p, double kmax, opt_spec & osp );
+   void solve( const std::string & name, unsigned numIter, const monte_carlo & monte, double p, double kmax, opt_spec & osp );
+   void solve( const std::string & name, const monte_carlo & monte, double p, double kmax, opt_spec & osp );
 
    // uniform quantile statistical formulation
-   void solve( const std::string & name,
-               std::vector<double> & kappas, std::vector<double> & betas,
-               opt_spec & osp );
-
-   void solve( const std::string & name, double kappa, double beta,
-               opt_spec & osp );
+   void solve( const std::string & name, std::vector<double> & kappas, std::vector<double> & betas, opt_spec & osp );
+   void solve( const std::string & name, double kappa, double beta, opt_spec & osp );
 
    void setAllKappasBetas( double kappa, double beta );
 
