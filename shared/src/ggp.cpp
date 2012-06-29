@@ -385,11 +385,11 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
    
    const std::string mpsToEoCmd = mpsToEo + " " + mpsFileName + " " + fFileName + " " + eoFileName;
    const std::string rmMpsCmd   = "rm " + mpsFileName + " " + fFileName;
-   const std::string mosekCmd   = "mskexpopt " + eoFileName + " -primal" + " -p " + paramFile;
+   const std::string mosekCmd   = "mskexpopt " + eoFileName + " -primal" + " -p " + paramFile + " -sol " + solFileName;
    
    system( mpsToEoCmd.c_str() );
    system( rmMpsCmd.c_str()   );
-   system( mosekCmd.c_str() );
+   system( mosekCmd.c_str()   );
    
    //system( ("mskexpopt " + eoFileName + " -primal").c_str());
    //system( ("mskexpopt " + eoFileName + " -primal" + " -p ~/research/dco/ggpsolexp/paramFile").c_str());
@@ -418,7 +418,10 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
    const std::string outFileName = cnvt::changeExtension( fileName, "out" );
 
    ofstream wrt( outFileName.c_str(), ios::out );
-   if( !wrt.is_open() ) assert( false );
+   
+   if( !wrt.is_open() ) {
+      assert( false );
+   }
 
    switch( status ) {
    case  1:  // PRIMAL_AND_DUAL_FEASIBLE 1
@@ -460,7 +463,9 @@ void ggp::solveUsingMOSEKdgopt( const std::string & fileName, ggp & GGP ) {
       wrtm.close();
    }
 
-   if( status != -4 ) system( "rm PrimalToDual.sol" );
+   if( status != -4 ) {
+      system( "rm PrimalToDual.sol" );
+   }
 
    delete primal_solution;
    delete at_act;
@@ -529,8 +534,7 @@ void ggp::writeDgoptFormat( const std::string & filename ) const {
    fwrt.close();
 }
 
-ostream & ggp::dgoptOptimalOutputToOstream
-( ostream & os, double p_obj, double d_obj, const ggp & GGP, bool sorted ) const {
+ostream & ggp::dgoptOptimalOutputToOstream( ostream & os, double p_obj, double d_obj, const ggp & GGP, bool sorted ) const {
    assert( GGP.hasInMaxLabelLengthUpToDate );
    assert( GGP.hasEqMaxLabelLengthUpToDate );
 
@@ -621,8 +625,7 @@ ostream & ggp::dgoptOptimalOutputToOstream
    return os;
 }
 
-ostream & ggp::dgoptOptimalVarMatlabToOstream
-( ostream & os, double p_obj, double d_obj, const ggp & GGP ) const {
+ostream & ggp::dgoptOptimalVarMatlabToOstream( ostream & os, double p_obj, double d_obj, const ggp & GGP ) const {
    assert( GGP.hasInMaxLabelLengthUpToDate );
    assert( GGP.hasEqMaxLabelLengthUpToDate );
    assert( eqCnstLabels.size() == GGP.eqCnstLabels.size() );

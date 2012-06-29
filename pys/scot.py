@@ -76,7 +76,7 @@ solCmd = ' '.join( [ params.optpy, '-sol', diofile, sspfile, params.cmdfile ] )
 jpsy.SystemWrapper( hspCmd, verbose = params.verbose, trial = False )
 jpsy.SystemWrapper( irsCmd, verbose = params.verbose, trial = False )
 jpsy.SystemWrapper( sspCmd, verbose = params.verbose, trial = False )
-#jpsy.SystemWrapper( solCmd, verbose = params.verbose, trial = False )
+jpsy.SystemWrapper( solCmd, verbose = params.verbose, trial = False )
 
 
 

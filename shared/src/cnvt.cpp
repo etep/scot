@@ -1,6 +1,7 @@
 #include "cnvt.hpp"
+using namespace std;
 
-std::vector<std::string> cnvt::colors, cnvt::styles, cnvt::mrkers;
+vector< string > cnvt::colors, cnvt::styles, cnvt::mrkers;
 
 bool cnvt::initDone = false;
 
@@ -42,10 +43,10 @@ void cnvt::initializeColorsStyles() {
    return;
 }
 
-std::vector<double> cnvt::mapToDoubleVector( const std::map<std::string,double> & doubleMap ) {
-   std::vector<double> vec;
+vector< double > cnvt::mapToDoubleVector( const map<string,double> & doubleMap ) {
+   vector<double> vec;
 
-   std::map<std::string,double>::const_iterator it;
+   map<string,double>::const_iterator it;
 
    for( it = doubleMap.begin(); it != doubleMap.end(); it++ ) {
       vec.push_back( it->second );
@@ -56,13 +57,13 @@ std::vector<double> cnvt::mapToDoubleVector( const std::map<std::string,double> 
    return vec;
 }
 
-ostream & cnvt::matlabPlotToOstream( ostream & os, const std::vector<std::string> & xnames, const std::vector<std::string> & ynames, bool marker ) {
+ostream & cnvt::matlabPlotToOstream( ostream & os, const vector<string> & xnames, const vector<string> & ynames, bool marker ) {
    assert( xnames.size() == ynames.size() );
    initializeColorsStyles();
 
    os << "plot( ";
 
-   for( std::vector<std::string>::size_type i = 0; i < xnames.size(); i++ ) {
+   for( vector<string>::size_type i = 0; i < xnames.size(); i++ ) {
       size_t colorNum = i - ( ( size_t )( i/colors.size() ) )*colors.size();
       size_t styleNum = i - ( ( size_t )( i/styles.size() ) )*styles.size();
       size_t mrkerNum = i - ( ( size_t )( i/mrkers.size() ) )*mrkers.size();
@@ -78,11 +79,11 @@ ostream & cnvt::matlabPlotToOstream( ostream & os, const std::vector<std::string
    return os;
 }
 
-ostream & cnvt::matlabLegendToOstream( ostream & os, const std::vector<std::string> & vec ) {
+ostream & cnvt::matlabLegendToOstream( ostream & os, const vector<string> & vec ) {
 
    os << "legend( ";
 
-   for( std::vector<std::string>::size_type i = 0; i < vec.size(); i ++ ) {
+   for( vector<string>::size_type i = 0; i < vec.size(); i ++ ) {
       if( i != 0 ) os << ", ";
       os << "'" << vec[i] << "'";
    }
@@ -104,11 +105,11 @@ double cnvt::interpolate( double xx, double x1, double y1, double x2, double y2 
    return ( w1 * y1 + w2 * y2 );
 }
 
-std::vector<double> cnvt::linSpaceToVec( double s, double e, size_t num ) {
+vector<double> cnvt::linSpaceToVec( double s, double e, size_t num ) {
 
    assert( e > s );
 
-   std::vector<double> vec;
+   vector<double> vec;
    double inc = ( e-s )/( double )num;
 
    for( size_t i = 0; i < num; i ++ ) vec.push_back( s + inc * ( double )i );
@@ -116,23 +117,23 @@ std::vector<double> cnvt::linSpaceToVec( double s, double e, size_t num ) {
    return vec;
 }
 
-double cnvt::getMean( const std::vector<double> & vec ) {
+double cnvt::getMean( const vector<double> & vec ) {
 
    double s = 0.0;
-   std::vector<double>::size_type num = vec.size();
+   vector<double>::size_type num = vec.size();
 
-   for( std::vector<double>::size_type i = 0; i < num; i++ ) {
+   for( vector<double>::size_type i = 0; i < num; i++ ) {
       s += vec[i];
    }
 
    return s/( double )num;
 }
 
-double cnvt::getSTD( const  std::vector<double> & vec, double mean ) {
+double cnvt::getSTD( const  vector<double> & vec, double mean ) {
    double s = 0.0;
-   std::vector<double>::size_type num = vec.size();
+   vector<double>::size_type num = vec.size();
 
-   for( std::vector<double>::size_type i = 0; i < num; i ++ ) {
+   for( vector<double>::size_type i = 0; i < num; i ++ ) {
       s += vec[i]*vec[i];
    }
 

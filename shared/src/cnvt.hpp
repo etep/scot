@@ -173,12 +173,32 @@ public:
    }
 
    static inline const std::string changeExtension( const std::string & name, const std::string & extension ) {
-      
-      std::string::size_type idx = name.rfind( '.' );
-      std::string basename = ( idx<name.length() )? name.substr( 0,idx ):name;
+   
+      std::string basename;
+   
+      std::string::size_type dotIdx   = name.rfind( '.' );
+      std::string::size_type slashIdx = name.rfind( '/' );
+	  
+      const bool dotFound   = dotIdx   < name.length();
+      const bool slashFound = slashIdx < name.length();
+      const bool bothFound  = dotFound && slashFound;
+	  
+      if( bothFound ) {
+         if( dotIdx < slashIdx ) {
+            // no file extension
+            basename = name;
+         }
+         else {
+            basename = name.substr( 0, dotIdx );
+         }
+      }
+      else if( dotFound ) {
+         basename = name.substr( 0, dotIdx );
+      }
 
-      return ( basename+"."+extension );
+      return basename + "." + extension;
    }
+
 
    static inline const std::string removeLastExtension( const std::string& name ) {
       

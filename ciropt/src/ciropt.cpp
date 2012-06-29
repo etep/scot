@@ -1,44 +1,52 @@
 // ciropt.cpp : generalized GP Parser
-
-
-// #include "randomc.h"
-#include <string>
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
-#include <iostream.h>
 #include <fstream.h>
+#include <iostream.h>
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+#include <string>
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 #include "network.hpp"
 #include "opt.hpp"
 #include "ggp.hpp"
-
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+using namespace std;
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 extern FILE * ciroptin;
 extern FILE * dioin;
-
+extern map<string, int> glbVars;
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 int ciroptparse();
-
-std::string dio_filename;
-std::string ciropt_filename;
-extern std::map<std::string, int> glbVars;
-
+int errorReport( const  string & );
+void errorBasedHalt();
+bool errorExist();
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+string dio_filename;
+string ciropt_filename;
 
 network * nw;
 opt_prob_generator * op;
 
-std::string ERROR_STRING = " ERROR ";
-std::string EMPTY_STRING = "";
-std::string KEEPER_INPUT = "inK";
-std::string DUM_KEEPER_INPUT = KEEPER_INPUT+"S";
+string ERROR_STRING = " ERROR ";
+string EMPTY_STRING = "";
+string KEEPER_INPUT = "inK";
+string DUM_KEEPER_INPUT = KEEPER_INPUT+"S";
 double DEFAULT_QUANTILE = 0.9;
 double MAX_PATH_LENGTH = 100.0;
 
 // excerpted from ggp.cpp for linking purpose
 const unsigned ggp::GP_TRANSFORM_NUMBER = 0;
-const std::string ggp::OBJECTIVE_LABEL = " obj";
-const std::string ggp::AUX_INEQ_LABEL_CONJ = "-";
-
-int errorReport( const  std::string & );
-void errorBasedHalt();
-bool errorExist();
-
+const string ggp::OBJECTIVE_LABEL = " obj";
+const string ggp::AUX_INEQ_LABEL_CONJ = "-";
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char ** argv ) {
    
    //fprintf(stderr, "**Stanford Optimization Project**\n");
@@ -47,29 +55,28 @@ int main( int argc, char ** argv ) {
       return -2;
    }
 
-   const std::string name  = argv[1];
-   const std::string spFileName  = argv[1];
-   const std::string dioFileName = argv[2];
+   const string name        = argv[1];
+   const string spFileName  = argv[1];
+   const string dioFileName = argv[2];
 
-   {
-      // check whether the number of input arguments of 'ciropt' is one.
-      // ciroptin is a (file) pointer pointing to the .sp file
-      if( ( ciroptin=fopen( spFileName.c_str(),"r" ) )== ( FILE* )NULL ) {
-         errorReport( ( "file open error: " + spFileName ) );
-      }
-
-      // dioin is a (file) pointer pointing to the .dio file
-      if( ( dioin=fopen( dioFileName.c_str(),"r" ) )== ( FILE* )NULL ) {
-         errorReport( ( "file open error: " + dioFileName ) );
-      }
+   // check whether the number of input arguments of 'ciropt' is one.
+   // ciroptin is a (file) pointer pointing to the .sp file
+   // dioin is a (file) pointer pointing to the .dio file
+   ciroptin = fopen( spFileName.c_str(),  "r" );
+   dioin    = fopen( dioFileName.c_str(), "r" );
+   if( ciroptin == NULL ) {
+      errorReport( "file open error: " + spFileName );
+   }
+   
+   if( dioin == NULL ) {
+      errorReport( "file open error: " + dioFileName );
    }
 
    errorBasedHalt();
 
    // create an instance of 'op' class and pass a reference to
    // a newly generated network.
-   // note that 'nw' is the global pointer variable (defined before main function
-   // in this file)
+   // note that 'nw' is the global pointer variable (defined before main function in this file)
    // which will be accessed in "ciropt.ypp",
    // where the circuit information in the .sp file
    // is processed and passed to the network instanced pointed by 'nw'.
@@ -88,7 +95,6 @@ int main( int argc, char ** argv ) {
    cout << "Parsing finished" << endl;
 
    // close each file
-   //
    fclose( ciroptin );
    fclose( dioin );
    errorBasedHalt();
@@ -98,8 +104,9 @@ int main( int argc, char ** argv ) {
    op->assignTheNetList();
 
    errorBasedHalt();
-   
+
    op->solve();
+   return 0;
    errorBasedHalt();
 
    op->write();
@@ -113,7 +120,7 @@ int main( int argc, char ** argv ) {
    return 0;
 }
 
-int errorReport( const std::string & em ) {
+int errorReport( const string & em ) {
    cerr << em << endl;
    exit( -1 );
 

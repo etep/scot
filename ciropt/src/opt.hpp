@@ -17,15 +17,13 @@ class subplot;
 class opt_dscr;
 class netspec;
 class mvec;
-
-
-/*
- * The class 'global_parameters' contains global parameter values,
- * and the (only) private member of which is:
- * 1) gvMap : 'std::map' of 'std::string' and 'double' pair.
- *
- * One can see this class simply a wrapper class for std::vector.
- */
+ 
+//  The class 'global_parameters' contains global parameter values,
+//  and the (only) private member of which is:
+//  1) gvMap : 'std::map' of 'std::string' and 'double' pair.
+// 
+//  One can see this class simply a wrapper class for std::vector.
+//
 class global_parameters {
 private:
    std::map<std::string, std::string> gvMap;
@@ -43,35 +41,32 @@ public:
 
 };
 
-/*
- * The class 'opt_prob_generator' takes the reference to a 'network'
- * as the (only) input argument of the (only) constructor
- * and has main functionalities of
- * 1) formulating the optimization problem,
- * 2) printing it as a GGP or a GP,
- * 3) solving the opt. problem using 'mskdgopt' of mosek,
- * 4) writing matlab code solving the opt. problem in a file.
- *
- * The class 'opt_prob_generator' has the following private members:
- * 1) 'netw'	: reference to 'network',
- * 2) 'gP'	: 'global_parameters',
- * 3)*'symtab'	: 'symbol_table',
- * 4) 'constraintVector'	: std::vector of std::string for constraints,
- * 5)*'objectiveFunction' : std::string for the objective
- * 		function of the opt. problem,
- * 6)*'optProblem' : pointer to 'gen_gp' for the opt. problem,
- * 7) 'haveConstantsBeenInitialized' : 'bool' indicating whether the global
- *	ants (parameters) have been initialized,
- * 8) 'CPrise', 'CPfall', 'CNrise', 'CNfall', 'Vthn', 'Vthp', 'Vdd' :
- * 		global constants (parameters),
- * 9) 'poEdgeVec' : 'std::vector' of pointers to'edge's for
- * 		primiary output nets,
- *10) 'piEdgeVec' : 'std::vector' of pointers to'edge's for
- * 		primiary input nets,
- *11)*'doneRecursive', 'donePIC', 'doneObj' : some internal indication values.
- *
- * '*' means DEPRECATED members
- */
+
+//  The class 'opt_prob_generator' takes the reference to a 'network'
+//  as the (only) input argument of the (only) constructor
+//  and has main functionalities of
+//  1) formulating the optimization problem,
+//  2) printing it as a GGP or a GP,
+//  3) solving the opt. problem using 'mskdgopt' of mosek,
+//  4) writing matlab code solving the opt. problem in a file.
+// 
+//  The class 'opt_prob_generator' has the following private members:
+//  1) 'netw'	: reference to 'network',
+//  2) 'gP'	: 'global_parameters',
+//  3)*'symtab'	: 'symbol_table',
+//  4) 'constraintVector'	: std::vector of std::string for constraints,
+//  5)*'objectiveFunction' : std::string for the objective
+//  		function of the opt. problem,
+//  6)*'optProblem' : pointer to 'gen_gp' for the opt. problem,
+//  7) 'haveConstantsBeenInitialized' : 'bool' indicating whether the global
+// 	ants (parameters) have been initialized,
+//  8) 'CPrise', 'CPfall', 'CNrise', 'CNfall', 'Vthn', 'Vthp', 'Vdd' : global constants (parameters),
+//  9) 'poEdgeVec' : 'std::vector' of pointers to'edge's for primary output nets,
+// 10) 'piEdgeVec' : 'std::vector' of pointers to'edge's for primary input nets,
+// 11)*'doneRecursive', 'donePIC', 'doneObj' : some internal indication values.
+// 
+//  '*' means DEPRECATED members
+//
 class opt_prob_generator {
 public:
    // static fields for parasitic capacitors look-up (by others)
@@ -222,24 +217,24 @@ private:
    double logicDepthFactor;
    bool OnlyFormulateProblem;
 
-   //bool to set if uniform kappas are to be used
+   // bool to set if uniform kappas are to be used
    bool UniformKappa;
 
-   //bool to set if criticality is to be added to kappas
+   // bool to set if criticality is to be added to kappas
    bool CriticalityKappa;
 
-   //bool to be set true if use of default activity factor is allowed
-   //for nets with no activity factor present.
+   // bool to be set true if use of default activity factor is allowed
+   // for nets with no activity factor present.
    bool UseDefActFact;
 
-   //bool to set if the leakage is not to be included in the
-   //energy expression
+   // bool to set if the leakage is not to be included in the
+   // energy expression
    bool NoLeakPow;
 
-   //Bool to set if the net should have separate rise fall time or a simple one
-   //delay per dio model. If this variable is true a simple delay is chosen.
-   //Then only the falling rf (NMOS) delay is considered from the dio file.
-   //The PMOS is assumed to be sized to have the same rising (fr) delay
+   // Bool to set if the net should have separate rise fall time or a simple one
+   // delay per dio model. If this variable is true a simple delay is chosen.
+   // Then only the falling rf (NMOS) delay is considered from the dio file.
+   // The PMOS is assumed to be sized to have the same rising (fr) delay
    bool NoRiseFallTiming;
 
    //Flag to indicate that all edges < POMAX constraint is not needed.
