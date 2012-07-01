@@ -102,10 +102,10 @@ XBitRow01 bitb_out01_01 bitb_out01_02 bitb_out01_03 bitb_out01_04 lwl01_01 lwlb0
 XBitRow02 bitb_out02_01 bitb_out02_02 bitb_out02_03 bitb_out02_04 lwl02_01 lwlb02_01 lwl02_02 lwlb02_02 my0 my1 BitRow WP=WPLTS WN=WNLTS
 XBitRow03 bitb_out03_01 bitb_out03_02 bitb_out03_03 bitb_out03_04 lwl03_01 lwlb03_01 lwl03_02 lwlb03_02 my0 my1 BitRow WP=WPLTS WN=WNLTS
 XBitRow04 bitb_out04_01 bitb_out04_02 bitb_out04_03 bitb_out04_04 lwl04_01 lwlb04_01 lwl04_02 lwlb04_02 my0 my1 BitRow WP=WPLTS WN=WNLTS
-XGTSGroupCCC00 bit_out00 bitb_out01_01 bitb_out02_01 bitb_out03_01 bitb_out04_01 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WP=WPGTS WN=WNGTS
-XGTSGroupCCC01 bit_out01 bitb_out01_02 bitb_out02_02 bitb_out03_02 bitb_out04_02 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WP=WPGTS WN=WNGTS
-XGTSGroupCCC02 bit_out02 bitb_out01_03 bitb_out02_03 bitb_out03_03 bitb_out04_03 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WP=WPGTS WN=WNGTS
-XGTSGroupCCC03 bit_out03 bitb_out01_04 bitb_out02_04 bitb_out03_04 bitb_out04_04 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WP=WPGTS WN=WNGTS
+XGTSGroupCCC00 bit_out00 bitb_out01_01 bitb_out02_01 bitb_out03_01 bitb_out04_01 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WPCCC=WPGTS WNCCC=WNGTS
+XGTSGroupCCC01 bit_out01 bitb_out01_02 bitb_out02_02 bitb_out03_02 bitb_out04_02 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WPCCC=WPGTS WNCCC=WNGTS
+XGTSGroupCCC02 bit_out02 bitb_out01_03 bitb_out02_03 bitb_out03_03 bitb_out04_03 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WPCCC=WPGTS WNCCC=WNGTS
+XGTSGroupCCC03 bit_out03 bitb_out01_04 bitb_out02_04 bitb_out03_04 bitb_out04_04 gwl00 gwlb00 gwl01 gwlb01 gwl02 gwlb02 gwl03 gwlb03  GTSGroupCCC WPCCC=WPGTS WNCCC=WNGTS
 .ENDS $ GlbRow
 
 .SUBCKT StoredBitCCC bit_out the_bitb_in WPMIN=8 WNMIN=4

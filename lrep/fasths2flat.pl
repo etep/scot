@@ -137,8 +137,9 @@ sub Fet {
 		if ( $args[$i] =~ /^[a-z]/ ) {
 			( $var, $val ) = getVar($i, \@args);
 			#print "var=$var val=$val\n";
-			print STDERR "Warning: Invalid mosfet argument $args[$i]\n" 
-				if ( $val == -1 );
+         if( $val == -1 ) {
+            print STDERR "Warning: Invalid mosfet argument $args[$i]\n";
+         }	
 		}
 		$l   = $val if ( $var eq "l"   );
 		$w   = $val if ( $var eq "w"   );

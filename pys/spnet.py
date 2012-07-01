@@ -4,7 +4,8 @@ import os, sys, re, argparse, jpsy
 ################################################################################
 class Params:
    verbose = True
-   lowcase = True
+   lowercase = True
+   localbind = True
    envname = 'SCOT_HOME_DIR'
    joinch  = '_'
    def __init__( self ):
@@ -15,6 +16,53 @@ class Params:
          sys.exit( -1 )
       
       self.homeDir = os.environ[ self.envname ]
+   
+
+class Capacitor:
+   def Print( self, connxns, extparams, netpfx = '' ):
+      # assume the connected nodes are local nets:
+      name  = self.gparams.joinch.join( [ netpfx, self.name  ] )
+      node0 = self.gparams.joinch.join( [ netpfx, self.node0 ] )
+      node1 = self.gparams.joinch.join( [ netpfx, self.node1 ] )
+      #
+      # go ahead and use a connected net if it exists:
+      if self.node0 in connxns: node0 = connxns[ self.node0 ]
+      if self.node1 in connxns: node1 = connxns[ self.node1 ]
+      #
+      # put an 'c' on the uniquified name -- make it a capacitor :)
+      name = 'c' + name
+      #
+      # -- TODO -- do caps have params?? -- # put the parameters in:
+      # -- TODO -- do caps have params?? -- boundparams = []
+      # -- TODO -- do caps have params?? -- for key, val in self.params.iteritems():
+      # -- TODO -- do caps have params?? --    if val in extparams:
+      # -- TODO -- do caps have params?? --       val = extparams[ val ]
+      # -- TODO -- do caps have params?? --    bp = '='.join( [ key, val ] )
+      # -- TODO -- do caps have params?? --    boundparams.append( bp )
+      # -- TODO -- do caps have params?? -- boundparams = ' '.join( boundparams )
+      # -- TODO -- do caps have params?? -- #
+      # instantiate the new mosfet:
+      toks = [ name, node0, node1, self.farads ]
+      toks = [ '%-40s' % x for x in toks ]
+      if self.gparams.lowercase:
+         toks = [ x.lower() for x in toks ]
+      line = ' '.join( toks )
+      print line
+   
+   def __init__( self, cdef, gparams ):
+      self.gparams = params
+      
+      # get the parameters (width, length, mfactor, etc...)
+      ( cdef, self.params ) = ExtractParameters( cdef )
+            
+      # now get nmos/pmos, name, and the s,g,d, and b ports
+      toks = cdef.split()
+      self.farads = toks.pop()
+      self.node0  = toks.pop()
+      self.node1  = toks.pop()
+      self.name   = toks.pop()
+      assert len( toks ) == 0
+      # -- TODO -- any sanity checks for Capacitor in spnet.py ??
    
 
 class DotCom:
@@ -61,7 +109,7 @@ class Mosfet:
       # instantiate the new mosfet:
       toks = [ name, s, g, d, b, self.type, boundparams ]
       toks = [ '%-20s' % x for x in toks ]
-      if self.gparams.lowcase:
+      if self.gparams.lowercase:
          toks = [ x.lower() for x in toks ]
       line = ' '.join( toks )
       print line
@@ -119,13 +167,25 @@ class SCInst:
       #
       # parameters specified on the line where this subckt was instantiated:
       for k, v in self.params.iteritems():
-         assert k in lparams
+         try:
+            assert k in lparams
+         except:
+            print ''
+            print 'k =', k
+            print 'v =', v
+            print 'lparams =', lparams
+            print 'self.sname =', self.sname
+            print 'self.iname =', self.iname
+            print ''
+            raise
          lparams[ k ] = v
       #
       # parameters passed in from a parent
-      for k, v in lparams.iteritems():
-         if v in extparams:
-            lparams[ k ] = extparams[ v ]
+      # (optionally, take the local parameters only)
+      if not params.localbind:
+         for k, v in lparams.iteritems():
+            if v in extparams:
+               lparams[ k ] = extparams[ v ]
       #
       # tell the subcircuit to print its elements
       subckt.Print( connxns, lparams, netpfx )
@@ -187,7 +247,12 @@ class Subckt:
          elif line[0].lower() == 'x':
             x = SCInst( line, gparams )
             self.elems.append( x )
+         elif line[0].lower() == 'c':
+            x = Capacitor( line, gparams )
+            self.elems.append( x )
          elif line[0] == '*':
+            continue
+         elif line[0] == '.':
             continue
          else:
             print ''
@@ -241,7 +306,7 @@ def ExtractParameters( line ):
       subtoks = tok.split( '=' )
       if len( subtoks ) == 2:
          k = subtoks[0]
-         v = subtoks[1]
+         v = subtoks[1].lstrip( "'" ).rstrip( "'" ).lstrip( '(' ).rstrip( ')' )
          params[ k ] = v
       else:
          toks.append( tok )
