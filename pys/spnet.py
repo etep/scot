@@ -5,7 +5,7 @@ import os, sys, re, argparse, jpsy
 class Params:
    verbose = True
    lowercase = True
-   localbind = True
+   localbind = False
    envname = 'SCOT_HOME_DIR'
    joinch  = '_'
    def __init__( self ):
@@ -279,7 +279,8 @@ def Sanitize( inpLines ):
       
       # join continuation lines
       if line[0] == '+':
-         line[0] = ' '
+         # -- TODO -- verify replace semantics: pattern, repl, max-num-to-replace
+         line = line.replace( '+', ' ', 1 )
          outLines[ -1 ] += line
          continue
       
