@@ -224,11 +224,15 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    const string irsimCmd       = irsmHome + "/irsim "                    + irsimTechFilenameStr + " " + irsimInputFileName + " " + "-" + irsimCmdFilename;
    const string perlCmd        = perlHome + "/cal_act_fact.pl "          + irsimOutput + " " +  irsimInputFileName + " " + powerFilenameStr + " " + dutyFilenameStr + " " +  intToString( numRuns );
    
-   system( adjustIRSIMcmd.c_str() );
+   int sysresult;
+   
+   sysresult = system( adjustIRSIMcmd.c_str() );
+   assert( sysresult == 0 );
    
    cout << "diogen: flattening netlist for irsim" << endl;
    cout << "..." << flattenerCmd << endl;
-   system( flattenerCmd.c_str() );
+   sysresult = system( flattenerCmd.c_str() );
+   assert( sysresult == 0 );
    
    
    // if (irsimInputCmdFilename == "") {

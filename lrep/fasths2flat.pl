@@ -35,7 +35,8 @@ $opt_v = 0;
 	$fileOut = $ENV{ "SCOT_TEMP_DIR_OPTIM_DOT_PY" } . "/" . "$basename.f";
 	$cmd = "../pys/spnet.py $fileIn 1> $fileOut 2>&1";
 	print STDERR "$prog: running\n\t$cmd\n" unless ( $opt_v );
-	system($cmd);
+	$cmdresult = system( $cmd );
+	if( $cmdresult != 0 ) { die; }
 	fsp2sim("$basename");
 
 	unless ( $opt_r ) {
