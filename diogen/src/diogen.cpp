@@ -192,6 +192,7 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    const string scotHome    = string( scotHomePtr );
    const string tempHome    = string( tempHomePtr );
    const string perlHome    = scotHome + "/lrep";
+   const string pyHome      = scotHome + "/pys";
    const string irsmHome    = scotHome + "/irsim/bin";
    
    const string modifiedSpiceFilenameStr = string( modifiedSpiceFilename );
@@ -220,7 +221,8 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    const string dutyFilenameStr    = modifiedSpiceFilenameStr + ".duty";
       
    const string adjustIRSIMcmd = scotHome + "/lrep/limVectForDiogen.pl " + irsimCmdFilename +  " " + intToString( maxSignalsOnALineInIrsim );
-   const string flattenerCmd   = perlHome + "/fasths2flat.pl "           + originalSpiceFilenameStr + " > " + irsimInputFileName;
+   // -- TODO -- remove -- shifted impl to python -- const string flattenerCmd   = perlHome + "/fasths2flat.pl "           + originalSpiceFilenameStr + " > " + irsimInputFileName;
+   const string flattenerCmd   = pyHome   + "/fasths2flat.py -i " + originalSpiceFilenameStr + " -o " + irsimInputFileName;
    const string irsimCmd       = irsmHome + "/irsim "                    + irsimTechFilenameStr + " " + irsimInputFileName + " " + "-" + irsimCmdFilename;
    const string perlCmd        = perlHome + "/cal_act_fact.pl "          + irsimOutput + " " +  irsimInputFileName + " " + powerFilenameStr + " " + dutyFilenameStr + " " +  intToString( numRuns );
    

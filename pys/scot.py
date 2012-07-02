@@ -47,19 +47,11 @@ class Params:
 
 ################################################################################
 ################################################################################
-def SwapFext( filename, fext ):
-   toks = filename.split( '.' )
-   toks.pop()
-   toks.append( fext )
-   return '.'.join( toks )
-
-################################################################################
-################################################################################
 params = Params()
 
 hspfile = sys.argv[1]
-sspfile = SwapFext( hspfile, 'ssp' )
-diofile = SwapFext( hspfile, 'dio' )
+sspfile = jpsy.SwapFext( hspfile, 'ssp' )
+diofile = jpsy.SwapFext( hspfile, 'dio' )
 sspfile = os.path.join( params.runpath, sspfile )
 diofile = os.path.join( params.runpath, diofile )
 

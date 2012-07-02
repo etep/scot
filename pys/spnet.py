@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os, sys, re, argparse, jpsy
+import os, sys, re, argparse, hspy, jpsy
 ################################################################################
 ################################################################################
 class Params:
@@ -19,7 +19,7 @@ class Params:
    
 
 class Capacitor:
-   def Print( self, connxns, extparams, netpfx = '' ):
+   def ToStr( self, connxns, extparams, netpfx = '' ):
       # assume the connected nodes are local nets:
       name  = self.gparams.joinch.join( [ netpfx, self.name  ] )
       node0 = self.gparams.joinch.join( [ netpfx, self.node0 ] )
@@ -47,13 +47,17 @@ class Capacitor:
       if self.gparams.lowercase:
          toks = [ x.lower() for x in toks ]
       line = ' '.join( toks )
+      return line
+   
+   def Print( self, connxns, extparams, netpfx ):
+      line = self.ToStr( connxns, extparams, netpfx )
       print line
    
    def __init__( self, cdef, gparams ):
       self.gparams = params
       
       # get the parameters (width, length, mfactor, etc...)
-      ( cdef, self.params ) = ExtractParameters( cdef )
+      ( cdef, self.params ) = hspy.ExtractParameters( cdef )
             
       # now get nmos/pmos, name, and the s,g,d, and b ports
       toks = cdef.split()
@@ -69,10 +73,13 @@ class DotCom:
    # spice deck line that
    # ... begins with a dot
    # ... or is a comment
-   def Print( self, connxns, extparams, netpfx = None ):
-      print self.line
-      pass
+   def ToStr( self, connxns, extparams, netpfx = None ):
+      return self.line
    
+   def Print( self, connxns, extparams, netpfx = None ):
+      line = self.ToStr( connxns, extparams, netpfx )
+      print line
+    
    def __init__( self, line, gparams ):
       self.gparams = params
       self.type = 'dotcom'
@@ -80,7 +87,7 @@ class DotCom:
    
 
 class Mosfet:
-   def Print( self, connxns, extparams, netpfx = '' ):
+   def ToStr( self, connxns, extparams, netpfx = '' ):
       # assume s,g,d, and b are local nets:
       name = self.gparams.joinch.join( [ netpfx, self.name ] )
       b    = self.gparams.joinch.join( [ netpfx, self.b    ] )
@@ -112,13 +119,17 @@ class Mosfet:
       if self.gparams.lowercase:
          toks = [ x.lower() for x in toks ]
       line = ' '.join( toks )
+      return line
+   
+   def Print( self, connxns, extparams, netpfx = '' ):
+      line = self.ToStr( connxns, extparams, netpfx )
       print line
    
    def __init__( self, mdef, gparams ):
       self.gparams = params
       
       # get the parameters (width, length, mfactor, etc...)
-      ( mdef, self.params ) = ExtractParameters( mdef )
+      ( mdef, self.params ) = hspy.ExtractParameters( mdef )
       
       # now get nmos/pmos, name, and the s,g,d, and b ports
       toks = mdef.split()
@@ -136,7 +147,7 @@ class Mosfet:
 
 class SCInst:
    # an instantiated subckt
-   def Print( self, connxns, extparams, netpfx = None ):
+   def Bind(  self, connxns, extparams, netpfx = None ):
       #
       # lnets: local net names, add prefix if not defined as an external connection
       lnets = []
@@ -187,14 +198,25 @@ class SCInst:
             if v in extparams:
                lparams[ k ] = extparams[ v ]
       #
+      return ( subckt, connxns, lparams, netpfx )
+   
+   def Print( self, connxns, extparams, netpfx = None ):
+      ( subckt, connxns, lparams, netpfx ) = self.Bind( connxns, extparams, netpfx )
+      #
       # tell the subcircuit to print its elements
       subckt.Print( connxns, lparams, netpfx )
+   
+   def ToStr( self, connxns, extparams, netpfx = None ):
+      ( subckt, connxns, lparams, netpfx ) = self.Bind( connxns, extparams, netpfx )
+      #
+      # tell the subcircuit to print its elements
+      return subckt.ToStr( connxns, lparams, netpfx )
    
    def __init__( self, idef, gparams ):
       self.gparams = gparams
       
       # get the parameters
-      ( idef, self.params ) = ExtractParameters( idef )
+      ( idef, self.params ) = hspy.ExtractParameters( idef )
       
       # now get the instance name, ports, and subckt name
       toks = idef.split()
@@ -214,10 +236,22 @@ class Subckt:
       for e in self.elems:
          e.Print( connxns, extparams, netpfx )
    
+   def ToStr( self, connxns, extparams, netpfx = None ):
+      #
+      # make a string including each element in this subcircuit
+      # ... SCInst::ToStr()
+      # ... Mosfet::ToStr()
+      # ... DotCom::ToStr()
+      outstr = ''
+      for e in self.elems:
+         outstr += e.ToStr( connxns, extparams, netpfx )
+         outstr += '\n'
+      return outstr
+   
    def ParseSubCktDef( self, line0 ):
       
       # pull the parameters out
-      ( scdef, self.params ) = ExtractParameters( line0 )
+      ( scdef, self.params ) = hspy.ExtractParameters( line0 )
       
       # tokenize
       toks = scdef.split()
@@ -290,32 +324,32 @@ def Sanitize( inpLines ):
 
 ################################################################################
 ################################################################################
-def PackEqualsSigns( line ):
-   # removes whitespace around equals signs
-   # ... transforms: 'foo bar baz = zam'
-   # ...       into: 'foo bar baz=zam'
-   toks = line.split( '=' )
-   toks = [ x.lstrip().rstrip() for x in toks ]
-   return '='.join( toks )
-
-def ExtractParameters( line ):
-   params = {}
-   line = PackEqualsSigns( line )
-   toks = line.split()
-   while len( toks ):
-      tok = toks.pop()
-      subtoks = tok.split( '=' )
-      if len( subtoks ) == 2:
-         k = subtoks[0]
-         v = subtoks[1].lstrip( "'" ).rstrip( "'" ).lstrip( '(' ).rstrip( ')' )
-         params[ k ] = v
-      else:
-         toks.append( tok )
-         break
-   assert len( toks )
-   line = ' '.join( toks )
-   return ( line, params )
-
+# -- moved to hspy -- def PackEqualsSigns( line ):
+# -- moved to hspy --    # removes whitespace around equals signs
+# -- moved to hspy --    # ... transforms: 'foo bar baz = zam'
+# -- moved to hspy --    # ...       into: 'foo bar baz=zam'
+# -- moved to hspy --    toks = line.split( '=' )
+# -- moved to hspy --    toks = [ x.lstrip().rstrip() for x in toks ]
+# -- moved to hspy --    return '='.join( toks )
+# -- moved to hspy -- 
+# -- moved to hspy -- def ExtractParameters( line ):
+# -- moved to hspy --    params = {}
+# -- moved to hspy --    line = PackEqualsSigns( line )
+# -- moved to hspy --    toks = line.split()
+# -- moved to hspy --    while len( toks ):
+# -- moved to hspy --       tok = toks.pop()
+# -- moved to hspy --       subtoks = tok.split( '=' )
+# -- moved to hspy --       if len( subtoks ) == 2:
+# -- moved to hspy --          k = subtoks[0]
+# -- moved to hspy --          v = subtoks[1].lstrip( "'" ).rstrip( "'" ).lstrip( '(' ).rstrip( ')' )
+# -- moved to hspy --          params[ k ] = v
+# -- moved to hspy --       else:
+# -- moved to hspy --          toks.append( tok )
+# -- moved to hspy --          break
+# -- moved to hspy --    assert len( toks )
+# -- moved to hspy --    line = ' '.join( toks )
+# -- moved to hspy --    return ( line, params )
+# -- moved to hspy -- 
 def ReadInSubckts( inpLines, params ):
    subckts  = {}
    outLines = []
@@ -368,10 +402,21 @@ def ReadInMainCkt( inpLines, params ):
 
 ################################################################################
 ################################################################################
-
 params = Params()
+parser = argparse.ArgumentParser( description = 'The Stanford Circuit Optimization Tool (SCOT): fasths2flat.py' )
 
-lines = jpsy.ReadFileLines( sys.argv[1] )
+parser.add_argument( '-i', '--inpfilename', nargs = 1 ) # -- TODO -- make this a required argument
+parser.add_argument( '-o', '--outfilename', nargs = 1 ) # -- TODO -- make this a required argument
+
+args = parser.parse_args()
+
+assert args.inpfilename is not None
+assert args.outfilename is not None
+
+ifn = args.inpfilename[0]
+ofn = args.outfilename[0]
+
+lines = jpsy.ReadFileLines( ifn )
 
 lines = Sanitize( lines )
 
@@ -386,7 +431,9 @@ connxns = {}
 connxns[ 'vdd' ] = 'vdd'
 connxns[ 'gnd' ] = 'gnd'
 
+lines = []
 for elem in mainckt:
-   elem.Print( connxns, {} )
+   lines.append( elem.ToStr( connxns, {} ) )
 
-# print '\n'.join( lines )
+jpsy.WriteLinesToFile( lines, ofn )
+
