@@ -1,8 +1,11 @@
 # Set the default target. When you make with no arguments,
 # this will be the target built.
-OBJDIR = ../obj
-BINDIR = ../bin
-BIN    = $(BINDIR)/diogen
+OBJDIR     = ../obj
+BINDIR     = ../bin
+SHDIR      = ../../shared
+SHSRCDIR   = $(SHDIR)/src
+SHOBJDIR   = $(SHDIR)/obj
+BIN        = $(BINDIR)/diogen
 
 .PHONY: clean
 
@@ -28,6 +31,8 @@ SRCS = Type.cpp               \
        TransitionTable.cpp    \
        diogen.cpp
 
+SHOBJECTS = SystemWrapper.o
+SHOBJS = $(addprefix $(SHOBJDIR)/, $(SHOBJECTS) )
 # .o versions of the c/cpp sources
 OBJS = $(OBJDIR)/y.tab.o  \
        $(OBJDIR)/lex.yy.o \
@@ -48,7 +53,7 @@ MV   = mv
 # Also STL has some signed/unsigned comparisons we want to suppress
 #
 # DEBUG  = -g
-CFLAGS = $(DEBUG) -O3 -Wall -Wno-unused -Wno-sign-compare
+CFLAGS = $(DEBUG) -O3 -Wall -Wno-unused -Wno-sign-compare -I. -I$(SHSRCDIR)
 
 # The -d flag tells lex to set up for debugging. Can turn on/off by
 # setting value of global yy_flex_debug inside the scanner itself
@@ -63,8 +68,8 @@ YACCFLAGS = -dvty
 # Link with standard c library, math library, and lex library
 LIBS = -lc -lm -ll
 
-$(BIN): $(OBJS)
-	$(LD) $(OBJS) $(LIBS) -o $@
+$(BIN): $(OBJS) $(SHOBJS)
+	$(LD) $(OBJS) $(SHOBJS) $(LIBS) -o $@
 
 $(OBJDIR)/lex.yy.c: scanner.l parser.y $(OBJDIR)/y.tab.c 
 	$(LEX) $(LEXFLAGS) -o $@ scanner.l
@@ -82,6 +87,8 @@ $(OBJDIR)/%.o: %.c
 $(OBJDIR)/%.o: %.cpp
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+$(SHOBJDIR)/%.o: $(SHSRCDIR)/%.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 clean:
 	rm -f $(OBJDIR)/*

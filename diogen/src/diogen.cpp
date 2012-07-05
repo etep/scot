@@ -1,9 +1,10 @@
 #include <string.h>
 #include <string>
-#include "utility.hpp"
-#include "scanner.h"
-#include "parser.h"
-#include "CircuitParser.hpp"
+#include <utility.hpp>
+#include <scanner.h>
+#include <parser.h>
+#include <CircuitParser.hpp>
+#include <SystemWrapper.hpp>
 
 #include <ostream>
 #include <fstream>
@@ -226,17 +227,12 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    const string irsimCmd       = irsmHome + "/irsim "                    + irsimTechFilenameStr + " " + irsimInputFileName + " " + "-" + irsimCmdFilename;
    const string perlCmd        = perlHome + "/cal_act_fact.pl "          + irsimOutput + " " +  irsimInputFileName + " " + powerFilenameStr + " " + dutyFilenameStr + " " +  intToString( numRuns );
    
-   int sysresult;
-   
-   sysresult = system( adjustIRSIMcmd.c_str() );
-   assert( sysresult == 0 );
-   
+   SystemWrapper( adjustIRSIMcmd );
+      
    cout << "diogen: flattening netlist for irsim" << endl;
    cout << "..." << flattenerCmd << endl;
-   sysresult = system( flattenerCmd.c_str() );
-   assert( sysresult == 0 );
-   
-   
+   SystemWrapper( flattenerCmd );
+
    // if (irsimInputCmdFilename == "") {
    //    irsimCmd += originalSpiceFilenameStr + ".cmd";
    // }
@@ -246,9 +242,7 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    // need to chdir so that the irsim .out file lands in the correct place
    assert( chdir( tempHome.c_str() ) == 0 );
    cout << "diogen: running irsim" << endl;
-   cout << "..." << flattenerCmd << endl;
-   cout << irsimCmd << endl;
-   system( irsimCmd.c_str() );
+   SystemWrapper( irsimCmd );
    
    // will use a perl file to record the switching activity factors.
    // yyin = openFile(irsimOutput.c_str(), "r");
@@ -264,7 +258,8 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    // ofstream dioFile(outputDioFilename, ios_base::app);
    // parser->generateActivityFactors(powerFile);
    // cout << "number of iterations  are " << intToString(numRuns) << endl;
-   system( perlCmd.c_str() );
+   cout << "diogen: running perl" << endl;
+   SystemWrapper( perlCmd );
 
    powerFile.close();
 }

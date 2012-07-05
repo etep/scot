@@ -2,9 +2,10 @@
 #include <vector>
 #include <fstream>
 
-#include "randomc.hpp"
-#include "cnvt.hpp"
-#include "opt.hpp"
+#include <SystemWrapper.hpp>
+#include <randomc.hpp>
+#include <cnvt.hpp>
+#include <opt.hpp>
 
 using namespace std;
 
@@ -2401,7 +2402,7 @@ void opt_prob_generator::solve( const string & nm, opt_spec & osp ) {
 
    errorBasedHalt();
    if( !OnlyFormulateProblem ) {
-      system( commandLine.c_str() );
+      SystemWrapper( commandLine );
       if( ggpsolOutToMap( optValues, outputfilename ) != 0 ) {
          errorReport( "ggpsolexp output reading error: " + outputfilename );
          return;
@@ -2412,9 +2413,12 @@ void opt_prob_generator::solve( const string & nm, opt_spec & osp ) {
    }
 
    if( ERASE_GGPSOL_SOURCE_FILE ) {
-      if( system( ( "rm "+ name ).c_str() ) != 0 ) {
-         errorReport( "file remove file error: " + name );
-      }
+	   
+      const string rmcmd = "rm " + name;
+	   SystemWrapper( rmcmd );
+      // -- TODO -- remove? -- did errorReport provide any real value here? -- if( system( ( "rm "+ name ).c_str() ) != 0 ) {
+      // -- TODO -- remove? -- did errorReport provide any real value here? --    errorReport( "file remove file error: " + name );
+      // -- TODO -- remove? -- did errorReport provide any real value here? -- }
    }
 
    osp.store( optValues );
@@ -2465,21 +2469,26 @@ void opt_prob_generator::solve( const string & name, const monte_carlo & monte, 
    errorBasedHalt();
 
    if( !OnlyFormulateProblem ) {
-      system( commandLine.c_str() );
+      
+      SystemWrapper( commandLine );
 
       if( ggpsolOutToMap( optVs, outputfilename ) != 0 ) {
          errorReport( "ggpsol output reading error: " + outputfilename );
          return;
       }
-   } else {
+   }
+   else {
       cout << "Only Formulating the Problem in file: " << name << endl;
       return;
    }
 
    if( ERASE_GGPSOL_SOURCE_FILE ) {
-      if( system( ( "rm "+name ).c_str() ) != 0 ) {
-         errorReport( "file remove file error: " + name );
-      }
+      
+      const string rmcmd = "rm " + name;
+	   SystemWrapper( rmcmd );
+      // -- TODO -- remove -- did error report provide any value here? -- if( system( ( "rm "+name ).c_str() ) != 0 ) {
+      // -- TODO -- remove -- did error report provide any value here? --    errorReport( "file remove file error: " + name );
+      // -- TODO -- remove -- did error report provide any value here? -- }
    }
    osp.store ( optVs );
    montecarlo( mcVs, crtclty, monte, p, osp, osp.getLengthOfOptValHistory()-1, kmax );
@@ -2514,16 +2523,21 @@ void opt_prob_generator::solve( const string & name, double kappa, double beta, 
    errorBasedHalt();
 
    if( !OnlyFormulateProblem ) {
-      system( ( "ggpsol -d "+name ).c_str() );
+      const string ggpsolcmd = "ggpsol -d " + name;
+      SystemWrapper( ggpsolcmd );
       if( ggpsolOutToMap( optVs, outputfilename ) != 0 ) {
          errorReport( "ggpsol output reading error: " + outputfilename );
          return;
       }
-   } else
+   }
+   else {
       cout << "Only Formulating the Problem in file: " << name << endl;
+   }
    if( ERASE_GGPSOL_SOURCE_FILE ) {
-      if( system( ( "rm "+name ).c_str() ) != 0 )
-         errorReport( "file remove file error: " + name );
+      const string rmcmd = "rm " + name;
+      SystemWrapper( rmcmd );
+      // -- TODO -- remove -- did error report provide any real value here? -- if( system( ( "rm "+name ).c_str() ) != 0 )
+      // -- TODO -- remove -- did error report provide any real value here? --    errorReport( "file remove file error: " + name );
    }
 
    osp.store( optVs );

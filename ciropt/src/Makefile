@@ -14,7 +14,8 @@ RANDOBJS   = stoc1.o          \
 
 SHOBJECTS  = symtab.o         \
              cnvt.o           \
-             gp.o
+             gp.o             \
+			 SystemWrapper.o
 
 OBJECTS    = ciropt.o         \
              opt.o            \
