@@ -230,7 +230,6 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
    SystemWrapper( adjustIRSIMcmd );
       
    cout << "diogen: flattening netlist for irsim" << endl;
-   cout << "..." << flattenerCmd << endl;
    SystemWrapper( flattenerCmd );
 
    // if (irsimInputCmdFilename == "") {

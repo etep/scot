@@ -22,7 +22,7 @@ class Params:
       ( progpath, prog ) = os.path.split( sys.argv[0] )
       self.prog = prog
       if not ( self.envscot in os.environ and self.envtemp in os.environ ):
-         print 'Before using ' + prog + ', you need to set the environment variables:', envscot, 'and', envtemp
+         print 'Before using ' + prog + ', you need to set the environment variables:', self.envscot, 'and', self.envtemp
          print 'to point to the proper directories for this project.'
          sys.exit( -1 )
       
@@ -121,7 +121,8 @@ def Fet( params, tt, scale, line ):
    return irstr
 
 def Fsp2Sim( params, ifn ):
-   lines = []
+   inpLines = []
+   outLines = []
    scale = 1e-6
    # -- perl -- variable names were shortened then translated back -- #print STDERR "$prog: reading translation table in $tmpFileI.fal..\n"
    # -- perl -- variable names were shortened then translated back -- #  unless ( $opt_v );
@@ -136,10 +137,10 @@ def Fsp2Sim( params, ifn ):
    if params.verbose:
       print params.prog + ': dumping sim netlist...'
    
-   lines = jpsy.ReadFileLines( ifn )
+   inpLines = jpsy.ReadFileLines( ifn )
    
    # extract the .opt scale setting (if it exists)
-   for line in lines:
+   for line in inpLines:
       if len( line ) > 4:
          if line[ 0:4 ] == '.opt':
             line = hspy.PackEqualsSigns( line )
@@ -152,29 +153,29 @@ def Fsp2Sim( params, ifn ):
    
    if params.suformat: fmtstr = 'SU'
    else:               fmtstr = 'LBL'
-   lines.append( '| units: %d tech: scmos format %s' % ( scale, fmtstr ) )
+   outLines.append( '| units: %.15f tech: scmos format %s' % ( scale, fmtstr ) )
    
-   for line in lines:
+   for line in inpLines:
       try:
          if line == '': continue
          toks = line.split()
          if   toks[0][0] == 'm':
-            lines.append( Fet( params, tt, scale, line ) )
+            outLines.append( Fet( params, tt, scale, line ) )
          elif toks[0][0] == 'c':
-            lines.append( Cap( params, tt, scale, line ) )
+            outLines.append( Cap( params, tt, scale, line ) )
          elif toks[0][0] == 'v':
             n0 = toks[1]
             n1 = toks[2]
             if params.transnodenames:
                n0 = tt[ n0 ]
                n1 = tt[ n1 ]
-            lines.append( '= %s %s' % ( n0, n1 ) )
+            outLines.append( '= %s %s' % ( n0, n1 ) )
       except:
          print '------------------------------------------------------------------------------------------------------------'
          print 'line =', line
          print '------------------------------------------------------------------------------------------------------------'
          raise
-   return lines
+   return outLines
 
 ################################################################################
 ################################################################################
@@ -217,7 +218,6 @@ if args.quiet is not None:
 
 tfn = os.path.join( params.tempHome, basename + '.spnet.flattened' )
 cmd = ' '.join( [ 'spnet.py', '-i', ifn, '-o', tfn ] )
-# -- TODO -- remove -- cmd = jpsy.AddRedirectionToCmd( cmd, tfn )
 cmd = os.path.join( params.pysHome, cmd )
 
 jpsy.SystemWrapper( cmd, verbose = params.verbose, trial = False )

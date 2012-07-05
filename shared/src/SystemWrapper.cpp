@@ -7,7 +7,9 @@ using namespace std;
 
 void SystemWrapper( const std::string & cmd, const bool verbose, const bool trial ) {
 	
-   cout << "... system( " << cmd << " );" << endl;
+   if( verbose ) {
+      cout << "... system( " << cmd << " );" << endl;
+   }
    if( !trial ) {
       
       int status = system( cmd.c_str() );  
@@ -16,6 +18,8 @@ void SystemWrapper( const std::string & cmd, const bool verbose, const bool tria
    else {
       cout << "... trial/dry run" << endl;
    }
-   cout << "... finished: " << cmd << endl;
+   if( verbose ) {
+      cout << "... finished: " << cmd << endl;
+   }
 }
 
