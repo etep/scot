@@ -6,6 +6,7 @@ class Params:
    verbose = True
    cleanup = True
    trial   = False
+   project = 'scot'
    def __init__( self ):
       
       envscot = 'SCOT_HOME_DIR'
@@ -18,8 +19,8 @@ class Params:
       
       self.homeDir = os.environ[ envscot ]
       
-      self.tmpHome = os.path.join( self.homeDir, 'tmp'  )
-      self.tarHome = os.path.join( self.tmpHome, 'scot' )
+      self.tmpHome = os.path.join( self.homeDir, 'tmp' )
+      self.tarHome = os.path.join( self.tmpHome, self.project )
    
 
 ################################################################################
@@ -48,7 +49,7 @@ def CopyRepoToTmpPath( params ):
 
 def MakeTarBall( params, version ):
    os.chdir( params.tmpHome )
-   cmd = 'tar cvfj scot-%s.tar.bz2 dagmtx' % version
+   cmd = 'tar cvfj %s-%s.tar.bz2 %s' % ( params.project, version, params.project )
    jpsy.SystemWrapper( cmd, params.verbose, trial = params.trial )
 
 def Cleanup( params ):
