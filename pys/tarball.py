@@ -38,8 +38,8 @@ def CopyRepoToTmpPath( params ):
          assert False
       assert toks[0] in [ 'C', 'I' ]
       if toks[0] == 'C':
-         src = os.path.join( params.dagHomeDir, toks[1] )
-         dst = os.path.join( params.tarHome,    toks[1] )
+         src = os.path.join( params.homeDir, toks[1] )
+         dst = os.path.join( params.tarHome, toks[1] )
          ( dstp, dstf ) = os.path.split( dst )
          if not os.path.isdir( dstp ):
             os.makedirs( dstp )
