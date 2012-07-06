@@ -12,12 +12,13 @@ YACC       = bison -d -p ggp
 CLEANFILES = lex.ggp.c ggp.tab.cpp ggp.tab.hpp
 OBJECTS    = ggpsolexp.o \
              lex.ggp.o   \
-			 ggp.tab.o   \
-			 d2p.o
-SHOBJECTS  = gp.o        \
-             ggp.o       \
-			 symtab.o    \
-			 cnvt.o
+             ggp.tab.o   \
+             d2p.o
+SHOBJECTS  = gp.o             \
+             ggp.o            \
+             symtab.o         \
+             cnvt.o           \
+             SystemWrapper.o
 
 OBJS   = $(addprefix $(OBJDIR)/, $(OBJECTS) )
 SHOBJS = $(addprefix $(SHOBJDIR)/, $(SHOBJECTS) )
@@ -48,7 +49,7 @@ $(BIN): $(OBJS) $(SHOBJS)
 	$(CC) $(OBJS) $(SHOBJS) $(LIBS) -o $@
    
 $(OBJDIR)/ggpsolexp.o: ggpsolexp.hpp ggpsolexp.cpp $(SHSRCDIR)/gp.hpp $(SHSRCDIR)/ggp.hpp $(SHSRCDIR)/cnvt.hpp
-$(OBJDIR)/d2p.o:       d2p.cpp d2p.h
+$(OBJDIR)/d2p.o:       d2p.cpp d2p.hpp
 
 $(OBJDIR)/lex.ggp.o: $(OBJDIR)/lex.ggp.c   $(OBJDIR)/ggp.tab.hpp  $(SHSRCDIR)/gp.hpp  $(SHSRCDIR)/ggp.hpp
 $(OBJDIR)/ggp.tab.o: $(OBJDIR)/ggp.tab.cpp $(SHSRCDIR)/symtab.hpp $(SHSRCDIR)/gp.hpp  $(SHSRCDIR)/ggp.hpp

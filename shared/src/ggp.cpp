@@ -5,10 +5,10 @@
 #include <iomanip>
 #include <fstream>
 
-#include "ggp.hpp"
-#include "cnvt.hpp"
-//#include "dgopt.h"
-#include "d2p.h"
+#include <ggp.hpp>
+#include <d2p.hpp>
+#include <cnvt.hpp>
+#include <SystemWrapper.hpp>
 
 using namespace std;
 
@@ -385,9 +385,9 @@ void ggp::solveUsingMOSEKdgopt( const string & fileName, ggp & GGP ) {
    const string rmMpsCmd   = "rm " + mpsFileName + " " + fFileName;
    const string mosekCmd   = "mskexpopt " + eoFileName + " -primal" + " -p " + paramFile + " -sol " + solFileName;
    
-   system( mpsToEoCmd.c_str() );
-   system( rmMpsCmd.c_str()   );
-   system( mosekCmd.c_str()   );
+   SystemWrapper( mpsToEoCmd );
+   SystemWrapper( rmMpsCmd   );
+   SystemWrapper( mosekCmd   );
    
    //system( ("mskexpopt " + eoFileName + " -primal").c_str());
    //system( ("mskexpopt " + eoFileName + " -primal" + " -p ~/research/dco/ggpsolexp/paramFile").c_str());
@@ -399,8 +399,8 @@ void ggp::solveUsingMOSEKdgopt( const string & fileName, ggp & GGP ) {
    const string priToDualCmd = priToDual + " " + solFileName + " PrimalToDual.sol " + cnvt::toString( numCon );
    const string rmSolFileCmd = "rm " + solFileName;
 
-   system( priToDualCmd.c_str() );
-   system( rmSolFileCmd.c_str() );
+   SystemWrapper( priToDualCmd );
+   SystemWrapper( rmSolFileCmd );
    
    cout << "Processed " << solFileName << " to produce " << outFile << endl;
 
@@ -462,7 +462,8 @@ void ggp::solveUsingMOSEKdgopt( const string & fileName, ggp & GGP ) {
    }
 
    if( status != -4 ) {
-      system( "rm PrimalToDual.sol" );
+
+      SystemWrapper( "rm PrimalToDual.sol" );
    }
 
    delete primal_solution;
