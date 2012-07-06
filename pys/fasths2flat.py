@@ -115,9 +115,9 @@ def Fet( params, tt, scale, line ):
    lstr = str( l )
    wstr = str( m*w )
    if params.suformat:
-      irstr = '%s %s %s %s %s %s %s' % ( mtype[0], g, d, s, b, lstr, wstr )
-   else:
       irstr = '%s %s %s %s %s %s 0 0 g=G_%s,S_%s s=A_%s,P_%s d=A_%s,P_%s' % ( mtype[0], g, d, s, lstr, wstr, mosparams[ 'geo' ], b, mosparams[ 'as' ], mosparams[ 'ps' ], mosparams[ 'ad' ], mosparams[ 'pd' ] )
+   else:
+      irstr = '%s %s %s %s %s %s %s' % ( mtype[0], g, d, s, b, lstr, wstr )
    return irstr
 
 def Fsp2Sim( params, ifn ):
@@ -153,7 +153,9 @@ def Fsp2Sim( params, ifn ):
    
    if params.suformat: fmtstr = 'SU'
    else:               fmtstr = 'LBL'
-   outLines.append( '| units: %.15f tech: scmos format %s' % ( scale, fmtstr ) )
+   outLines.append( '| units: %.6f tech: scmos format %s' % ( 1e8*scale, fmtstr ) )
+   # -- TODO -- remove -- outLines.append( '= vdd Vdd' )
+   # -- TODO -- remove -- outLines.append( '= gnd Gnd' )
    
    for line in inpLines:
       try:
