@@ -49,7 +49,7 @@ def CopyRepoToTmpPath( params ):
 def MakeTarBall( params, version ):
    os.chdir( params.tmpHome )
    cmd = 'tar cvfj scot-%s.tar.bz2 dagmtx' % version
-   SystemWrapper( cmd, params.verbose, trial = params.trial )
+   jpsy.SystemWrapper( cmd, params.verbose, trial = params.trial )
 
 def Cleanup( params ):
    if params.cleanup:
