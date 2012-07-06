@@ -7,7 +7,7 @@ class Params:
    cleanup = True
    trial   = False
    project = 'scot'
-   def __init__( self ):
+   def __init__( self, version ):
       
       envscot = 'SCOT_HOME_DIR'
       
@@ -19,8 +19,9 @@ class Params:
       
       self.homeDir = os.environ[ envscot ]
       
+      pstub = self.project + '-' + version
       self.tmpHome = os.path.join( self.homeDir, 'tmp' )
-      self.tarHome = os.path.join( self.tmpHome, self.project )
+      self.tarHome = os.path.join( self.tmpHome, pstub )
    
 
 ################################################################################
@@ -64,7 +65,7 @@ if len( sys.argv ) < 2:
    sys.exit( -1 )
 
 version = sys.argv[1]
-params  = Params()
+params  = Params( version )
 
 CopyRepoToTmpPath( params )
 MakeTarBall( params, version )
