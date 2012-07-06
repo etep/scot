@@ -26,8 +26,10 @@ Xinv3 out net4 t_inv_constratio
 *output: name=out, c=1800;
 ****glbcnst: A<100;
 *glbcnst: D(all) < 0.1;
+*glbcnst: E < 100;
 *glbcnst: MAX_WIDTH = 10000;
 *glbcnst: MIN_WIDTH = 0.25;
+****glbcnst: OnlyFormulateProblem;
 * .ENDS	$ invChain3
 
 .GLOBAL gnd vdd
