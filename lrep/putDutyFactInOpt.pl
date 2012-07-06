@@ -38,7 +38,7 @@ if ($#ARGV != 1) { # $#ARGV is the number of command line arguments minus 1
 print "Running $prog\n";
 $spfile = shift(@ARGV);
 $dutyfile = shift(@ARGV);
-$dumfile = "dummyDutyFact_".$spfile;
+$dumfile = $spfile . "dummy.dutyfact";
 
 #record the duty factors from the .duty file first.
 open (DUTY,"<$dutyfile") ||  die  ("Can't open $dutyfile : $!\n");
@@ -134,7 +134,8 @@ print DUM ".ENDS\n\n";
 close(SP);
 close(DUM);
 $scotHome = $ENV{ 'SCOT_HOME_DIR' };
-$perlHome = $scotHome . '/lrep';
-$psioPerl = $perlHome . '/putSectionInOpt.pl';
-system("$psioPerl $spfile $dumfile DUTY");
+# -- TODO -- remove -- $perlHome = $scotHome . '/lrep';
+$pyHome   = $scotHome . '/pys';
+$psioPy   = $pyHome   . '/putSectionInOpt.py';
+system("$psioPy $spfile $dumfile DUTY");
 `rm -f $dumfile`;

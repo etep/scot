@@ -80,8 +80,8 @@ def DashIrsimOption( args, params ):
    #
    # call the commands:
    jpsy.SystemWrapper( dioCmd, verbose = params.verbose, trial = False )
-   #jpsy.SystemWrapper( pafCmd, verbose = params.verbose, trial = False )
-   #jpsy.SystemWrapper( pdfCmd, verbose = params.verbose, trial = False )
+   jpsy.SystemWrapper( pafCmd, verbose = params.verbose, trial = False )
+   jpsy.SystemWrapper( pdfCmd, verbose = params.verbose, trial = False )
 
 def DashScotSpiceOption( args, params ):
    #

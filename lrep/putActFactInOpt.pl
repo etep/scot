@@ -38,26 +38,26 @@ if ($#ARGV != 1) { # $#ARGV is the number of command line arguments minus 1
 print "Running $prog\n";
 $spfile = shift(@ARGV);
 $powfile = shift(@ARGV);
-$dumfile = "dummyActFact_".$spfile;
+$dumfile = $spfile . "dummy.actfact";
 
 #record the duty factors from the .duty file first.
 open (POW,"<$powfile") ||  die  ("Can't open $powfile : $!\n");
 open (DUM,">$dumfile") ||  die  ("Can't open $dumfile : $!\n");
-while(<POW>)
-{
-		 if(/\.POWER/ or /\.ENDS/)
-		 {
-					next;
-		 }
-		 if(/^\*/)
-		 {
-					print DUM $_;
-					next;
-		 }
-		 s/;//;
-		 s/\s+//g;
-		 @tokens = split /:/, $_;
-		 $actFact{$tokens[0]} = $tokens[1] + 0;
+
+while(<POW>) {
+   
+   if(/\.POWER/ or /\.ENDS/) {
+      next;
+   }
+   
+   if(/^\*/) {
+      print DUM $_;
+      next;
+   }
+   s/;//;
+   s/\s+//g;
+   @tokens = split /:/, $_;
+   $actFact{$tokens[0]} = $tokens[1] + 0;
 }
 
 close(POW);
@@ -249,7 +249,7 @@ print DUM ".ENDS\n\n";
 close(SP);
 close(DUM);
 $scotHome = $ENV{ 'SCOT_HOME_DIR' };
-$perlHome = $scotHome . '/lrep';
-$psioPerl = $perlHome . '/putSectionInOpt.pl';
-system("$psioPerl $spfile $dumfile POWER");
+$pyHome   = $scotHome . '/pys';
+$psioPy   = $pyHome   . '/putSectionInOpt.py';
+system("$psioPy $spfile $dumfile POWER");
 `rm -f $dumfile`;

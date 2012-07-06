@@ -19,14 +19,16 @@ MM_2 egress in gnd gnd nmos W=WN L=0.1 GEO=0
 
 * start main CELL invChain3
 * .SUBCKT invChain3 in out 
-Xinv1 net3 in t_inv_constratio 
+
+Xinv1 net3 in   t_inv_constratio 
 Xinv2 net4 net3 t_inv_constratio 
-Xinv3 out net4 t_inv_constratio 
+Xinv3 out  net4 t_inv_constratio 
+
 *input: name=in, at=0.0, s=(0.06,0.06), c=3;
 *output: name=out, c=1800;
 ****glbcnst: A<100;
-*glbcnst: D(all) < 0.1;
-*glbcnst: E < 100;
+****glbcnst: D(all) < 0.1;
+*glbcnst: E < 440;
 *glbcnst: MAX_WIDTH = 10000;
 *glbcnst: MIN_WIDTH = 0.25;
 ****glbcnst: OnlyFormulateProblem;
