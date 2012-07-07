@@ -21,275 +21,264 @@ use Getopt::Long;
 
 
 # Check for proper number of arguments and extract args
-#if ($#ARGV != 3) { # $#ARGV is the number of command line arguments minus 1
-#    print STDERR "Usage: $0 in_spicefile testbench_spicefile glb_param filebase_dio_file\n"; # $0 is the script name
-#    print STDERR "EXAMPLE: run_opt.pl foo.sp test.sp glb_param.sp base_dio.txt\n";
-#    print STDERR "The final hspice will be run on foo_test.sp\n";
-#    exit;
-#}
-$opt_sp = 0;
+$opt_sp  = 0;
 $opt_mod = 0;
 $opt_sol = 0;
 $opt_irsim = 0;
-$opt_bsu = 0;
-$opt_bsp = 0;
+$opt_bsu   = 0;
+$opt_bsp   = 0;
 $opt_beldo = 0;
-$opt_ggp  = 0;
-$opt_ggpx = 0;
-$opt_psvo = 0;
-$opt_gpIter = 0;
-$opt_psn = 0;
+$opt_ggp   = 0;
+$opt_ggpx  = 0;
+$opt_psvo  = 0;
+$opt_gpIter  = 0;
+$opt_psn     = 0;
 $opt_extract = 0;
-$opt_paf = 0;
-$opt_pdf = 0;
+$opt_paf  = 0;
+$opt_pdf  = 0;
 $opt_area = 0;
 $transmission = "TRANSMISSION";
 
 ($prog) = fileparse($0);
 
-
-Usage() if ( ! GetOptions('sp' => \$opt_sp,
-           'mod'=> \$opt_mod, 
-           'sol'=> \$opt_sol,
-           'ggpx'=> \$opt_ggpx,
-           'irsim'=> \$opt_irsim,
-           'bsu'=> \$opt_bsu,
-           'bsp'=> \$opt_bsp,
-           'beldo' => \$opt_beldo,
-           'ggp' => \$opt_ggp,
-           'psvo' => \$opt_psvo,
-           'gpIter' => \$opt_gpIter,
-           'psn' => \$opt_psn,
+Usage() if ( ! GetOptions(
+           'sp'      => \$opt_sp,
+           'mod'     => \$opt_mod, 
+           'sol'     => \$opt_sol,
+           'ggpx'    => \$opt_ggpx,
+           'irsim'   => \$opt_irsim,
+           'bsu'     => \$opt_bsu,
+           'bsp'     => \$opt_bsp,
+           'beldo'   => \$opt_beldo,
+           'ggp'     => \$opt_ggp,
+           'psvo'    => \$opt_psvo,
+           'gpIter'  => \$opt_gpIter,
+           'psn'     => \$opt_psn,
            'extract' => \$opt_extract,
-           'paf' => \$opt_paf,
-           'pdf' => \$opt_pdf,
-           'area' => \$opt_area) );
+           'paf'     => \$opt_paf,
+           'pdf'     => \$opt_pdf,
+           'area'    => \$opt_area) );
 
 $opt_sum = $opt_sp + $opt_mod +  $opt_sol + $opt_ggpx + $opt_irsim + $opt_bsu +$opt_bsp + $opt_beldo + $opt_ggp + $opt_psvo + $opt_gpIter + $opt_psn + $opt_extract + $opt_paf + $opt_pdf + $opt_area;
 
 Usage() if ($opt_sum == 0);
 
-if($opt_sum > 1)
-{
-     die("Only one option allowed per script call\n");
+if( $opt_sum > 1 ) {
+   die("Only one option allowed per script call\n");
 }
-#print "$ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3]\n";
-
 
 if    ( $opt_sp    == 1 ) {
-     if ($#ARGV != 2)  {
-         # $#ARGV is the number of command line arguments minus 1
-         print STDERR "Usage: $prog -sp heirarchical_spice_infile glb_param_file output_file\n";
-         print STDERR "EXAMPLE: $prog -sp foo.sp glb_param.sp foo_mod.sp\n";
-         print STDERR "The output file is used by the optimizer\n";
-         exit;
-     }
-     $infile  = shift( @ARGV );
-     $glbfile = shift( @ARGV );
-     $outfile = shift( @ARGV );
-     $tmpfile = $infile."_tmp_opt_sp";
-     system("./gate_sub_flat.pl $infile $tmpfile mainlist");
-     system("./sue_spice.pl $glbfile $tmpfile $outfile");
-     system("./endsendshack.pl $outfile");
-#     system("rm -f $tmpfile");
+   if( $#ARGV != 2 ) {
+      # $#ARGV is the number of command line arguments minus 1
+      print STDERR "Usage: $prog -sp heirarchical_spice_infile glb_param_file output_file\n";
+      print STDERR "EXAMPLE: $prog -sp foo.sp glb_param.sp foo_mod.sp\n";
+      print STDERR "The output file is used by the optimizer\n";
+      exit;
+   }
+   $infile  = shift( @ARGV );
+   $glbfile = shift( @ARGV );
+   $outfile = shift( @ARGV );
+   $tmpfile = $infile."_tmp_opt_sp";
+   system("./gate_sub_flat.pl $infile $tmpfile mainlist");
+   system("./sue_spice.pl $glbfile $tmpfile $outfile");
+   system("./endsendshack.pl $outfile");
+   # system("rm -f $tmpfile");
 }
 elsif ( $opt_mod   == 1 ) {
-     if ($#ARGV != 2)  { 
-         print STDERR "Usage: $prog -mod modified_spice_file dio_data_file output_dio_file\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -mod foo_mod.sp ST9015var.dat foo_mod.dio\n";
-         print STDERR "foo_mod.dio contains the delay/leakage models for CCCs in foo_mod.sp\n";
-         exit;
-     }
-     $spfile = shift(@ARGV);
-     $diofile = shift(@ARGV);
-     $outfile = shift(@ARGV);
-     system("diogen -d $spfile $diofile $outfile");
-     system("putSectionInOpt.pl $spfile $spfile.txgate $transmission");
+   if( $#ARGV != 2 ) {
+      # $0 is the script name
+      print STDERR "Usage: $prog -mod modified_spice_file dio_data_file output_dio_file\n";
+      print STDERR "EXAMPLE: $prog -mod foo_mod.sp ST9015var.dat foo_mod.dio\n";
+      print STDERR "foo_mod.dio contains the delay/leakage models for CCCs in foo_mod.sp\n";
+      exit;
+   }
+   $spfile = shift(@ARGV);
+   $diofile = shift(@ARGV);
+   $outfile = shift(@ARGV);
+   system("diogen -d $spfile $diofile $outfile");
+   system("putSectionInOpt.pl $spfile $spfile.txgate $transmission");
 }
 elsif ( $opt_irsim == 1 ) {
-     if ($#ARGV < 3 || $#ARGV >=  5)  { 
-         print STDERR "Usage: $prog -irsim spice_file(with reasonble sizes) modified_spice_file irsim_tech_file #_irsim_runs  [optional]<.cmd file for IRSIM runs>\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -irsim foo.sp(back anotated) foo_mod.sp scmos30.prm 1000 <test_foo.cmd>(if you have it)\n";
-         print STDERR "The activity(duty) factors will be in file foo_mod.sp.power(duty) and also be included in foo_mod.sp\n";
-         print STDERR "If the user provides the .cmd file, s/he should also provide the #iterations\n";
-         exit;
-     }
-     $spfile = shift(@ARGV);
-     $modfile = shift(@ARGV);
-     $techfile = shift(@ARGV);
-     $numRuns = shift(@ARGV);
-     $actfile = $modfile.".power";
-     $dutyfile = $modfile.".duty";
-     if($#ARGV == 0) {
-          $cmdfile = shift(@ARGV);
-          system("diogen -p $spfile $modfile $techfile $numRuns $cmdfile");
-     }
-     else {
-          system("diogen -p $spfile $modfile $techfile $numRuns");
-     }
-     print "Warning: If the modified spice file already has a power/duty section in it, they WOULD be overwritten\n";
-#     print "This may result in error while solving it, Please delete those sections before hand\n";
-     system("putActFactInOpt.pl $modfile  $actfile");
-     system("putDutyFactInOpt.pl $modfile $dutyfile");
+   if( $#ARGV < 3 || $#ARGV >=  5 )  { 
+      print STDERR "Usage: $prog -irsim spice_file(with reasonble sizes) modified_spice_file irsim_tech_file #_irsim_runs  [optional]<.cmd file for IRSIM runs>\n"; # $0 is the script name
+      print STDERR "EXAMPLE: $prog -irsim foo.sp(back anotated) foo_mod.sp scmos30.prm 1000 <test_foo.cmd>(if you have it)\n";
+      print STDERR "The activity(duty) factors will be in file foo_mod.sp.power(duty) and also be included in foo_mod.sp\n";
+      print STDERR "If the user provides the .cmd file, s/he should also provide the #iterations\n";
+      exit;
+   }
+   $spfile = shift(@ARGV);
+   $modfile = shift(@ARGV);
+   $techfile = shift(@ARGV);
+   $numRuns = shift(@ARGV);
+   $actfile = $modfile.".power";
+   $dutyfile = $modfile.".duty";
+   if( $#ARGV == 0 ) {
+      $cmdfile = shift(@ARGV);
+      system("diogen -p $spfile $modfile $techfile $numRuns $cmdfile");
+   }
+   else {
+      system("diogen -p $spfile $modfile $techfile $numRuns");
+   }
+   print "Warning: If the modified spice file already has a power/duty section in it, they WOULD be overwritten\n";
+   # print "This may result in error while solving it, Please delete those sections before hand\n";
+   system("putActFactInOpt.pl $modfile  $actfile");
+   system("putDutyFactInOpt.pl $modfile $dutyfile");
 }
 elsif ( $opt_paf   == 1 ) {
-    if ($#ARGV != 1) 
-    { 
-        print STDERR "Usage: $prog -paf modified_spice_file file_with_activity_factors\n"; 
-        print STDERR "EXAMPLE: $prog -paf foo_mod.sp foo_mod.sp.power\n";
-        exit;
-    } 
-    $modfile = shift(@ARGV);
-    $actfile = shift(@ARGV);
-    system("putActFactInOpt.pl $modfile $actfile");
+   if( $#ARGV != 1 )  { 
+      print STDERR "Usage: $prog -paf modified_spice_file file_with_activity_factors\n"; 
+      print STDERR "EXAMPLE: $prog -paf foo_mod.sp foo_mod.sp.power\n";
+      exit;
+   } 
+   $modfile = shift(@ARGV);
+   $actfile = shift(@ARGV);
+   system( "putActFactInOpt.pl $modfile $actfile" );
 }
 elsif ( $opt_pdf   == 1 ) {
-    if ($#ARGV != 1) 
-    { 
-        print STDERR "Usage: $prog -pdf modified_spice_file file_with_duty_factors\n"; 
-        print STDERR "EXAMPLE: $prog -pdf foo_mod.sp foo_mod.sp.duty\n";
-        exit;
-    } 
-    $modfile = shift(@ARGV);
-    $dutyfile = shift(@ARGV);
-    system("putDutyFactInOpt.pl $modfile $dutyfile");
+   if( $#ARGV != 1 ) { 
+      print STDERR "Usage: $prog -pdf modified_spice_file file_with_duty_factors\n"; 
+      print STDERR "EXAMPLE: $prog -pdf foo_mod.sp foo_mod.sp.duty\n";
+      exit;
+   } 
+   $modfile = shift(@ARGV);
+   $dutyfile = shift(@ARGV);
+   system("putDutyFactInOpt.pl $modfile $dutyfile");
 }
 elsif ( $opt_sol   == 1 ) {
-     if ($#ARGV != 2)  { 
-         print STDERR "Usage: $prog -sol modified_spice_file delay_model_file opt_spec_file\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -sol foo_mod.sp foo_mod.dio foo.opt\n";
-         print STDERR "The results are generated as per the tasks and file names specified in opt_spec_file\n";
-         exit;
-     }
-     $modfile = shift(@ARGV);
-     $dumfile = $modfile."_optimize";
-     $diofile = shift(@ARGV);
-     $optfile = shift(@ARGV);
-     system("cp $modfile $dumfile");
-     system("cat $optfile >> $dumfile");
-     system("ciropt $dumfile $diofile");
-#     system("rm -f $dumfile");
+   if( $#ARGV != 2 ) {
+      # $0 is the script name
+      print STDERR "Usage: $prog -sol modified_spice_file delay_model_file opt_spec_file\n";
+      print STDERR "EXAMPLE: $prog -sol foo_mod.sp foo_mod.dio foo.opt\n";
+      print STDERR "The results are generated as per the tasks and file names specified in opt_spec_file\n";
+      exit;
+   }
+   $modfile = shift(@ARGV);
+   $dumfile = $modfile."_optimize";
+   $diofile = shift(@ARGV);
+   $optfile = shift(@ARGV);
+   system("cp $modfile $dumfile");
+   system("cat $optfile >> $dumfile");
+   system("ciropt $dumfile $diofile");
+   # system("rm -f $dumfile");
 }
 elsif ( $opt_bsu   == 1 ) {
-     if ($#ARGV != 1)  { 
-         print STDERR "Usage: $prog -bsu top_cell.sue data_file.out\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -bsu foo.sue fooDDET.out\n";
-         print STDERR "The resulting sue file(along with the hierarchy) will be in top_cell_opt.sue\n";
-         exit;
-     }
-     $suefile = shift(@ARGV);
-     $datafile = shift(@ARGV);
-     system("back_annotate.pl $suefile $datafile");  
+   if ($#ARGV != 1)  {
+      # $0 is the script name
+      print STDERR "Usage: $prog -bsu top_cell.sue data_file.out\n";
+      print STDERR "EXAMPLE: $prog -bsu foo.sue fooDDET.out\n";
+      print STDERR "The resulting sue file(along with the hierarchy) will be in top_cell_opt.sue\n";
+      exit;
+   }
+   $suefile = shift(@ARGV);
+   $datafile = shift(@ARGV);
+   system( "back_annotate.pl $suefile $datafile" );
 }
 elsif ( $opt_bsp   == 1 ) {
-     if ($#ARGV != 3)  { 
-         print STDERR "Usage: $prog -bsp data_file original_spice_file modified_spice_file output_spice_file\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -bsp fooDDET.out foo.sp foo_mod.sp foo_opt.sp \n";
-         print STDERR "foo_opt.sp contains the back annotated spice netlist\n";
-         exit;
-     }
-     $datafile = shift(@ARGV);
-     $spfile = shift(@ARGV);
-     $modfile = shift(@ARGV);
-     $outfile = shift(@ARGV);
-     system("opt2spice.pl $datafile $spfile $modfile $outfile");
+   if( $#ARGV != 3 )  { 
+      # $0 is the script name
+      print STDERR "Usage: $prog -bsp data_file original_spice_file modified_spice_file output_spice_file\n";
+      print STDERR "EXAMPLE: $prog -bsp fooDDET.out foo.sp foo_mod.sp foo_opt.sp \n";
+      print STDERR "foo_opt.sp contains the back annotated spice netlist\n";
+      exit;
+   }
+   $datafile = shift(@ARGV);
+   $spfile = shift(@ARGV);
+   $modfile = shift(@ARGV);
+   $outfile = shift(@ARGV);
+   system("opt2spice.pl $datafile $spfile $modfile $outfile");
 }
 elsif ( $opt_beldo == 1 ) {
-     if ($#ARGV < 3) 
-     { 
-         print STDERR "Usage: $prog -beldo data_file original_spice_file modified_spice_file output_eldo_file <NMOS name> <PMOS name> (both optional)\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -beldo fooDDET.out foo.sp foo_mod.sp foo_opt.eldo nhvt psvt\n";
-         print STDERR "foo_opt.eldo is the output file. Default NMOS and PMOS names are \"nsvt\" and \"psvt\" resp.\n";
-         exit;
-     }
-     $datafile = shift(@ARGV);
-     $spfile = shift(@ARGV);
-     $modfile = shift(@ARGV);
-     $eldofile = shift(@ARGV);
-     $tmpfile = $modfile."_tmp_opt_sp";
-     if($#ARGV == 1)
-     {
-          $nName = shift(@ARGV);
-          $pName = shift(@ARGV);
-     }
-     elsif ($#ARGV == 0)
-     {
-          $nName = shift(@ARGV);
-          $pName = "psvt";
-     }
-     else
-     {
-          $nName = "nsvt";
-          $pName = "psvt";
-     }
-     system("opt2spice.pl $datafile $spfile $modfile $tmpfile");
-     system("spiceToEldo.pl $tmpfile $eldofile $nName $pName");
-     system("rm -f $tmpfile");
+   if( $#ARGV < 3 )  { 
+      print STDERR "Usage: $prog -beldo data_file original_spice_file modified_spice_file output_eldo_file <NMOS name> <PMOS name> (both optional)\n"; # $0 is the script name
+      print STDERR "EXAMPLE: $prog -beldo fooDDET.out foo.sp foo_mod.sp foo_opt.eldo nhvt psvt\n";
+      print STDERR "foo_opt.eldo is the output file. Default NMOS and PMOS names are \"nsvt\" and \"psvt\" resp.\n";
+      exit;
+   }
+   $datafile = shift(@ARGV);
+   $spfile = shift(@ARGV);
+   $modfile = shift(@ARGV);
+   $eldofile = shift(@ARGV);
+   $tmpfile = $modfile."_tmp_opt_sp";
+   if    ( $#ARGV == 1 ) {
+      $nName = shift(@ARGV);
+      $pName = shift(@ARGV);
+   }
+   elsif ( $#ARGV == 0 ) {
+      $nName = shift(@ARGV);
+      $pName = "psvt";
+   }
+   else {
+      $nName = "nsvt";
+      $pName = "psvt";
+   }
+   system("opt2spice.pl $datafile $spfile $modfile $tmpfile");
+   system("spiceToEldo.pl $tmpfile $eldofile $nName $pName");
+   system("rm -f $tmpfile");
 }
 elsif ( $opt_ggp   == 1 ) {
-     if ($#ARGV != 0)  { 
-         print STDERR "Usage: $prog -ggp ggp_input_file\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -ggp fooDDET\n";
-         print STDERR "The solution will be in fooDDET.out\n";
-         exit;
-     }
-     $ggpfile = shift(@ARGV);
-     system("ggpsol -d $ggpfile");
+   if( $#ARGV != 0 ) { 
+      print STDERR "Usage: $prog -ggp ggp_input_file\n"; # $0 is the script name
+      print STDERR "EXAMPLE: $prog -ggp fooDDET\n";
+      print STDERR "The solution will be in fooDDET.out\n";
+      exit;
+   }
+   $ggpfile = shift(@ARGV);
+   system("ggpsol -d $ggpfile");
 }
 elsif ( $opt_ggpx  == 1 ) {
-     if ($#ARGV != 0)  { 
-         print STDERR "Usage: $prog -ggpx ggp_input_file\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -ggpx fooDDET\n";
-         print STDERR "The solution will be in fooDDET.out\n";
-         exit;
-     }
-     $ggpfile = shift(@ARGV);
-     system("ggpsolexp -d $ggpfile");
+   if( $#ARGV != 0 ) { 
+      # $0 is the script name
+      print STDERR "Usage: $prog -ggpx ggp_input_file\n"; 
+      print STDERR "EXAMPLE: $prog -ggpx fooDDET\n";
+      print STDERR "The solution will be in fooDDET.out\n";
+      exit;
+   }
+   $ggpfile = shift(@ARGV);
+   system("ggpsolexp -d $ggpfile");
 }
 elsif ( $opt_psn   == 1 ) {
-     if ($#ARGV != 0)  { 
-         print STDERR "Usage: $prog -psn top_cell.sue\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -psn foo32.sue\n";
-         print STDERR "The same sue hierarchy results, now with names.\n";
-         print STDERR "Names are given only to cells in the same directory as the top_cell.\n";
-         print STDERR "Note that this does not name buses or wires that are not\n";
-         print STDERR "attached to a name-net label.\n";
-         exit;
-     }
-     $suefile = shift(@ARGV);
-     system("putSueNames.pl $suefile");
+   if( $#ARGV != 0 ) { 
+      print STDERR "Usage: $prog -psn top_cell.sue\n"; # $0 is the script name
+      print STDERR "EXAMPLE: $prog -psn foo32.sue\n";
+      print STDERR "The same sue hierarchy results, now with names.\n";
+      print STDERR "Names are given only to cells in the same directory as the top_cell.\n";
+      print STDERR "Note that this does not name buses or wires that are not\n";
+      print STDERR "attached to a name-net label.\n";
+      exit;
+   }
+   $suefile = shift(@ARGV);
+   system("putSueNames.pl $suefile");
 }
 elsif ( $opt_extract == 1 ) {
-     if ($#ARGV != 1)  { 
-         print STDERR "Usage: $prog -extract SolutionFileListAndVariableListFile matlabFileName\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -extract foo.data matlab.dat\n";
-         print STDERR "The matlab.dat file will contain the info about what column is which variable.\n";
-         exit;
-     }
-     $datafile = shift(@ARGV);
-     $matfile = shift(@ARGV);
-     system("ExtractValues.pl $datafile $matfile");
+   if( $#ARGV != 1 ) { 
+      print STDERR "Usage: $prog -extract SolutionFileListAndVariableListFile matlabFileName\n"; # $0 is the script name
+      print STDERR "EXAMPLE: $prog -extract foo.data matlab.dat\n";
+      print STDERR "The matlab.dat file will contain the info about what column is which variable.\n";
+      exit;
+   }
+   $datafile = shift(@ARGV);
+   $matfile = shift(@ARGV);
+   system("ExtractValues.pl $datafile $matfile");
 }
 elsif ( $opt_psvo    == 1 ) {
-     if ($#ARGV < 2) 
-     { 
-         print STDERR "Usage: $prog -psvo ggpsol_input_file solution_file Vthmargin(absolute) <old_VthVal file> (if it exists)\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -psvo fooDDET fooDDETprev.out 0.01 <fooDDETprev_VthVal\n";
-         print STDERR "The output ggpsol file : fooDDET_snapVth   The file with snapped Vth values: fooDDET_VthVal or the fooDDETprev_VthVal file if specified\n";
-         exit;
-     }
-     $ggpfile = shift(@ARGV);
-     $resfile = shift(@ARGV);
-     $margin = shift(@ARGV);
-     if($#ARGV == 3)
-     {
-          $oldVthFile = shift(@ARGV);
-          system("PutSnappedVthValues.pl $ggpfile $resfile $margin $oldVthFile");
-     }
-     else
-     {
-          system("PutSnappedVthValues.pl $ggpfile $resfile $margin ");
-     }
+   
+   if( $#ARGV < 2 ) { 
+      # $0 is the script name
+      print STDERR "Usage: $prog -psvo ggpsol_input_file solution_file Vthmargin(absolute) <old_VthVal file> (if it exists)\n"; 
+      print STDERR "EXAMPLE: $prog -psvo fooDDET fooDDETprev.out 0.01 <fooDDETprev_VthVal\n";
+      print STDERR "The output ggpsol file : fooDDET_snapVth   The file with snapped Vth values: fooDDET_VthVal or the fooDDETprev_VthVal file if specified\n";
+      exit;
+   }
+   $ggpfile = shift( @ARGV );
+   $resfile = shift( @ARGV );
+   $margin  = shift( @ARGV );
+   if( $#ARGV == 3 ) {
+      $oldVthFile = shift(@ARGV);
+      system( "PutSnappedVthValues.pl $ggpfile $resfile $margin $oldVthFile" );
+   }
+   else {
+      system( "PutSnappedVthValues.pl $ggpfile $resfile $margin" );
+   }
 }
 elsif ( $opt_gpIter  == 1 ) {
      if ($#ARGV < 4)  { 
@@ -321,24 +310,22 @@ EOP
      system("runDelAreaPowIter.pl $templatefile $newfile $constraint $logfile nosnap $stt");
 }
 elsif ( $opt_area    == 1 ) {
-     if ($#ARGV != 0)  { 
-         print STDERR "Usage: $prog -area irsimFile\n"; # $0 is the script name
-         print STDERR "EXAMPLE: $prog -area foo.sim\n";
-         print STDERR "The script adds the total gate cap and the total wire cap.\n";
-         exit;
-     }
-     $simfile = shift(@ARGV);
-     system("area_estimate.pl $simfile");  
+   if( $#ARGV != 0 ) { 
+      # $0 is the script name
+      print STDERR "Usage: $prog -area irsimFile\n";
+      print STDERR "EXAMPLE: $prog -area foo.sim\n";
+      print STDERR "The script adds the total gate cap and the total wire cap.\n";
+      exit;
+   }
+   $simfile = shift(@ARGV);
+   system("area_estimate.pl $simfile");  
 }
 else {
-     print "ERROR: No options given\n";
+   print "ERROR: No options given\n";
 }
-     
-#print "$opt_sp asdf \n";
 
-
-##############################################################################
-
+################################################################################
+################################################################################
 sub Usage {
 print << "EOM";
 Usage: $prog [option] respective_fileNames
