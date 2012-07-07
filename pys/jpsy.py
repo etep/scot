@@ -39,10 +39,13 @@ def Unpickle( fn ):
 ################################################################################
 ################################################################################
 def SwapFext( filename, fext ):
-   toks = filename.split( '.' )
-   toks.pop()
+   ( path, fn ) = os.path.split( filename )
+   toks = fn.split( '.' )
+   if len( toks ) > 1:
+      toks.pop()
    toks.append( fext )
-   return '.'.join( toks )
+   fn = '.'.join( toks )
+   return os.path.join( path, fn )
 
 ################################################################################
 ################################################################################
@@ -81,7 +84,7 @@ def SystemWrapperPipelined( cmd, verbose = False, trial = False ):
     return output
   return []
 
-def SystemWrapper( cmd, verbose = False, trial = False ):
+def SystemWrapper( cmd, verbose = True, trial = False ):
    dt = 0
    if verbose:
       PrintTimeStamp()
