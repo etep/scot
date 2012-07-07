@@ -1,12 +1,13 @@
 #!/usr/bin/python
-import sys, os, re, time, shutil, jpsy
+import sys, os, re, math, time, shutil, jpsy
 ################################################################################
 ################################################################################
 class Params:
    verbose = True
    nirsims = 8000
    EDTrade = True
-   numInteriorPoints = 2
+   numInteriorPoints = 20
+   interiorPointZeroFraction = 1e-6
    envname = 'SCOT_HOME_DIR'
    envtemp = 'SCOT_TEMP_DIR'
    def SetupTempPath( self ):
@@ -49,6 +50,23 @@ class Params:
       
       self.SetupTempPath()
    
+
+################################################################################
+################################################################################
+def logspace( beg, end, numpoints ):
+   numpoints += 2
+   beg = float( beg )
+   end = float( end )
+   expbeg  = math.log( beg, 10.0 )
+   expend  = math.log( end, 10.0 )
+   logvec = []
+   delta  = expend - expbeg
+   assert delta > 0.0
+   assert numpoints > 2
+   step = delta / ( float( numpoints ) - 1.0 )
+   for idx in range( numpoints ):
+      logvec.append( 10.0**( expbeg + float(idx) * step ) )
+   return logvec[ 1:-1 ]
 
 ################################################################################
 ################################################################################
@@ -108,9 +126,6 @@ def FindMinDelay( params, origGpFile ):
    
    jpsy.WriteLinesToFile( lines, minDGPFile )
    ggpsolcmd = ' '.join( [ params.ggpsolbin, '-d', minDGPFile ] )
-   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
-   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
-   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
    jpsy.SystemWrapper( ggpsolcmd )
    
    solFile  = jpsy.SwapFext( minDGPFile, 'out' )
@@ -128,14 +143,29 @@ def FindMinEnergy( params, origGpFile ):
    
    jpsy.WriteLinesToFile( lines, minEGPFile )
    ggpsolcmd = ' '.join( [ params.ggpsolbin, '-d', minEGPFile ] )
-   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
-   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
-   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
    jpsy.SystemWrapper( ggpsolcmd )
    
    solFile  = jpsy.SwapFext( minEGPFile, 'out' )
    minNrg   = FindOptimalValue( solFile, 'E_TOTAL' )
    return minNrg
+
+def FindInteriorPoint( params, origGpFile, kidx, kval ):
+   
+   gpfile = jpsy.SwapFext( origGpFile, 'ed.%03d.gp' % kidx )
+   
+   lines = jpsy.ReadFileLines( origGpFile )
+   assert lines[0].index( 'minimize' ) == 0
+   lines[0] = 'minimize obj_epi_var;'
+   lines.append( 'obj_epi_var_constraint : POMAX + %g * E_TOTAL < obj_epi_var;' % kval )
+   print 'obj_epi_var_constraint : POMAX + %e * E_TOTAL < obj_epi_var;' % kval
+      
+   jpsy.WriteLinesToFile( lines, gpfile )
+   ggpsolcmd = ' '.join( [ params.ggpsolbin, '-d', gpfile ] )
+   jpsy.SystemWrapper( ggpsolcmd )
+   
+   solFile  = jpsy.SwapFext( gpfile, 'out' )
+   edpoint  = FindOptimalEDPoint( solFile )
+   return edpoint
 
 def GetSanitizedGPFile( params ):
    oldGpfn = os.path.join( params.runpath, 'MINDDDET' )
@@ -147,9 +177,24 @@ def DoEDTradeOff( params ):
    gpfile = GetSanitizedGPFile( params )
    minDel = FindMinDelay( params, gpfile )
    minNrg = FindMinEnergy( params, gpfile )
+   midpoint = minDel / minNrg
+   beg  = midpoint * params.interiorPointZeroFraction
+   end  = midpoint / params.interiorPointZeroFraction
+   kvec = logspace( beg, end, params.numInteriorPoints )
+   edpoints = []
+   for kidx, kval in enumerate( kvec ):
+      edpoint = FindInteriorPoint( params, gpfile, kidx, kval )
+      edpoints.append( edpoint )
+   print ''
+   print ''
+   print ''
    print 'minDelay  =', minDel
    print 'minEnergy =', minNrg
-   assert False
+   for edpoint in edpoints:
+      print edpoint
+   print ''
+   print ''
+   print ''
 
 ################################################################################
 ################################################################################
