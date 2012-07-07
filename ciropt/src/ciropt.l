@@ -157,37 +157,36 @@ END_OPTIMIZE    (".ends"|".ENDS")
  /* Rules for the .GLBCNSTR Section on;y...it contains the most symbols. */
 {BEG_GLBCNSTR}             { BEGIN( GLB_CNSTR );return GLBCNSTR; }
 <GLB_CNSTR>{END_GLBCNSTR}  { BEGIN( N ); return ENDS;}
-<GLB_CNSTR>"A"		{ return AREA; }
-<GLB_CNSTR>"E"		{ return ENGY; }
-<GLB_CNSTR>"P"		{ return PWR; }
-<GLB_CNSTR>"D"		{ return DELAY; }
-<GLB_CNSTR>"MIN_WIDTH"	{ return MIN_WIDTH; }
-<GLB_CNSTR>"MAX_WIDTH"	{ return MAX_WIDTH; }
-<GLB_CNSTR>"MIN_VTH_P"	{ return MIN_VTH_P; }
-<GLB_CNSTR>"MAX_VTH_P"	{ return MAX_VTH_P; }
-<GLB_CNSTR>"MIN_VTH_N"	{ return MIN_VTH_N; }
-<GLB_CNSTR>"MAX_VTH_N"	{ return MAX_VTH_N; }
-<GLB_CNSTR>"MAX_VDD"	{ return MAX_VDD; }
-<GLB_CNSTR>"MIN_VDD"	{ /*printf("got here\n");*/ 
-		                     return MIN_VDD; }
-<GLB_CNSTR>"LogicDepthFactor"	{ return LDF; }
-<GLB_CNSTR>"OnlyFormulateProblem"	{ return OFP; }
-<GLB_CNSTR>"DoNotUniquify"	{ return DNU; }
-<GLB_CNSTR>"DoNotIncludeLeakage"	{ return DNIL; }
-<GLB_CNSTR>"NoRiseFallTiming"	{ return NRF; }
-<GLB_CNSTR>"NoAllEdgeTimeConstraint"	{ return NAETC; }
-<GLB_CNSTR>"GlobalVar"	{ return GLBVAR; }
-<GLB_CNSTR>"SetUniformKappas"	{ return SUK; }
-<GLB_CNSTR>"SetCriticalityKappas"	{ return SCK; }
-<GLB_CNSTR>"UseDefActFact"	{ return UDAF; }
-<GLB_CNSTR>"AntiCorr"	{ return ANTICORR; }
-<GLB_CNSTR>"IntPrecharge"	{ return INTPRECHARGE; }
+<GLB_CNSTR>"A"          { return AREA;       }
+<GLB_CNSTR>"E"          { return ENGY;       }
+<GLB_CNSTR>"P"          { return PWR;        }
+<GLB_CNSTR>"D"          { return DELAY;      }
+<GLB_CNSTR>"MIN_WIDTH"  { return MIN_WIDTH;  }
+<GLB_CNSTR>"MAX_WIDTH"  { return MAX_WIDTH;  }
+<GLB_CNSTR>"MIN_VTH_P"  { return MIN_VTH_P;  }
+<GLB_CNSTR>"MAX_VTH_P"  { return MAX_VTH_P;  }
+<GLB_CNSTR>"MIN_VTH_N"  { return MIN_VTH_N;  }
+<GLB_CNSTR>"MAX_VTH_N"  { return MAX_VTH_N;  }
+<GLB_CNSTR>"MAX_VDD"    { return MAX_VDD;    }
+<GLB_CNSTR>"MIN_VDD"    { return MIN_VDD;    }
+<GLB_CNSTR>"LogicDepthFactor"        { return LDF; }
+<GLB_CNSTR>"OnlyFormulateProblem"    { return OFP; }
+<GLB_CNSTR>"DoNotUniquify"           { return DNU; }
+<GLB_CNSTR>"SetUniformKappas"        { return SUK; }
+<GLB_CNSTR>"SetCriticalityKappas"    { return SCK; }
+<GLB_CNSTR>"NoRiseFallTiming"        { return NRF; }
+<GLB_CNSTR>"DoNotIncludeLeakage"     { return DNIL; }
+<GLB_CNSTR>"UseDefActFact"           { return UDAF; }
+<GLB_CNSTR>"NoAllEdgeTimeConstraint" { return NAETC; }
+<GLB_CNSTR>"GlobalVar"               { return GLBVAR; }
+<GLB_CNSTR>"AntiCorr"                { return ANTICORR; }
+<GLB_CNSTR>"IntPrecharge"            { return INTPRECHARGE; }
 <GLB_CNSTR>"t_rise"	{ return TRISE; }
 <GLB_CNSTR>"t_fall"	{ return TFALL; }
-<GLB_CNSTR>"RF"	{ return RF; }
-<GLB_CNSTR>"FR"	{ return FR; }
-<GLB_CNSTR>"rf"	{ return RF; }
-<GLB_CNSTR>"fr"	{ return FR; }
+<GLB_CNSTR>"RF"      { return RF; }
+<GLB_CNSTR>"FR"      { return FR; }
+<GLB_CNSTR>"rf"      { return RF; }
+<GLB_CNSTR>"fr"      { return FR; }
 <GLB_CNSTR>{identifier}		{ HandleToken();return IDENTIFIER; }
 
 
