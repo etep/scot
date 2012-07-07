@@ -45,11 +45,12 @@ int main( int argc, char* argv[] ) {
    unsigned numberOfProcessedFiles = 0;
 
    for( int i = 0; i < aa.getNumberOfInputFiles(); i ++ ) {
+
       filename = vecString[i];
 
       ggpin = fopen( filename.c_str(), "r" );
       
-      if( ggpin == ( FILE * )NULL ) {
+      if( ggpin == ( FILE * ) NULL ) {
 
          cerr << executablePrompt << "file open error: " << filename.c_str() << endl;
          continue;
@@ -81,18 +82,14 @@ int main( int argc, char* argv[] ) {
          GP->solveUsingMOSEKdgopt( filename, *GGP );
       }
 
-      /*
-      if( aa.isMatlabOn() )
-      {
-        if( !GP->toMatlabFile( cnvt::changeExtension(filename,"m") ) )
-          cerr << "there are equality constraints." << endl;
-      }
-      */
-
-      /*
-      if( aa.isMakeMatlabFileOn() ) GGP->makeMatlabFile( filename );
-      */
-
+      // if( aa.isMatlabOn() ) {
+      //    if( !GP->toMatlabFile( cnvt::changeExtension(filename,"m") ) ) {
+      //       cerr << "there are equality constraints." << endl;
+      //    }
+      // }
+      
+      // if( aa.isMakeMatlabFileOn() ) GGP->makeMatlabFile( filename );
+      
       fclose( ggpin );
       delete GGP;
       delete GP;
