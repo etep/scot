@@ -4,7 +4,9 @@ import sys, os, re, time, shutil, jpsy
 ################################################################################
 class Params:
    verbose = True
-   numruns = 100
+   nirsims = 100
+   EDTrade = True
+   numInteriorPoints = 2
    envname = 'SCOT_HOME_DIR'
    envtemp = 'SCOT_TEMP_DIR'
    def SetupTempPath( self ):
@@ -42,8 +44,112 @@ class Params:
       self.prmfile  = os.path.join( self.tekHome, 'scmos90.prm' )
       self.cmdfile  = os.path.join( self.txtHome, 'optcmd.txt'  )
       
+      self.ggpsolHome = os.path.join( self.scotHome, 'ggpsolexp', 'bin' )
+      self.ggpsolbin  = os.path.join( self.ggpsolHome, 'ggpsolexp' )
+      
       self.SetupTempPath()
    
+
+################################################################################
+################################################################################
+def AddEDTradeConstraintsToHsp( hspfile ):
+   lines = jpsy.ReadFileLines( hspfile )
+   lines.append( '*glbcnst: OnlyFormulateProblem;'   )
+   lines.append( '*glbcnst: E     < 99999999999999;' )
+   lines.append( '*glbcnst: POMAX < 99999999999999;' )
+   jpsy.WriteLinesToFile( lines, hspfile )
+
+def FindOptimalValue( solFile, varname ):
+   
+   lines = jpsy.ReadFileLines( solFile )
+   
+   inoptvars = False
+   for line in lines:
+      if line.find( 'Inequality Constraints:'  ) == 0: break
+      if inoptvars:
+         toks = line.split()
+         if len( toks ) == 2:
+            name  = toks[0]
+            value = float( toks[1] )
+            if name == varname:
+               return value
+      if line.find( 'Optimal Variable Values:' ) == 0: inoptvars = True
+   assert False
+
+def FindOptimalEDPoint( solFile ):
+   
+   pomax  = None
+   etotal = None
+   lines  = jpsy.ReadFileLines( solFile )
+   
+   inoptvars = False
+   for line in lines:
+      if line.find( 'Inequality Constraints:'  ) == 0: break
+      if inoptvars:
+         toks = line.split()
+         if len( toks ) == 2:
+            name  = toks[0]
+            value = float( toks[1] )
+            if name == 'POMAX':   pomax  = value
+            if name == 'E_TOTAL': etotal = value
+      if line.find( 'Optimal Variable Values:' ) == 0: inoptvars = True
+   assert pomax  is not None
+   assert etotal is not None
+   return ( etotal, pomax )
+
+def FindMinDelay( params, origGpFile ):
+   
+   minDGPFile = jpsy.SwapFext( origGpFile, 'min.delay.gp' )
+   
+   lines = jpsy.ReadFileLines( origGpFile )
+   assert lines[0].index( 'minimize' ) == 0
+   lines[0] = 'minimize obj_epi_var;'
+   lines.append( 'obj_epi_var_constraint : POMAX < obj_epi_var;' )
+   
+   jpsy.WriteLinesToFile( lines, minDGPFile )
+   ggpsolcmd = ' '.join( [ params.ggpsolbin, '-d', minDGPFile ] )
+   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
+   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
+   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
+   jpsy.SystemWrapper( ggpsolcmd )
+   
+   solFile  = jpsy.SwapFext( minDGPFile, 'out' )
+   minDel   = FindOptimalValue( solFile, 'POMAX' )
+   return minDel
+
+def FindMinEnergy( params, origGpFile ):
+   
+   minEGPFile = jpsy.SwapFext( origGpFile, 'min.energy.gp' )
+   
+   lines = jpsy.ReadFileLines( origGpFile )
+   assert lines[0].index( 'minimize' ) == 0
+   lines[0] = 'minimize obj_epi_var;'
+   lines.append( 'obj_epi_var_constraint : E_TOTAL < obj_epi_var;' )
+   
+   jpsy.WriteLinesToFile( lines, minEGPFile )
+   ggpsolcmd = ' '.join( [ params.ggpsolbin, '-d', minEGPFile ] )
+   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
+   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
+   # -- TODO -- remove -- print '----------------------------------------------------------------------------------------------------------------'
+   jpsy.SystemWrapper( ggpsolcmd )
+   
+   solFile  = jpsy.SwapFext( minEGPFile, 'out' )
+   minNrg   = FindOptimalValue( solFile, 'E_TOTAL' )
+   return minNrg
+
+def GetSanitizedGPFile( params ):
+   oldGpfn = os.path.join( params.runpath, 'MINDDDET' )
+   newGpfn = jpsy.SwapFext( oldGpfn, 'gp' )
+   shutil.copy( oldGpfn, newGpfn )
+   return newGpfn
+
+def DoEDTradeOff( params ):
+   gpfile = GetSanitizedGPFile( params )
+   minDel = FindMinDelay( params, gpfile )
+   minNrg = FindMinEnergy( params, gpfile )
+   print 'minDelay  =', minDel
+   print 'minEnergy =', minNrg
+   assert False
 
 ################################################################################
 ################################################################################
@@ -52,16 +158,26 @@ params = Params()
 hspfile = sys.argv[1]
 sspfile = jpsy.SwapFext( hspfile, 'ssp' )
 diofile = jpsy.SwapFext( hspfile, 'dio' )
+
+# copy the hspice file into the tmp/run path
+assert os.path.isfile( hspfile )
+shutil.copy( hspfile, os.path.join( params.runpath, hspfile ) )
+
+hspfile = os.path.join( params.runpath, hspfile )
 sspfile = os.path.join( params.runpath, sspfile )
 diofile = os.path.join( params.runpath, diofile )
 
 assert os.path.isfile( hspfile )
+if params.EDTrade:
+   AddEDTradeConstraintsToHsp( hspfile )
 
 ( path, filename ) = os.path.split( hspfile )
 if path != '': os.chdir( path )
 
+
+
 hspCmd = ' '.join( [ params.optpy, '-hsp', hspfile, params.glbfile, sspfile ] )
-irsCmd = ' '.join( [ params.optpy, '-irs', hspfile, sspfile, params.prmfile, str( params.numruns ) ] )
+irsCmd = ' '.join( [ params.optpy, '-irs', hspfile, sspfile, params.prmfile, str( params.nirsims ) ] )
 sspCmd = ' '.join( [ params.optpy, '-ssp', sspfile, params.datfile, diofile ] )
 solCmd = ' '.join( [ params.optpy, '-sol', diofile, sspfile, params.cmdfile ] )
 
@@ -70,6 +186,8 @@ jpsy.SystemWrapper( irsCmd, verbose = params.verbose, trial = False )
 jpsy.SystemWrapper( sspCmd, verbose = params.verbose, trial = False )
 jpsy.SystemWrapper( solCmd, verbose = params.verbose, trial = False )
 
+if params.EDTrade:
+   DoEDTradeOff( params )
 
 
 
