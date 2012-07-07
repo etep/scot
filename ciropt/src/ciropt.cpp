@@ -23,9 +23,6 @@ extern map<string, int> glbVars;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 int ciroptparse();
-int errorReport( const  string & );
-void errorBasedHalt();
-bool errorExist();
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 string dio_filename;
@@ -47,6 +44,21 @@ const string ggp::OBJECTIVE_LABEL = " obj";
 const string ggp::AUX_INEQ_LABEL_CONJ = "-";
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+int errorReport( const string & em ) {
+
+   cerr << em << endl;
+
+   exit( -1 );
+   return -1;
+}
+void errorBasedHalt() {
+   return;
+}
+bool errorExist() {
+   return false;
+}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char ** argv ) {
    
    //fprintf(stderr, "**Stanford Optimization Project**\n");
@@ -64,11 +76,11 @@ int main( int argc, char ** argv ) {
    // dioin is a (file) pointer pointing to the .dio file
    ciroptin = fopen( spFileName.c_str(),  "r" );
    dioin    = fopen( dioFileName.c_str(), "r" );
+   
    if( ciroptin == NULL ) {
       errorReport( "file open error: " + spFileName );
    }
-   
-   if( dioin == NULL ) {
+   if( dioin    == NULL ) {
       errorReport( "file open error: " + dioFileName );
    }
 
@@ -118,20 +130,5 @@ int main( int argc, char ** argv ) {
    delete op;
    delete nw;
    return 0;
-}
-
-int errorReport( const string & em ) {
-   cerr << em << endl;
-   exit( -1 );
-
-   return -1;
-}
-
-void errorBasedHalt() {
-   return;
-}
-
-bool errorExist() {
-   return false;
 }
 
