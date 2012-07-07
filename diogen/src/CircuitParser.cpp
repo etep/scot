@@ -101,7 +101,7 @@ void CircuitParser::generateDio( ostream &o, bool printToFile ) {
 
    for( it = subcircuits.begin(); it != subcircuits.end(); it++ ) {
 
-      Subcircuit * currentSub = i->second;
+      Subcircuit * currentSub = it->second;
       currentSub->generateDio( o, constants, printToFile );
    }
 }
