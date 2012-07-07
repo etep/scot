@@ -361,6 +361,7 @@ bool ggp::toMatlabFile( const string & fileName ) {
 }
 
 void ggp::solveUsingMOSEKdgopt( const string & fileName, ggp & GGP ) {
+   
    assert( isGP() );
    updateCnstPosys();
 
