@@ -242,9 +242,10 @@ private:
    prob_dist u_dist, v_dist;
    unsigned M;
 
-   // for storage of results of synthesis and analysis
-   // optimal values
-   std::vector<std::map<std::string,double> > optVHist;
+   // optimal values history: for storage of results of synthesis and analysis optimal values
+   // a vector of maps:
+   // each map: variable name => optimal value
+   std::vector< std::map< std::string, double> > optVHist;
 
    // Monte Carlo
    std::map<monte_carlo,std::vector<std::map<std::string,ProbDist *> > > monteHist;
@@ -364,11 +365,13 @@ public:
       return v_dist;
    }
 
-   // std::string & getDistribution()
-   //{ assert( objective == "stat_delay" ); return distribution; }
+   // std::string & getDistribution() {
+   //    assert( objective == "stat_delay" ); return distribution;
+   // }
 
-   //unsigned getNumberOfMonteCarlos()
-   //{ assert( objective == "stat_delay" ); return N; }
+   // unsigned getNumberOfMonteCarlos() {
+   //    assert( objective == "stat_delay" ); return N;
+   // }
 
    monte_carlo getMonte() {
       assert( objective == "stat_delay_update" || objective == "stat_delay_CritUpdate" );
@@ -382,11 +385,13 @@ public:
 
    double getKmax() {
       assert( objective == "stat_delay_update" || objective == "stat_delay_CritUpdate" );
-      if( objective == "stat_delay_CritUpdate" )
+      
+      if( objective == "stat_delay_CritUpdate" ) {
          return kmax;
-      else
+      }
+      else {
          return 0;
-
+      }
    }
 
    double getStartingValue() {
@@ -431,57 +436,42 @@ public:
       return optVHist;
    }
 
-   std::map<std::string,double> & getOptValues( unsigned num ) {
+   std::map< std::string,double > & getOptValues( unsigned num ) {
       assert( num < optVHist.size() );
-      return optVHist[num];
+      return optVHist[ num ];
    }
 
    std::vector<double> getOptWidthVector( size_t num ) ;
 
    // ANALYSIS
-   std::map<std::string, ProbDist *> & getMonteCarlo
-   ( monte_carlo & monte,opt_prob_generator & op, unsigned num, double p );
+   std::map< std::string, ProbDist *> & getMonteCarlo ( monte_carlo & monte,opt_prob_generator & op, unsigned num, double p );
+   std::map< std::string, double    > & getCrtcMap    ( monte_carlo & monte,opt_prob_generator & op, size_t   num, double p );
 
-   std::map<std::string,double> & getCrtcMap
-   ( monte_carlo & monte,opt_prob_generator & op, size_t num , double p );
+   std::map<std::string,double> & getNomAnlys( opt_prob_generator & op, unsigned num );
+   std::vector<double> & getPathLengths   ( opt_prob_generator & op, unsigned num );
+   std::vector<double> & getPathVariances ( opt_prob_generator & op, unsigned num );
 
-   std::map<std::string,double> & getNomAnlys
-   ( opt_prob_generator & op, unsigned num );
-
-   std::vector<double> & getPathLengths
-   ( opt_prob_generator & op, unsigned num );
-
-   std::vector<double> & getPathVariances
-   ( opt_prob_generator & op, unsigned num );
-
-   std::vector<double> & getGateDios
-   ( opt_prob_generator & op, unsigned num, const std::string cccName );
-
+   std::vector<double> & getGateDios( opt_prob_generator & op, unsigned num, const std::string cccName );
 
    std::vector<std::string> & getGateDioNames() {
       return gateDioNames;
    }
 
-   std::map<std::string,double> & getDetCrtcMap
-   ( opt_prob_generator & op, size_t num );
+   std::map<std::string,double> & getDetCrtcMap( opt_prob_generator & op, size_t num );
 
    // storers
-   void store( std::map<std::string,double> & ov ) {
-      optVHist.push_back( ov );
+   void store( std::map< std::string, double > & ov ) {
+      
+      optVHist.push_back( ov );      
    }
 
-   void store( std::map<std::string,ProbDist *> & mc,
-               std::map<std::string,double> & criticality,
-               const monte_carlo & monte ) {
+   void store( std::map< std::string, ProbDist * > & mc, std::map<std::string,double> & criticality, const monte_carlo & monte ) {
       monteHist[monte].push_back( mc );
       std::vector<std::map<std::string,ProbDist *> > res =  monteHist[monte];
       statCrtcHist[monte].push_back( criticality );
    }
 
-   void store( std::map<std::string,double> & ov,
-               std::map<std::string,ProbDist *> & mc,
-               std::map<std::string,double> & criticality,
-               monte_carlo & monte ) {
+   void store( std::map< std::string, double > & ov, std::map<std::string,ProbDist *> & mc, std::map<std::string,double> & criticality, monte_carlo & monte ) {
       store( ov );
       store( mc, criticality, monte );
    }
