@@ -2,10 +2,10 @@
 #include <vector>
 #include <fstream>
 
-#include <SystemWrapper.hpp>
-#include <randomc.hpp>
-#include <cnvt.hpp>
 #include <opt.hpp>
+#include <cnvt.hpp>
+#include <randomc.hpp>
+#include <SystemWrapper.hpp>
 
 using namespace std;
 
@@ -17,10 +17,7 @@ bool errorExist();
 extern string ERROR_STRING;
 extern string EMPTY_STRING;
 
-/*
- * CLASS global_parameters MEMBER FUNCTION DEFINITIONS
- */
-
+// CLASS global_parameters MEMBER FUNCTION DEFINITIONS
 void global_parameters::put( const string & s,const string & d ) {
    if( gvMap.find( s ) != gvMap.end() ) {
       ciropterror( "multiple global paramter assignment error: global parameter " + s + " has previously been defined." );
@@ -42,10 +39,8 @@ string global_parameters::getValueOf( const string s ) {
    return itr->second;
 }
 
-/*
- * CLASS opt_prob_generator MEMBER FUNCTION DEFINITIONS
- */
 
+// CLASS opt_prob_generator MEMBER FUNCTION DEFINITIONS
 // PUBLIC STATIC MEMBERS
 double opt_prob_generator::WEIGHT_OF_OTHER_NETS_IN_OBJECTIVE( 1e-7 );
 string opt_prob_generator::MAX_OF_PRIMARY_OUTPUTS_NAME( "POMAX" );
@@ -77,10 +72,10 @@ string opt_prob_generator::DEF_DF	= "";
 string opt_prob_generator::MIN_SL	= "";
 string opt_prob_generator::MIN_RES	= "";
 
-string opt_prob_generator::Vthn 	= "";
-string opt_prob_generator::Vthp 	= "";
-string opt_prob_generator::Vdd   	= "";
-string opt_prob_generator::Vdd_energy   	= "";
+string opt_prob_generator::Vthn 	      = "";
+string opt_prob_generator::Vthp 	      = "";
+string opt_prob_generator::Vdd         = "";
+string opt_prob_generator::Vdd_energy  = "";
 
 bool opt_prob_generator::haveConstantsBeenInitialized = false;
 
@@ -118,7 +113,6 @@ bool opt_prob_generator::isObjectiveABs( const string & obj ) {
 }
 
 // PUBLIC MEMBER FUNCTIONS
-
 opt_prob_generator::opt_prob_generator( const string & nm, network & nw ) : name( nm ), netw( nw ), Beta( node::Dbeta ), haveTheNetListAssigned( false ), minWidth( -1.0 ), maxWidth( -1.0 ), minVthP( -1.0 ), maxVthP( -1.0 ), minVthN( -1.0 ), maxVthN( -1.0 ),minVdd( -1.0 ), maxVdd( -1.0 ), logicDepthFactor( 1.0 ), OnlyFormulateProblem( false ), UniformKappa( false ), CriticalityKappa( false ), UseDefActFact( false ), NoLeakPow( false ), NoAllEdgeTimeConst( false ),IncludeWireEnergy( false ) {
    return;
 }
@@ -361,14 +355,17 @@ void opt_prob_generator::write() {
 }
 
 void opt_prob_generator::montecarloAndStore( monte_carlo & monte, double p, opt_spec & osp ) {
+   
    osp.assertHistoryLengths();
-   map<string,ProbDist *> mc;
-   map<string,double> criticality;
+   
+   map< string,ProbDist * > mc;
+   map< string, double    > criticality;
 
    assert( osp.getLengthOfOptValHistory() == osp.getNumberOfOptimizations() );
 
    for( unsigned i = 0; i < osp.getLengthOfOptValHistory(); i ++ ) {
-      montecarlo( mc, criticality, monte, p, osp, i,0 );
+      
+      montecarlo( mc, criticality, monte, p, osp, i, 0 );
       osp.store( mc, criticality, monte );
       mc.clear();
       criticality.clear();
@@ -440,10 +437,8 @@ void opt_prob_generator::addTRise( const string & net_name, double t ) {
    addT( net_name, t, true );
 }
 
-/*
- * add a constraint of the falling {net_name} being less than 't'
- */
 void opt_prob_generator::addTFall( const string & net_name, double t ) {
+   // add a constraint of the falling {net_name} being less than 't'
    addT( net_name, t, false );
 }
 
@@ -565,7 +560,6 @@ void opt_prob_generator::setUseDefActFact() {
    return;
 }
 
-
 void opt_prob_generator::setNoLeakPow() {
    NoLeakPow = true;
    return;
@@ -610,13 +604,11 @@ void opt_prob_generator::setMinVthP( double min_vth_p ) {
    return;
 }
 
-
 void opt_prob_generator::setMaxVthP( double max_vth_p ) {
    assert( max_vth_p > 0.0 );
    maxVthP = max_vth_p;
    return;
 }
-
 
 void opt_prob_generator::setMinVthN( double min_vth_n ) {
    assert( min_vth_n > 0.0 );
@@ -624,14 +616,11 @@ void opt_prob_generator::setMinVthN( double min_vth_n ) {
    return;
 }
 
-
 void opt_prob_generator::setMaxVthN( double max_vth_n ) {
    assert( max_vth_n > 0.0 );
    maxVthN = max_vth_n;
    return;
 }
-
-
 
 void opt_prob_generator::setMinWidth( double min_width ) {
    assert( min_width > 0.0 );
@@ -732,11 +721,11 @@ void opt_prob_generator::minimizeDelay( bool noRiseFall, const string & optname,
    return;
 }
 
-//So far the kmax is not functional as it is set as a constant...this functionality will be
-//added later.
 void opt_prob_generator::minimizeDelay( const string & optname, unsigned numiter, unsigned n, double p , double kmax ) {
+   
+   // So far the kmax is not functional as it is set as a constant...this functionality will be added later.
    assert( kmax > 0 );
-   //noRiseFall is true
+   // noRiseFall is true
    addNewOptSpec( * new opt_spec( false,optname,"stat_delay_CritUpdate",numiter,n,p,"normal",kmax ) );
    return;
 }
@@ -757,26 +746,23 @@ void opt_prob_generator::putDrawing( const string & mfile, vector<subplot *> & s
 
    return;
 }
-/*
-void opt_prob_generator::putWriting
-( const string & filename, const string & optname, unsigned num )
-{
-  if( isTheFilenameAlreadyRegistered( filename ) )
-  {
-    ciropterror("multiple file name error: a drawing or writing with the file name '" + filename + "' has previously been defined");
 
-    return;
-  }
-
-  opt_dscr as(optname,num,"");
-
-  writingList.insert(pair<string,opt_dscr>(filename,as));
-
-  as.putOptSpec( * this );
-
-  return;
-}
-*/
+// void opt_prob_generator::putWriting( const string & filename, const string & optname, unsigned num ) {
+//   if( isTheFilenameAlreadyRegistered( filename ) )
+//   {
+//     ciropterror("multiple file name error: a drawing or writing with the file name '" + filename + "' has previously been defined");
+// 
+//     return;
+//   }
+// 
+//   opt_dscr as(optname,num,"");
+// 
+//   writingList.insert(pair<string,opt_dscr>(filename,as));
+// 
+//   as.putOptSpec( * this );
+// 
+//   return;
+// }
 
 void opt_prob_generator::putWriting( const string & filename, const string & optname, unsigned num,const string & gateName ) {
    if( isTheFilenameAlreadyRegistered( filename )  && gateName == "" ) {
@@ -794,28 +780,24 @@ void opt_prob_generator::putWriting( const string & filename, const string & opt
    return;
 }
 
-/*
-void opt_prob_generator::putWriting
-( const string & filename, const string & outfilename )
-{
-  if( isTheFilenameAlreadyRegistered( filename ) )
-  {
-    ciropterror
-    ("multiple file name error: a drawing or writing with the file name '" + filename + "' has previously been defined");
-
-    return;
-  }
-
-  opt_dscr as(outfilename,"");
-
-  writingList.insert
-    (pair<string,opt_dscr>(filename,opt_dscr(outfilename,"")));
-
-  as.putOptSpec( * this );
-
-  return;
-}
-*/
+// void opt_prob_generator::putWriting( const string & filename, const string & outfilename ) {
+//   if( isTheFilenameAlreadyRegistered( filename ) )
+//   {
+//     ciropterror
+//     ("multiple file name error: a drawing or writing with the file name '" + filename + "' has previously been defined");
+// 
+//     return;
+//   }
+// 
+//   opt_dscr as(outfilename,"");
+// 
+//   writingList.insert
+//     (pair<string,opt_dscr>(filename,opt_dscr(outfilename,"")));
+// 
+//   as.putOptSpec( * this );
+// 
+//   return;
+// }
 
 void opt_prob_generator::putWriting( const string & filename, const string & outfilename, const string & gateName ) {
    if( isTheFilenameAlreadyRegistered( filename ) && gateName == "" ) {
@@ -888,12 +870,18 @@ void opt_prob_generator::checkLegitimacyOfReferencesToOptimizations() {
    return;
 }
 
-
-int opt_prob_generator::ggpsolOutToMap( map<string,double> & optVs, const string & filename ) {
-   assert( optVs.size() == 0 );
-
-   unsigned MAX_LINELENTH = 1000;
-   string::size_type sI, eI;
+int opt_prob_generator::ggpsolOutToMap( map< string, double > & optimalValues, const string & filename ) {
+   
+   // read the .out file produced by ggpsolexp
+   // determine status of problem (solved, infeasible, something else)
+   // create a map: variable name => optimal value
+   
+   assert( optimalValues.size() == 0 );
+   string::size_type sI;
+   string::size_type eI;
+   
+   unsigned MAX_LINELENGTH = 1000;
+   
    ifstream ifs( filename.c_str(), ios::in );
 
    if( !ifs.is_open() ) {
@@ -901,56 +889,67 @@ int opt_prob_generator::ggpsolOutToMap( map<string,double> & optVs, const string
       return -5;
    }
 
-   char str[MAX_LINELENTH];
+   char str[MAX_LINELENGTH];
    string line;
 
-   ifs.getline( str, MAX_LINELENTH );
+   ifs.getline( str, MAX_LINELENGTH );
    line = str;
 
-   //NOT_PRIMAL_AND_DUAL_FEASIBLE -1
-   if( line == "Problem Status: not primal-dual feasible" ) return -1;
+   // NOT_PRIMAL_AND_DUAL_FEASIBLE -1
+   if( line == "Problem Status: not primal-dual feasible" ) {
+      return -1;
+   }
 
-   //MEMORY_ALLOCATION_ERROR -2
-   if( line == "Problem Status: memory allocation error" ) return -2;
+   // MEMORY_ALLOCATION_ERROR -2
+   if( line == "Problem Status: memory allocation error" ) {
+      return -2;
+   }
 
-   //GP_SOLVER_ERROR -3
-   if( line ==  "Problem Status: gp solver error" ) return -3;
+   // GP_SOLVER_ERROR -3
+   if( line ==  "Problem Status: gp solver error" ) {
+      return -3;
+   }
 
-   //DGOPT_ERROR -4
-   if( line == "Problem Status: dgopt error" ) return -4;
+   // DGOPT_ERROR -4
+   if( line == "Problem Status: dgopt error" ) {
+      return -4;
+   }
 
    do {
-      ifs.getline( str, MAX_LINELENTH );
+      ifs.getline( str, MAX_LINELENGTH );
       line = str;
-   } while( line.substr( 0,24 )!="Optimal Variable Values:" && !ifs.eof() );
+   } while( line.substr( 0, 24 ) != "Optimal Variable Values:" && !ifs.eof() );
 
    while( true ) {
+      
       if( ifs.eof() ) {
-         ifs.close();
-         errorReport( "file format error: " +  filename );
 
+         ifs.close();
+         
+         errorReport( "file format error: " +  filename );
          return -6;
       }
 
-      ifs.getline( str, MAX_LINELENTH );
+      ifs.getline( str, MAX_LINELENGTH );
       string temp = str;
 
-      if( str[0] == '\0' ) break;
-
+      if( str[0] == '\0' ) {
+         break;
+      }
 
       line = str;
-      sI = line.find( ' ' );
-      eI = line.rfind( ' ' );
-      /*
-      	 char * x = line.substr(eI+1,line.length()-eI-1).c_str();
-      		int len = line.substr(eI+1,line.length()-eI-1).length();
-      		cout << eI << " " << len << "are the values" << endl;
-      	  cout << (int) x[len -1] << " " << (int) x[len-2] << endl;
-      */
+      sI = line.find  ( ' ' );
+      eI = line.rfind ( ' ' );
+      
+      // char * x = line.substr(eI+1,line.length()-eI-1).c_str();
+      // int len = line.substr(eI+1,line.length()-eI-1).length();
+      // cout << eI << " " << len << "are the values" << endl;
+      // cout << (int) x[len -1] << " " << (int) x[len-2] << endl;
+      
       double value = atof( line.substr( eI+1,line.length()-eI-1 ).c_str() );
-      //		cout << value << " is the value" << endl;
+      // cout << value << " is the value" << endl;
 
-      optVs[line.substr( 0,sI )] = value;
+      optimalValues[ line.substr( 0, sI ) ] = value;
    }
 
    ifs.close();
@@ -983,21 +982,22 @@ void opt_prob_generator::addNewOptSpec( opt_spec & os ) {
    return;
 }
 
-/*
- string opt_prob_generator::getArea()
-{
-  string cnstr;
-
- map<string,node *> & nodeMap = netw.getNodeMap();
-
-  map<string,node *>::iterator citr;
-  for( citr = nodeMap.begin(); citr != nodeMap.end(); citr ++ )
-    if( cnstr.length() == 0 ) cnstr += citr->second->getArea();
-    else cnstr += citr->second->getArea(" + ");
-
-  return cnstr;
-}
-*/
+// string opt_prob_generator::getArea() {
+//    string cnstr;
+// 
+//    map<string,node *> & nodeMap = netw.getNodeMap();
+// 
+//    map<string,node *>::iterator citr;
+//    for( citr = nodeMap.begin(); citr != nodeMap.end(); citr ++ )
+//       if( cnstr.length() == 0 ) {
+//          cnstr += citr->second->getArea();
+//       }
+//       else {
+//          cnstr += citr->second->getArea(" + ");
+//       }
+//    }
+//    return cnstr;
+// }
 
 string opt_prob_generator::getArea() {
    string areastr;
@@ -1016,10 +1016,8 @@ string opt_prob_generator::getArea() {
    return areastr;
 }
 
-
-/* this function is no longer used for calculating energy constraint
- * ..Its use is only for forming the objective..*/
 string opt_prob_generator::getEnergy() {
+   // This function is no longer used for calculating energy constraint; Its use is only for forming the objective.
    map<string, edge *> & edgemap = netw.getEdgeMap();
    map<string, edge *>::iterator itr;
    string vdd_energy = opt_prob_generator::getVdd_energy();
@@ -1057,8 +1055,7 @@ string opt_prob_generator::getEnergy() {
 /* we are not using this function as we are making the circuit energy
  * with smaller parts.
  *
-string opt_prob_generator::getCircuitEnergy()
-{
+string opt_prob_generator::getCircuitEnergy() {
   map<string, edge *> & edgemap = netw.getEdgeMap();
   map<string, edge *>::iterator itr;
 	string vdd_energy = opt_prob_generator::getVdd_energy();
@@ -1411,7 +1408,6 @@ void opt_prob_generator::getLoadEnergy( ostream & os ) {
    }
 }
 
-
 string opt_prob_generator::getLeakage( bool stat ) {
    map<string, node *> & nodemap = netw.getNodeMap();
    map<string, node *>::iterator itr;
@@ -1446,9 +1442,6 @@ string opt_prob_generator::getLeakage( bool stat ) {
    leakstr += ")\n" ;
    return leakstr;
 }
-
-
-
 
 string opt_prob_generator::getMaxPODelay() {
    assert( poEdgeVec.size() > 0 );
@@ -1567,7 +1560,6 @@ void opt_prob_generator::CheckPIandPO() {
    return;
 }
 
-
 ostream & opt_prob_generator::objectiveStatementToOstream( ostream & os, opt_spec & osp , bool stat ) {
    cout << "Forming the Objective function statement" << endl;
    string obj = osp.getObjective();
@@ -1649,7 +1641,6 @@ ostream & opt_prob_generator::objectiveStatementToOstream( ostream & os, opt_spe
    return os;
 }
 
-
 ostream & opt_prob_generator::allEdgesLessThanMaxConstraint( ostream & os ) {
    if( NoAllEdgeTimeConst )
       cout << "Not forming AllEdgeTimings < POMAX constraint" << endl;
@@ -1662,8 +1653,6 @@ ostream & opt_prob_generator::allEdgesLessThanMaxConstraint( ostream & os ) {
          cout << "No intermediate Edges for this constraint" << endl;
    }
 }
-
-
 
 string opt_prob_generator::getEdgeTimes( const string & delim ) {
    string edgestr;
@@ -1689,8 +1678,6 @@ string opt_prob_generator::getEdgeTimes( const string & delim ) {
    }
    return edgestr;
 }
-
-
 
 ostream & opt_prob_generator::theThreeConstraintsToOstream( ostream & os, bool stat ) {
    cout << "Forming Area/Energy/Delay constraints as specified by user" << endl;
@@ -1742,7 +1729,6 @@ ostream & opt_prob_generator::theThreeConstraintsToOstream( ostream & os, bool s
    }
    return os;
 }
-
 
 void opt_prob_generator::leakPowConstraintsToOstream() {
    if( maxVthP == -1.0 && maxVthN == -1.0 && minVthP == -1.0 && minVthN == -1.0 )
@@ -2306,8 +2292,6 @@ ostream & opt_prob_generator::gateDelayConstraintsTypeIIToOstream( ostream & os,
    return os;
 }
 
-
-
 // deterministic formulation
 void opt_prob_generator::solve( opt_spec & optspec ) {
    cout << "Solve 2" << endl;
@@ -2393,7 +2377,7 @@ void opt_prob_generator::solve( const string & nm, opt_spec & osp ) {
 
    name = scotTemp + "/" + name;
    
-   const string commandLine    = scotHome + "/ggpsolexp/bin/ggpsolexp -d " + name;
+   const string ggpsolCmd      = scotHome + "/ggpsolexp/bin/ggpsolexp -d " + name;
    const string outputfilename = name + ".out";
    
    map< string, double > optValues;
@@ -2401,24 +2385,25 @@ void opt_prob_generator::solve( const string & nm, opt_spec & osp ) {
    writeGGPSOLInput( name, osp );
 
    errorBasedHalt();
-   if( !OnlyFormulateProblem ) {
-      SystemWrapper( commandLine );
+   
+   if( OnlyFormulateProblem ) {
+      
+      cout << "Only Formulating the Problem in file: " << name << endl;
+   }
+   else {
+      
+      // invoke mosek
+      SystemWrapper( ggpsolCmd );
       if( ggpsolOutToMap( optValues, outputfilename ) != 0 ) {
          errorReport( "ggpsolexp output reading error: " + outputfilename );
          return;
-      }
-   }
-   else {
-      cout << "Only Formulating the Problem in file: " << name << endl;
+      }      
    }
 
    if( ERASE_GGPSOL_SOURCE_FILE ) {
 	   
       const string rmcmd = "rm " + name;
 	   SystemWrapper( rmcmd );
-      // -- TODO -- remove? -- did errorReport provide any real value here? -- if( system( ( "rm "+ name ).c_str() ) != 0 ) {
-      // -- TODO -- remove? -- did errorReport provide any real value here? --    errorReport( "file remove file error: " + name );
-      // -- TODO -- remove? -- did errorReport provide any real value here? -- }
    }
 
    osp.store( optValues );
@@ -2459,9 +2444,9 @@ void opt_prob_generator::solve( const string & name, const monte_carlo & monte, 
    map<string,ProbDist *> mcVs;
    map<string,double> crtclty;
 
-   const char * scotHomePtr   = getenv( "SCOT_HOME_DIR" );
-   const string scotHome = string( scotHomePtr );
-   const string commandLine    = scotHome + "/ggpsolexp/bin/ggpsolexp -d " + name;
+   const char * scotHomePtr    = getenv( "SCOT_HOME_DIR" );
+   const string scotHome       = string( scotHomePtr );
+   const string ggpsolCmd      = scotHome + "/ggpsolexp/bin/ggpsolexp -d " + name;
    const string outputfilename = name + ".out";
 
    writeGGPSOLInput( name, osp );
@@ -2470,7 +2455,7 @@ void opt_prob_generator::solve( const string & name, const monte_carlo & monte, 
 
    if( !OnlyFormulateProblem ) {
       
-      SystemWrapper( commandLine );
+      SystemWrapper( ggpsolCmd );
 
       if( ggpsolOutToMap( optVs, outputfilename ) != 0 ) {
          errorReport( "ggpsol output reading error: " + outputfilename );
@@ -2486,9 +2471,6 @@ void opt_prob_generator::solve( const string & name, const monte_carlo & monte, 
       
       const string rmcmd = "rm " + name;
 	   SystemWrapper( rmcmd );
-      // -- TODO -- remove -- did error report provide any value here? -- if( system( ( "rm "+name ).c_str() ) != 0 ) {
-      // -- TODO -- remove -- did error report provide any value here? --    errorReport( "file remove file error: " + name );
-      // -- TODO -- remove -- did error report provide any value here? -- }
    }
    osp.store ( optVs );
    montecarlo( mcVs, crtclty, monte, p, osp, osp.getLengthOfOptValHistory()-1, kmax );
@@ -2534,10 +2516,9 @@ void opt_prob_generator::solve( const string & name, double kappa, double beta, 
       cout << "Only Formulating the Problem in file: " << name << endl;
    }
    if( ERASE_GGPSOL_SOURCE_FILE ) {
+
       const string rmcmd = "rm " + name;
       SystemWrapper( rmcmd );
-      // -- TODO -- remove -- did error report provide any real value here? -- if( system( ( "rm "+name ).c_str() ) != 0 )
-      // -- TODO -- remove -- did error report provide any real value here? --    errorReport( "file remove file error: " + name );
    }
 
    osp.store( optVs );
