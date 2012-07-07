@@ -5,9 +5,11 @@ import sys, os, re, math, time, shutil, jpsy
 class Params:
    verbose = True
    nirsims = 8000
-   EDTrade = True
-   numInteriorPoints = 20
-   interiorPointZeroFraction = 1e-6
+   #
+   # parameters for energy/delay trade off curve:
+   EDTrade = True                      # turn feature on/off
+   numInteriorPoints = 20              # number of tradeoff points to generate
+   interiorPointZeroFraction = 1e-3    # smaller number generates points closer to absolute minimums for delay & energy
    envname = 'SCOT_HOME_DIR'
    envtemp = 'SCOT_TEMP_DIR'
    def SetupTempPath( self ):
@@ -185,13 +187,20 @@ def DoEDTradeOff( params ):
    for kidx, kval in enumerate( kvec ):
       edpoint = FindInteriorPoint( params, gpfile, kidx, kval )
       edpoints.append( edpoint )
-   print ''
-   print ''
-   print ''
-   print 'minDelay  =', minDel
-   print 'minEnergy =', minNrg
+   lines = []
+   lines.append( 'minDelay  = %f' % minDel )
+   lines.append( 'minEnergy = %f' % minNrg )
    for edpoint in edpoints:
-      print edpoint
+      lines.append( '%s' % str( edpoint ) )
+      
+   outfile = os.path.join( params.runpath, 'scot.out' )
+   jpsy.WriteLinesToFile( lines, outfile )
+   print ''
+   print ''
+   print ''
+   print '---------------------------------------------------------------------------------------------------'
+   print 'wrote output to:', outfile
+   print '---------------------------------------------------------------------------------------------------'
    print ''
    print ''
    print ''
