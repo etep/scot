@@ -60,14 +60,14 @@ int main( int argc, char ** argv ) {
    outputDioFilename = "adder32.dio";
    irsimCmdFilename = "test.cmd";
 
-   /*
-     originalSpiceFilename = "inv_chain4.spi";
-     modifiedSpiceFilename = "inv_chain4.sp";
-     modifiedSpiceForPowerFilename = "inv_chain4.sp";
-     irsimTechFilename = "scmos30.prm";
-     dioDataFilename = "base_dio_var.txt";
-     outputDioFilename = "inv_chain4.dio";
-    */
+   //
+   //  originalSpiceFilename = "inv_chain4.spi";
+   //  modifiedSpiceFilename = "inv_chain4.sp";
+   //  modifiedSpiceForPowerFilename = "inv_chain4.sp";
+   //  irsimTechFilename = "scmos30.prm";
+   //  dioDataFilename = "base_dio_var.txt";
+   //  outputDioFilename = "inv_chain4.dio";
+
    generateDio = true;
    generatePower = true;
 
@@ -202,8 +202,9 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
 
    const bool cmdFileSpecified = string( irsimInputCmdFilename ) != "";
    
-   const string irsimCmdFilename = cmdFileSpecified ? string( irsimInputCmdFilename ) : tempHome + "/" + originalSpiceFilenameStr + ".cmd";
-
+   // -- TODO -- remove -- original spice file is assumed to be placed in the temp home -- const string irsimCmdFilename = cmdFileSpecified ? string( irsimInputCmdFilename ) : tempHome + "/" + originalSpiceFilenameStr + ".cmd";
+   const string irsimCmdFilename = cmdFileSpecified ? string( irsimInputCmdFilename ) : originalSpiceFilenameStr + ".cmd";
+   
    ofstream irsimCmdFile;
    if ( string( irsimInputCmdFilename ) == "" ) {
       irsimCmdFile.open( irsimCmdFilename.c_str() );
@@ -216,8 +217,10 @@ void runPower( const char * originalSpiceFilename, const char * modifiedSpiceFil
       parser->generateIrsimInput( irsimCmdFile, originalSpiceFilenameStr, numRuns, defActFact );
    }
 
-   const string irsimInputFileName = tempHome + "/" + originalSpiceFilenameStr + ".irsim";
-   const string irsimOutput        = tempHome + "/" + originalSpiceFilenameStr + ".out";
+   // -- TODO -- remove -- original spice file is assumed to be placed in the temp home -- const string irsimInputFileName = tempHome + "/" + originalSpiceFilenameStr + ".irsim";
+   // -- TODO -- remove -- original spice file is assumed to be placed in the temp home -- const string irsimOutput        = tempHome + "/" + originalSpiceFilenameStr + ".out";
+   const string irsimInputFileName = originalSpiceFilenameStr + ".irsim";
+   const string irsimOutput        = originalSpiceFilenameStr + ".out";
    const string powerFilenameStr   = modifiedSpiceFilenameStr + ".power";
    const string dutyFilenameStr    = modifiedSpiceFilenameStr + ".duty";
       

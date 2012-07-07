@@ -1,8 +1,11 @@
-#include "CircuitParser.hpp"
 #include <stdlib.h>
-#include "Instance.hpp"
+
 #include <fstream>
-#include "ModelPrefix.hpp"
+
+#include <Instance.hpp>
+#include <ModelPrefix.hpp>
+#include <CircuitParser.hpp>
+
 
 
 void CircuitParser::setConstants( SymbolTable constants ) {
@@ -93,12 +96,13 @@ void CircuitParser::setIrsimData( vector<SymbolTable> irsimData ) {
 
 
 void CircuitParser::generateDio( ostream &o, bool printToFile ) {
-   map<string, Subcircuit *>::iterator i = subcircuits.begin();
 
-   while ( i != subcircuits.end() ) {
+   map< string, Subcircuit * >::iterator it = subcircuits.begin();
+
+   for( it = subcircuits.begin(); it != subcircuits.end(); it++ ) {
+
       Subcircuit * currentSub = i->second;
       currentSub->generateDio( o, constants, printToFile );
-      i++;
    }
 }
 
