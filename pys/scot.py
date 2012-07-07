@@ -158,8 +158,7 @@ def FindInteriorPoint( params, origGpFile, kidx, kval ):
    lines = jpsy.ReadFileLines( origGpFile )
    assert lines[0].index( 'minimize' ) == 0
    lines[0] = 'minimize obj_epi_var;'
-   lines.append( 'obj_epi_var_constraint : POMAX + %g * E_TOTAL < obj_epi_var;' % kval )
-   print 'obj_epi_var_constraint : POMAX + %e * E_TOTAL < obj_epi_var;' % kval
+   lines.append( 'obj_epi_var_constraint : POMAX + %e * E_TOTAL < obj_epi_var;' % kval )
       
    jpsy.WriteLinesToFile( lines, gpfile )
    ggpsolcmd = ' '.join( [ params.ggpsolbin, '-d', gpfile ] )
