@@ -4,7 +4,7 @@ import sys, os, re, time, shutil, jpsy
 ################################################################################
 class Params:
    verbose = True
-   nirsims = 100
+   nirsims = 8000
    EDTrade = True
    numInteriorPoints = 2
    envname = 'SCOT_HOME_DIR'

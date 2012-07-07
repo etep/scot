@@ -1,12 +1,16 @@
 BEGIN MOSEK
-MSK_DPAR_INTPNT_NL_TOL_MU_RED 1e-5 
-MSK_DPAR_INTPNT_NL_TOL_REL_GAP 1e-5
-MSK_DPAR_INTPNT_TOL_MU_RED 1e-5
-MSK_DPAR_INTPNT_TOL_REL_GAP 1e-5
-MSK_DPAR_INTPNT_CO_TOL_DFEAS 1e-5
-MSK_DPAR_INTPNT_CO_TOL_PFEAS 1e-5
-MSK_DPAR_INTPNT_TOL_DFEAS 1e-5
-MSK_DPAR_INTPNT_TOL_PFEAS 1e-5
-MSK_DPAR_INTPNT_NL_TOL_DFEAS 1e-5
-MSK_DPAR_INTPNT_NL_TOL_PFEAS 1e-5
+% note:
+% smaller numbers mean tighter bounds on the solution, i.e. more accurate solutions.
+%
+% Primal feasibility tolerance used when a nonlinear model is solved:
+% Dual feasibility tolerance used when a nonlinear model is solved:
+MSK_DPAR_INTPNT_NL_TOL_PFEAS   1e-10
+MSK_DPAR_INTPNT_NL_TOL_DFEAS   1e-10
+%
+% Relative gap termination tolerance for nonlinear problems:
+% MSK_DPAR_INTPNT_NL_TOL_REL_GAP 1e-8
+%
+% Relative complementarity gap tolerance:
+% MSK_DPAR_INTPNT_NL_TOL_MU_RED  1e-8
+%
 END MOSEK
