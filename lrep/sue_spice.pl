@@ -53,9 +53,9 @@ else {
 $connect = ".CONNECT";
 # these are other global variables that I might be using in future to make the 
 # script more intelligent 
-$pi = ".PI";
-$po = ".PO";
-$ends = ".ENDS";
+$pi       = ".PI";
+$po       = ".PO";
+$ends     = ".ENDS";
 $glbcnstr = ".GLBCNSTR";
 $global   = ".GLOBAL";
 
@@ -93,7 +93,7 @@ while( $a != 0 ) {
       # print "$subcktname is the name\n";
       $i=0;
       # find out the number of outputs for this CCC. typically 1, but could be multiple
-      for( $j=2; $j <= $#tokens;$j++ ) {
+      for( $j=2; $j <= $#tokens; $j++ ) {
          if( $tokens[$j] =~ /^([^\s]+)=([^\s]+)$/ ) {
             $parameters{$subcktname}{$1} = $2;
          }
@@ -505,7 +505,7 @@ while( <IN> ) {
    print OUT $_;
 }
 
-if($inTopCell == 1) {
+if( $inTopCell == 1 ) {
    print OUT "$ends\n\n";
 }
 
