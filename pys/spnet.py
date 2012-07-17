@@ -32,21 +32,26 @@ class Capacitor:
       # put an 'c' on the uniquified name -- make it a capacitor :)
       name = 'c' + name
       #
-      # -- TODO -- do caps have params?? -- # put the parameters in:
-      # -- TODO -- do caps have params?? -- boundparams = []
-      # -- TODO -- do caps have params?? -- for key, val in self.params.iteritems():
-      # -- TODO -- do caps have params?? --    if val in extparams:
-      # -- TODO -- do caps have params?? --       val = extparams[ val ]
-      # -- TODO -- do caps have params?? --    bp = '='.join( [ key, val ] )
-      # -- TODO -- do caps have params?? --    boundparams.append( bp )
-      # -- TODO -- do caps have params?? -- boundparams = ' '.join( boundparams )
-      # -- TODO -- do caps have params?? -- #
-      # instantiate the new mosfet:
-      toks = [ name, node0, node1, self.farads ]
+      #
+      # determine if capacitor value is passed in as a parameter
+      farads = self.farads
+      if farads in extparams:
+         farads = extparams[ farads ]
+      #
+      # instantiate the new capacitor:
+      toks = [ name, node0, node1, farads ]
       toks = [ '%-40s' % x for x in toks ]
       if self.gparams.lowercase:
          toks = [ x.lower() for x in toks ]
       line = ' '.join( toks )
+      # -- TODO -- remove -- print '------------------------------------------------------------------------------------------------------------------------------'
+      # -- TODO -- remove -- print 'connxns =', connxns
+      # -- TODO -- remove -- print 'extparams =', extparams
+      # -- TODO -- remove -- print 'netpfx =', netpfx
+      # -- TODO -- remove -- print 'name =', name
+      # -- TODO -- remove -- print 'line =', line
+      # -- TODO -- remove -- print '------------------------------------------------------------------------------------------------------------------------------'
+      # -- TODO -- remove -- assert False
       return line
    
    def Print( self, connxns, extparams, netpfx ):
@@ -242,11 +247,10 @@ class Subckt:
       # ... SCInst::ToStr()
       # ... Mosfet::ToStr()
       # ... DotCom::ToStr()
-      outstr = ''
+      lines = []
       for e in self.elems:
-         outstr += e.ToStr( connxns, extparams, netpfx )
-         outstr += '\n'
-      return outstr
+         lines.append( e.ToStr( connxns, extparams, netpfx ) )
+      return '\n'.join( lines )
    
    def ParseSubCktDef( self, line0 ):
       
@@ -324,32 +328,6 @@ def Sanitize( inpLines ):
 
 ################################################################################
 ################################################################################
-# -- moved to hspy -- def PackEqualsSigns( line ):
-# -- moved to hspy --    # removes whitespace around equals signs
-# -- moved to hspy --    # ... transforms: 'foo bar baz = zam'
-# -- moved to hspy --    # ...       into: 'foo bar baz=zam'
-# -- moved to hspy --    toks = line.split( '=' )
-# -- moved to hspy --    toks = [ x.lstrip().rstrip() for x in toks ]
-# -- moved to hspy --    return '='.join( toks )
-# -- moved to hspy -- 
-# -- moved to hspy -- def ExtractParameters( line ):
-# -- moved to hspy --    params = {}
-# -- moved to hspy --    line = PackEqualsSigns( line )
-# -- moved to hspy --    toks = line.split()
-# -- moved to hspy --    while len( toks ):
-# -- moved to hspy --       tok = toks.pop()
-# -- moved to hspy --       subtoks = tok.split( '=' )
-# -- moved to hspy --       if len( subtoks ) == 2:
-# -- moved to hspy --          k = subtoks[0]
-# -- moved to hspy --          v = subtoks[1].lstrip( "'" ).rstrip( "'" ).lstrip( '(' ).rstrip( ')' )
-# -- moved to hspy --          params[ k ] = v
-# -- moved to hspy --       else:
-# -- moved to hspy --          toks.append( tok )
-# -- moved to hspy --          break
-# -- moved to hspy --    assert len( toks )
-# -- moved to hspy --    line = ' '.join( toks )
-# -- moved to hspy --    return ( line, params )
-# -- moved to hspy -- 
 def ReadInSubckts( inpLines, params ):
    subckts  = {}
    outLines = []
