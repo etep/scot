@@ -77,7 +77,7 @@ def Cap( params, tt, scale, line ):
    node1  = toks.pop()
    node0  = toks.pop()
    #
-   if params.nodetranslate:
+   if params.transnodenames:
       node0 = tt[ node0 ]
       node1 = tt[ node1 ]
    cstr = 'C %s %s %s' % ( node0, node1, farads )
@@ -87,9 +87,6 @@ def Fet( params, tt, scale, line ):
    # -- TODO -- remove -- print 'line =', line
    ( line, mosparams ) = hspy.ExtractParameters( line )
    toks = line.split()
-   # -- TODO -- remove -- print 'line =', line
-   # -- TODO -- remove -- print mosparams
-   # -- TODO -- remove -- assert False
    mosparams = FillMissingFetParams( mosparams )
    mtype = toks.pop()
    b     = toks.pop()
