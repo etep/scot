@@ -1,4 +1,4 @@
-#!/opt/local/bin/python
+#!/usr/bin/python
 from pyparsing import Literal, CaselessLiteral, Word, Combine, Group, LineEnd
 from pyparsing import oneOf, restOfLine, alphas, nums, delimitedList, cppStyleComment
 from pyparsing import Keyword, Optional, ZeroOrMore, OneOrMore, Suppress, FollowedBy, MatchFirst

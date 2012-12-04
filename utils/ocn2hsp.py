@@ -1,4 +1,4 @@
-#!/opt/local/bin/python
+#!/usr/bin/python
 import sys
 from spectreparse import JoinContinuedLines
 from spectreparse import SpectreNetlistParser
