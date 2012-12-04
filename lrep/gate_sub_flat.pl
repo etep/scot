@@ -108,7 +108,7 @@ while(<DATA>)
 {
 	$lineno++;
 	s/\s*=\s*/=/g;
-	if(/^\.SUBCKT/)
+	if(/^\.SUBCKT/i)
 	{
 		$first_line = 1; # to record that this is the first line of the subckt
 		$subckt_def = $_; #record this line, if its a ccc we will print it
@@ -140,7 +140,7 @@ while(<DATA>)
 		}
 		next;
 	}
-	if(/^\.ENDS/)
+	if(/^\.ENDS/i)
 	{	
 		if($is_ccc == 1)
 		{
@@ -361,7 +361,7 @@ while(<DATA>)
 				 }
 				 next;
 	}
-	if(/^\.GLOBAL/)
+	if(/^\.GLOBAL/i)
 	{
 		@globals = split /\s+/, $_;
 		shift(@globals);
@@ -413,7 +413,7 @@ while($not_expand == 0)
 			push @new_netlist, $line;
 			next;
 		}
-		if($line =~ /^X/s)
+		if($line =~ /^[Xx]/s)
 		{
 			
 			@parts = split /\s+/, $line;
@@ -580,7 +580,7 @@ $is_subckt = 0;
 $in_mainlist =0;
 while(<DATA>)
 {
-	if(/^\.SUBCKT/)
+	if(/^\.SUBCKT/i)
 	{
 			 if (/$level/) # Now put the expanded subckt
 			 {
@@ -598,7 +598,7 @@ while(<DATA>)
 			 }
 			 next;
 	}
-	if(/^\.ENDS/)
+	if(/^\.ENDS/i)
 	{
 		$is_subckt = 0;
 		next;
