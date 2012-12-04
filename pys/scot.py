@@ -208,15 +208,17 @@ def DoEDTradeOff( params ):
 ################################################################################
 params = Params()
 
-hspfile = sys.argv[1]
-sspfile = jpsy.SwapFext( hspfile, 'ssp' )
-diofile = jpsy.SwapFext( hspfile, 'dio' )
+hspfile = os.path.abspath( sys.argv[1] )
+( hsppath, hsprawf ) = os.path.split( hspfile )
+sspfile = jpsy.SwapFext( hsprawf, 'ssp' )
+diofile = jpsy.SwapFext( hsprawf, 'dio' )
 
 # copy the hspice file into the tmp/run path
 assert os.path.isfile( hspfile )
-shutil.copy( hspfile, os.path.join( params.runpath, hspfile ) )
 
-hspfile = os.path.join( params.runpath, hspfile )
+shutil.copy( hspfile, os.path.join( params.runpath, hsprawf ) )
+
+hspfile = os.path.join( params.runpath, hsprawf )
 sspfile = os.path.join( params.runpath, sspfile )
 diofile = os.path.join( params.runpath, diofile )
 
