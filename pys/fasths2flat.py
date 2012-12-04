@@ -15,6 +15,7 @@ class Params:
    verbose  = True
    suformat = True
    removeir = True
+   permissive = True
    transnodenames = False
    envscot = 'SCOT_HOME_DIR'
    envtemp = 'SCOT_TEMP_DIR_OPTIM_DOT_PY'
@@ -44,16 +45,27 @@ def Usage( prog ):
 
 ################################################################################
 ################################################################################
-def FillMissingFetParams( params ):
-   if 'l' not in params: params[ 'l' ] = 0
-   if 'w' not in params: params[ 'w' ] = 0
-   if 'm' not in params: params[ 'm' ] = 1
-   if 'geo' not in params: params[ 'geo' ] = 0
-   if 'as'  not in params: params[ 'as'  ] = 0
-   if 'ad'  not in params: params[ 'ad'  ] = 0
-   if 'ps'  not in params: params[ 'ps'  ] = 0
-   if 'pd'  not in params: params[ 'pd'  ] = 0
-   return params
+def FillMissingFetParams( mosparams, params ):
+   plist = [ 'l', 'w', 'm', 'geo', 'as', 'ad', 'ps', 'pd' ]
+   dvals = {}
+   dvals[ 'l' ] = 1
+   dvals[ 'w' ] = 2
+   dvals[ 'm' ] = 1
+   dvals[ 'geo' ] = 0
+   dvals[ 'as' ]  = 0
+   dvals[ 'ad' ]  = 0
+   dvals[ 'ps' ]  = 0
+   dvals[ 'pd' ]  = 0
+   for p in plist:
+      if p not in mosparams:
+         mosparams[ p ] = dvals[ p ]
+   if params.permissive:
+      for p in plist:
+         try:
+            x = float( mosparams[ p ] )
+         except:
+            mosparams[ p ] = dvals[ p ]
+   return mosparams
 
 def SanitizeCapVal( v ):
    v = v.lower()
@@ -87,7 +99,7 @@ def Fet( params, tt, scale, line ):
    # -- TODO -- remove -- print 'line =', line
    ( line, mosparams ) = hspy.ExtractParameters( line )
    toks = line.split()
-   mosparams = FillMissingFetParams( mosparams )
+   mosparams = FillMissingFetParams( mosparams, params )
    mtype = toks.pop()
    b     = toks.pop()
    s     = toks.pop()
