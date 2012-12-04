@@ -7,7 +7,7 @@ class Params:
    lowercase = True
    localbind = False
    envname = 'SCOT_HOME_DIR'
-   joinch  = '_'
+   joinch  = '__'
    def __init__( self ):
       
       if not self.envname in os.environ:
