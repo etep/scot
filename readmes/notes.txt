@@ -1,0 +1,9 @@
+transistors:
+width needs to be in caps, e.g.:
+... m0 out in vdd vdd pmos W=3
+... m0 out in gnd gnd nmos W=3
+must be 'W' not 'w'
+
+ccc ports:
+must have the output ports listed first, and start with 'e' as in egress
+
