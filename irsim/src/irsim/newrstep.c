@@ -228,7 +228,7 @@ private void UndoConnList( nptr n ) {
             t->tflags |= CROSSED;
       }
    }
-   #endif CL_STATS
+   #endif /* CL_STATS */
 
    do {
       next = n->nlink;
@@ -245,7 +245,7 @@ private void UndoConnList( nptr n ) {
 #ifdef CL_STATS
          if( t->tflags & CROSSED )
             num_trans ++;
-#endif CL_STATS
+#endif /* CL_STATS */
          if( not( t->tflags & ( PBROKEN | BROKEN ) ) ) {
             register Thev  r;
 
@@ -265,7 +265,7 @@ private void UndoConnList( nptr n ) {
 
    #ifdef CL_STATS
    RecordConnList( num_trans );
-   #endif CL_STATS
+   #endif /* CL_STATS */
 }
 
 

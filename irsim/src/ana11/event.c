@@ -54,7 +54,7 @@ int sigsetmask( int sig ) {
 #    define	SigBlock( sig )	sigsetmask( sigmask( sig ) )
 #    define	SigRelease( sig )	\
 		    sigsetmask( sigsetmask( 0 ) & ~sigmask( sig ) )
-#endif SYS_V
+#endif /* SYS_V */
 
 #include <stdio.h>
 #include "ana.h"
@@ -350,7 +350,7 @@ private int StartHelper( int  fd ) {
    return( TRUE );
 }
 
-#endif NEED_HELPER
+#endif /* NEED_HELPER */
 
 
 
@@ -363,7 +363,7 @@ public int InitHandler( int fd ) {
 
 #ifdef NEED_HELPER
    return( StartHelper( fd ) );
-#endif NEED_HELPER
+#endif /* NEED_HELPER */
 
 # ifdef SYS_V
    flags = 1;
@@ -384,8 +384,8 @@ public int InitHandler( int fd ) {
          return( FALSE );
       }
    }
-#endif  /* OS2 */
-# endif SYS_V
+#endif  /* OS2   */
+#endif  /* SYS_V */
 
 # ifdef I_SETSIG
    if( ioctl( fd, I_SETSIG, S_INPUT ) == -1 ) {

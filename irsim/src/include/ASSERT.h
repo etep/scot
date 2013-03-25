@@ -23,6 +23,6 @@
 
 #define	ASSERT( EXP )	if( 0 )
 
-#endif DEBUG
+#endif /* DEBUG  */
 
-#endif ASSERT
+#endif /* ASSERT */

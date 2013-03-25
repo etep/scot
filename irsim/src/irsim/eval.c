@@ -150,7 +150,7 @@ private void acc_step_power( nptr n ) {
    if ( not ( n->nflags & INPUT ) )
       step_cap_x_trans += n->ncap;
 }
-#endif POWER_EST
+#endif /* POWER_EST */
 
 /*
  * Run through the event list, marking all nodes that need to be evaluated.
@@ -177,7 +177,7 @@ private void MarkNodes( evptr evlist ) {
          pr_capwatched( e, n );
       if( pstep && ( n->nflags & ( POWWATCHED | STOPONCHANGE ) ) )
          acc_step_power( n );
-#endif POWER_EST
+#endif /* POWER_EST */
 
       n->npot = e->eval;
 
@@ -194,7 +194,7 @@ private void MarkNodes( evptr evlist ) {
          extern int ev_hgm;
          if( ev_hgm ) IncHistEvCnt( -1 );
       }
-#endif STATS
+#endif /* STATS */
 
       /* for each transistor controlled by event node, mark
        * source and drain nodes as needing recomputation.

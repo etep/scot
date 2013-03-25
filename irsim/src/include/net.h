@@ -136,7 +136,7 @@ struct Node
     hptr     curr;	/* ptr. to current history entry */
 #ifdef POWER_EST
     int	     toggles; /* number of transitions */
-#endif POWER_EST
+#endif /* POWER_EST */
 #ifdef FAULT_SIM
     HistEnt  hchange;	/* special entry to avoid changing the history */ 
 #endif
@@ -300,7 +300,7 @@ struct Input
 #ifdef POWER_EST
 #define	POWWATCHED	0x080000	/* node's capacitance is being logged*/
 #define	POWWATCHVECTOR	0x100000	/* vector version */
-#endif POWER_EST
+#endif /* POWER_EST */
 
 
 	/* resistance types */

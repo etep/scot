@@ -589,7 +589,7 @@ private void update_nodes( evptr e ) {
    do {
 #ifdef STATS
       { extern int ev_hgm; if( ev_hgm ) IncHistEvCnt( ( Uint ) e->type ); }
-#endif STATS
+#endif /* STATS */
       switch( e->type ) {
       case PUNTED :
          npunted_ev++;

@@ -204,12 +204,12 @@ int main( int argc, char ** argv ) {
    signal( SIGINT,  abnorm );
    signal( SIGQUIT, abnorm );
 
-   mktemp( tmpname );
+   char * tfname = mktemp( tmpname );
 
-   fout = freopen( tmpname, "w", stdout );
+   fout = freopen( tfname, "w", stdout );
    if( fout == NULL ) {
       
-      fprintf( stderr,  "can't write %s", tmpname );
+      fprintf( stderr,  "can't write %s", tfname );
       Crash();
    }
 
@@ -224,15 +224,15 @@ int main( int argc, char ** argv ) {
       fclose( fin );
    }
    fclose( fout );
-   ( void ) sprintf( syscmd, "cmp -s %s %s", tmpname, outfname );
+   ( void ) sprintf( syscmd, "cmp -s %s %s", tfname, outfname );
    r = system( syscmd );
    if ( r != 0 ) {
-      ( void ) sprintf( syscmd, "mv %s %s", tmpname, outfname );
+      ( void ) sprintf( syscmd, "mv %s %s", tfname, outfname );
       r = system( syscmd );
       if( r != 0 )
          fprintf( stderr, "can't create %s\n", outfname );
    } else
-      unlink( tmpname );
+      unlink( tfname );
    exit( 0 );
 }
 

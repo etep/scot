@@ -271,11 +271,11 @@ private void pr_usage( char * dst, rusage * r0, rusage * r1, timeval * t0, timev
    int              ms;
 
    tvsub( &dt, &r1->ru_utime, &r0->ru_utime );
-   ( void ) sprintf( dst, "%d.%01du ", (int)dt.tv_sec, u2d( dt.tv_usec ) );
+   ( void ) sprintf( dst, "%d.%01du ", (int)dt.tv_sec, (int)u2d( dt.tv_usec ) );
    while( *++dst );
 
    tvsub( &dt, &r1->ru_stime, &r0->ru_stime );
-   ( void ) sprintf( dst, "%d.%01ds ", (int)dt.tv_sec, u2d( dt.tv_usec ) );
+   ( void ) sprintf( dst, "%d.%01ds ", (int)dt.tv_sec, (int)u2d( dt.tv_usec ) );
    while( *++dst );
 
    ms = ( t1->tv_sec - t0->tv_sec ) * 100 + u2m( t1->tv_usec - t0->tv_usec );
@@ -328,4 +328,4 @@ public void get_usage( char * dest ) {
    ( void ) sprintf( dest, "%ldu %lds %ld", msu, mss, ms );
 }
 
-#endif SYS_V
+#endif /* SYS_V */

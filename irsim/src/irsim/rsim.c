@@ -116,7 +116,7 @@ public  float	captime = 0.0;
 public  float	powermult = 0.0;	/* to do power estimate in milliWatts */
 public  int	pstep = 0;		/* Bool - end of step power display */
 public  float   step_cap_x_trans = 0;	/* Stepwise C*trans count */
-#endif POWER_EST
+#endif /* POWER_EST */
 
 
 /* forward references */
@@ -781,7 +781,7 @@ private int xpowtrace( nptr n, char * flag ) {
 
    return( 1 );
 }
-#endif POWER_EST
+#endif /* POWER_EST */
 
 /*
  * set/clear trace bit in vector
@@ -815,7 +815,7 @@ private int vpowtrace( bptr b, char * flag ) {
    }
    return( 1 );
 }
-#endif POWER_EST
+#endif /* POWER_EST */
 
 /*
  * just in case node appears in more than one bit vector, run through all
@@ -938,7 +938,7 @@ private int togglepstep() {
       lprintf( stdout,"Power display disbled\n" );
    return( 0 );
 }
-#endif POWER_EST
+#endif /* POWER_EST */
 
 
 
@@ -1443,7 +1443,7 @@ private int dostep() {
    long newsize;
 #ifdef POWER_EST
    long pstepstart;
-#endif POWER_EST
+#endif /* POWER_EST */
    CHECK_STOP();
 
    if( targc == 2 ) {
@@ -1458,7 +1458,7 @@ private int dostep() {
 #ifdef POWER_EST
    pstepstart = cur_delta;
    step_cap_x_trans = 0;
-#endif POWER_EST
+#endif /* POWER_EST */
 
    ( void ) relax( cur_delta + newsize );
    if( ddisplay )
@@ -1469,7 +1469,7 @@ private int dostep() {
       lprintf( stdout,
                "Dynamic power estimate for powtrace'd nodes on last step = %f mW\n",
                step_cap_x_trans*vsupply*vsupply/( 2*( d2ns( cur_delta-pstepstart ) ) ) );
-#endif POWER_EST
+#endif /* POWER_EST */
 
    return( 0 );
 }
@@ -1966,7 +1966,7 @@ public
 #ifdef POWER_EST
 public
 #define REPORT_CAP      0x10
-#endif POWER_EST
+#endif /* POWER_EST */
 
 
 
@@ -2071,7 +2071,7 @@ private int setcaplog() {
    }
    return( 0 );
 }
-#endif POWER_EST
+#endif /* POWER_EST */
 
 /*
  * restore state of network
@@ -2862,7 +2862,7 @@ private do_pr_ev_stats() {
    return( 0 );
 }
 
-#endif STATS
+#endif /* STATS */
 
 #ifdef CL_STATS
 
@@ -2936,7 +2936,7 @@ int do_cl_stats() {
    return( 0 );
 }
 
-#endif CL_STATS
+#endif /* CL_STATS */
 
 
 typedef struct {
@@ -3401,13 +3401,13 @@ private Command  cmds[] = {
       "evstats",	do_pr_ev_stats,	1,	2,
       "[file] -> print event activity recorded"
    },
-#endif STATS
+#endif /* STATS */
 #ifdef CL_STATS
    {
       "clstats",	do_cl_stats,	1,	2,
       "[file] -> print connection-list statistics"
    },
-#endif CL_STATS
+#endif /* CL_STATS */
    {
       "help",		do_help,	1,	MAXARGS,
       "[command]... -> print info on command(s) or available commands"
@@ -3579,7 +3579,7 @@ private Command  cmds[] = {
       "powstep",	togglepstep,	1,	1,
       " -> Toggle display of power estimate for each step"
    },
-#endif POWER_EST
+#endif /* POWER_EST */
    { NULL,		NULL,		0,	0,	NULL		}
 };
 
