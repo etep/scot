@@ -72,7 +72,7 @@ $(BIN): $(OBJS) $(SHOBJS)
 	$(LD) $(OBJS) $(SHOBJS) $(LIBS) -o $@
 
 $(OBJDIR)/lex.yy.c: scanner.l parser.y $(OBJDIR)/y.tab.c 
-	$(LEX) $(LEXFLAGS) -o $@ scanner.l
+	$(LEX) $(LEXFLAGS) -o$@ scanner.l
 
 $(OBJDIR)/y.tab.c: parser.y
 	$(YACC) $(YACCFLAGS) parser.y

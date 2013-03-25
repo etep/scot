@@ -3,7 +3,7 @@ CC        = g++
 CFLAGS    = -O3
 BINDIR    = ../../bin
 OBJDIR    = ../../obj
-INCLUDES  =	-I../include
+INCLUDES  =	-I../include -I/opt/local/include
 LIBS      =
 EXPORTBIN = $(BINDIR)/export
 EXPORTED  = ana_glob.h
@@ -46,7 +46,7 @@ $(OBJDIR)/ana.o: $(EXPORTED) $(SRCS) $(OBJS) anXhelper.c
 $(BINDIR)/anXhelper: anXhelper.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(BINDIR)/anXhelper anXhelper.c
 
-$(OBJDIR)/%.o: %.c dirs
+$(OBJDIR)/%.o: %.c dirs $(EXPORTED)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(EXPORTED): $(SRCS) $(EXPORTBIN)
