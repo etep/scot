@@ -115,18 +115,22 @@ void Input::findPaths( Subcircuit * parent, unsigned no ) {
 
 
       for ( int i = 0; i < combined.size(); i++ ) {
-         if( AntiCorrInputMap.empty() && IntPrechargeInputMap.empty()
-               || !( combined[i] ).containsAntiCorrOrIntPrechargeInputs( AntiCorrInputMap,IntPrechargeInputMap ) )
+         const bool mapsEmpty  = AntiCorrInputMap.empty() && IntPrechargeInputMap.empty();
+         const bool noAntiCorr = !( combined[i].containsAntiCorrOrIntPrechargeInputs( AntiCorrInputMap, IntPrechargeInputMap ) );
+         if( mapsEmpty || noAntiCorr ) {
             pathsToGndVec[no].push_back( combined[i] );
+         }
       }
 
       combined = combinePaths( finishedPathsToOutput,
                                finishedPathsToVdd );
 
       for ( int i = 0; i < combined.size(); i++ ) {
-         if( AntiCorrInputMap.empty() && IntPrechargeInputMap.empty()
-               || !( combined[i] ).containsAntiCorrOrIntPrechargeInputs( AntiCorrInputMap,IntPrechargeInputMap ) )
+         const bool mapsEmpty  = AntiCorrInputMap.empty() && IntPrechargeInputMap.empty();
+         const bool noAntiCorr = !( combined[i].containsAntiCorrOrIntPrechargeInputs( AntiCorrInputMap,IntPrechargeInputMap ) );
+         if( mapsEmpty  || noAntiCorr ) {
             pathsToVddVec[no].push_back( combined[i] );
+         }
       }
 
    }

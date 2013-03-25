@@ -212,7 +212,7 @@ void Path::checkForTxGates() {
          // -- TODO -- check the logic here... -- const bool outputNode = nmos2pmos || pmos2nmos;
          // -- TODO -- should it be (nmos2pmos || pmos2nmos) && rest-of-test
          
-         if( nmos2pmos || pmos2nmos && !currentTransistor->equals( sourceConnections[j] ) ) {
+         if( nmos2pmos || ( pmos2nmos && !currentTransistor->equals( sourceConnections[j] ) ) ) {
 
             if( drain->existConnectionTo( sourceConnections[j] ) ) {
 
@@ -288,10 +288,11 @@ bool Path::containsAntiCorrOrIntPrechargeInputs( map<string,string> AntiCorrInpu
                
                string in2 = ( *it1 )->getConnectionAt( Transistor::GateConnection )->getName();
                //												 cout <<  in2 << endl;
-               if( AntiCorrInputMap.find( in1 ) != AntiCorrInputMap.end()
-                     && AntiCorrInputMap.find( in1 )->second == in2
-                     || AntiCorrInputMap.find( in2 ) != AntiCorrInputMap.end()
-                     && AntiCorrInputMap.find( in2 )->second == in1 ) {
+               const bool in1found = AntiCorrInputMap.find( in1 ) != AntiCorrInputMap.end();
+               const bool in1match = AntiCorrInputMap.find( in1 )->second == in2;
+               const bool in2found = AntiCorrInputMap.find( in2 ) != AntiCorrInputMap.end();
+               const bool in2match = AntiCorrInputMap.find( in2 )->second == in1;
+               if( ( in1found && in1match ) || ( in2found && in2match ) ) {
                   //															cout <<  "Reached here" << endl;
                   return true;
                }
