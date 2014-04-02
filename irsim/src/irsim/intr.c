@@ -19,7 +19,7 @@
 
 #ifdef SYS_V
 #    ifndef hpux
-#	define	signal( SIG, HAND )	sigset( SIG, HAND )
+#   define  signal( SIG, HAND ) sigset( SIG, HAND )
 #    endif
 #endif
 
@@ -28,30 +28,30 @@ public int int_received = 0;
 
 
 private void int_handler( int unused ) {
-   
-   if( int_received == 1 ) {
-      ( void ) fprintf( stderr, "\nok ... wait a second\n" );
-   }
-   if( int_received <= 1 ) {
-      int_received++;
-   }
 
-   #ifdef SYS_V
-   ( void ) signal( SIGINT, int_handler );
-   #endif
+    if( int_received == 1 ) {
+        ( void ) fprintf( stderr, "\nok ... wait a second\n" );
+    }
+    if( int_received <= 1 ) {
+        int_received++;
+    }
+
+#ifdef SYS_V
+    ( void ) signal( SIGINT, int_handler );
+#endif
 }
 
 
 private void bye_bye( int unused ) {
-   extern void TerminateAnalyzer();
+    extern void TerminateAnalyzer();
 
-   TerminateAnalyzer();
-   exit( 0 );
+    TerminateAnalyzer();
+    exit( 0 );
 }
 
 
 public void InitSignals() {
-   ( void ) signal( SIGQUIT, SIG_IGN );		  /* ignore quit */
-   ( void ) signal( SIGINT, int_handler );
-   ( void ) signal( SIGHUP, bye_bye );		  /* for magic's sake */
+    ( void ) signal( SIGQUIT, SIG_IGN );       /* ignore quit */
+    ( void ) signal( SIGINT, int_handler );
+    ( void ) signal( SIGHUP, bye_bye );        /* for magic's sake */
 }

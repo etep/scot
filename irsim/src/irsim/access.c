@@ -26,51 +26,55 @@
 #include "defs.h"
 
 
-public	typedef	struct {
-   char  exist;
-   char  read;
-   char  write;
+public  typedef struct {
+    char  exist;
+    char  read;
+    char  write;
 } Fstat;
 
 
-public Fstat *FileStatus( const char * name ) {
-   static Fstat   ret;
-   char           dir[ 256 ];
-   char *q;
-   const char  *s;
-   const char * p;
+public Fstat * FileStatus( const char * name ) {
+    static Fstat   ret;
+    char           dir[ 256 ];
+    char * q;
+    const char * s;
+    const char * p;
 
-   if( access( name, R_OK ) == 0 )
-      ret.read = 1;		    	/* file exists and is readable */
-   else
-      ret.read = 0;
+    if( access( name, R_OK ) == 0 ) {
+        ret.read = 1;    /* file exists and is readable */
+    }
+    else {
+        ret.read = 0;
+    }
 
-   if( access( name, W_OK ) == 0 ) {	/* file exists and is writeable */
-      ret.exist = 1;
-      ret.write = 1;
-      return( &ret );
-   }
+    if( access( name, W_OK ) == 0 ) {    /* file exists and is writeable */
+        ret.exist = 1;
+        ret.write = 1;
+        return( &ret );
+    }
 
-   if( access( name, F_OK ) == 0 ) {	/* file exists but isn't writeable */
-      ret.exist = 1;
-      ret.write = 0;
-      return( &ret );
-   }
-   /* file doesn't exist, check dir. */
-   p = name;
-   for( s = p; *s != '\0'; s++ );
-   while( s > p and *s != '/' ) s--;
-   if( *s == '/' ) s++;
-   q = dir;
-   while( p < s ) {
-      *q++ = *p++;
-   }
-   *q++ = '.';
-   *q = '\0';
-   if( access( dir, W_OK ) == 0 )
-      ret.write = 1;				/*  dir. is writeable */
-   else
-      ret.write = 0;
-   ret.exist = 0;
-   return( &ret );
+    if( access( name, F_OK ) == 0 ) {    /* file exists but isn't writeable */
+        ret.exist = 1;
+        ret.write = 0;
+        return( &ret );
+    }
+    /* file doesn't exist, check dir. */
+    p = name;
+    for( s = p; *s != '\0'; s++ );
+    while( s > p and *s != '/' ) { s--; }
+    if( *s == '/' ) { s++; }
+    q = dir;
+    while( p < s ) {
+        *q++ = *p++;
+    }
+    *q++ = '.';
+    *q = '\0';
+    if( access( dir, W_OK ) == 0 ) {
+        ret.write = 1;    /*  dir. is writeable */
+    }
+    else {
+        ret.write = 0;
+    }
+    ret.exist = 0;
+    return( &ret );
 }

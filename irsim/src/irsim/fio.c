@@ -23,13 +23,13 @@
 #include <os2.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-extern   Display     *display;
+extern   Display   *  display;
 #else
 #include <defs.h>
 #include "net.h"
 #include "globals.h"
-#ifndef	clearerr
-extern	void	clearerr();
+#ifndef clearerr
+extern  void    clearerr();
 #endif
 #endif  /* OS2 */
 
@@ -39,92 +39,93 @@ extern	void	clearerr();
  * upon an interrupt condition.  This is mostly for system V.
  */
 
-public char *fgetline( char * bp, int len, FILE * fp ) {
-   register char  *buff = bp;
-   register int  c;
+public char * fgetline( char * bp, int len, FILE * fp ) {
+    register char * buff = bp;
+    register int  c;
 
-   contline = 0;
-   while( --len > 0 ) {
+    contline = 0;
+    while( --len > 0 ) {
 
-   again :
-   #ifdef OS2
-      if( !kbhit() && ( isatty( ( int ) fileno( fp ) ) ) ) {
-         if ( analyzerON ) {
-            DosSleep( 50 );
-            EnableInput();
-         }
-         DosSleep( 50 );
-         goto again;
-      }
-      if( fp == stdin ) {
-         c = _getch();
-         if( c != '\b' ) printf( "%c", c );
-         fflush( stdout );
-      }
-      else
-   #endif  /* OS2 */
-         c = getc( fp );
-      if( c == EOF ) {
-         if( feof( fp ) == 0 ) {
-            clearerr( fp );
-            goto again;
-         }
-         *buff = '\0';
-         return( NULL );
-      }
-      if ( ( fp == stdin ) && ( c == '\b' ) && ( buff > bp ) ) {
-         printf( "\b \b" );
-         fflush( stdout );
-         *buff--;
-      }
-      else {
-         if( ( c == '\\' ) && ( *bp != '|' ) ) {
-            c = getc( fp );
-            contline++;
-            if( isatty( ( int ) fileno( fp ) ) ) {
-               printf( "cont>" );
-               fflush( stdout );
+again :
+#ifdef OS2
+        if( !kbhit() && ( isatty( ( int ) fileno( fp ) ) ) ) {
+            if ( analyzerON ) {
+                DosSleep( 50 );
+                EnableInput();
             }
+            DosSleep( 50 );
             goto again;
-         }
-         if ( c != '\b' )
-            *buff++ = c;
-      }
-      if( ( c == '\n' ) || ( c == 0xd ) ) {
-         c = '\n';
-         break;
-      }
-   }
-   *buff = '\0';
-   if ( len <= 0 ) {
-      printf( "Command line max length exceeded.\n" );
-      exit( -1 );
-   }
-   return( bp );
+        }
+        if( fp == stdin ) {
+            c = _getch();
+            if( c != '\b' ) { printf( "%c", c ); }
+            fflush( stdout );
+        }
+        else
+#endif  /* OS2 */
+            c = getc( fp );
+        if( c == EOF ) {
+            if( feof( fp ) == 0 ) {
+                clearerr( fp );
+                goto again;
+            }
+            *buff = '\0';
+            return( NULL );
+        }
+        if ( ( fp == stdin ) && ( c == '\b' ) && ( buff > bp ) ) {
+            printf( "\b \b" );
+            fflush( stdout );
+            *buff--;
+        }
+        else {
+            if( ( c == '\\' ) && ( *bp != '|' ) ) {
+                c = getc( fp );
+                contline++;
+                if( isatty( ( int ) fileno( fp ) ) ) {
+                    printf( "cont>" );
+                    fflush( stdout );
+                }
+                goto again;
+            }
+            if ( c != '\b' ) {
+                *buff++ = c;
+            }
+        }
+        if( ( c == '\n' ) || ( c == 0xd ) ) {
+            c = '\n';
+            break;
+        }
+    }
+    *buff = '\0';
+    if ( len <= 0 ) {
+        printf( "Command line max length exceeded.\n" );
+        exit( -1 );
+    }
+    return( bp );
 }
 
 
 public int Fread( char * ptr, int size, FILE * fp ) {
-   register int  ret;
+    register int  ret;
 
 again :
-   ret = fread( ptr, 1, size, fp );
-   if( ret <= 0 and feof( fp ) == 0 ) {
-      clearerr( fp );
-      goto again;
-   }
-   return( ret );
+    ret = fread( ptr, 1, size, fp );
+    if( ret <= 0 and feof( fp ) == 0 ) {
+        clearerr( fp );
+        goto again;
+    }
+    return( ret );
 }
 
 
 public int Fwrite( char * ptr, int size, FILE * fp ) {
-   register int  ret;
+    register int  ret;
 
 again :
-   ret = fwrite( ptr, 1, size, fp );
-   if( ret <= 0 and feof( fp ) == 0 ) {
-      clearerr( fp );
-      goto again;
-   }
-   return( ret );
+    ret = fwrite( ptr, 1, size, fp );
+    if( ret <= 0 and feof( fp ) == 0 ) {
+        clearerr( fp );
+        goto again;
+    }
+    return( ret );
 }

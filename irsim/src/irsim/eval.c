@@ -23,26 +23,26 @@
  * below.
  */
 public
-#define	LIN_MODEL	0
+#define LIN_MODEL   0
 public
-#define	SWT_MODEL	1
+#define SWT_MODEL   1
 public
-#define	NMODEL		2		/* number of models supported */
+#define NMODEL      2       /* number of models supported */
 
 
 public void ( *model_table[NMODEL] )( nptr ) = {
-   /* model dispatch table */
-   linear_model, switch_model
+    /* model dispatch table */
+    linear_model, switch_model
 };
 
 
-public	int	model_num = LIN_MODEL;		/* index of model in table */
-public	void	( *model )( nptr ) = linear_model;	/* evaluation model */
-public	int	sm_stat = NORM_SIM;		/* simulation status */
-public	int	treport = 0;			/* report format */
+public  int model_num = LIN_MODEL;      /* index of model in table */
+public  void    ( *model )( nptr ) = linear_model;  /* evaluation model */
+public  int sm_stat = NORM_SIM;     /* simulation status */
+public  int treport = 0;            /* report format */
 
-private	int	firstcall = 1;	    /* reset when calling init_vdd_gnd */
-private	struct Node nd_no_inp;
+private int firstcall = 1;      /* reset when calling init_vdd_gnd */
+private struct Node nd_no_inp;
 
 
 
@@ -51,17 +51,17 @@ private	struct Node nd_no_inp;
  * and drain nodes just in case event driven calculations don't get to them.
  */
 private void init_vdd_gnd() {
-   enqueue_input( VDD_node, HIGH );
-   enqueue_input( GND_node, LOW );
+    enqueue_input( VDD_node, HIGH );
+    enqueue_input( GND_node, LOW );
 
-   firstcall = 0;		/* initialization now taken care of */
+    firstcall = 0;       /* initialization now taken care of */
 }
 
 /*
  * Reset the firstcall flag.  Usually after reading history dump or net state
  */
 public void NoInit() {
-   firstcall = 0;
+    firstcall = 0;
 }
 
 
@@ -69,17 +69,17 @@ public void NoInit() {
  * Set the firstcall flags.  Used when moving back to time 0.
  */
 public void ReInit() {
-   firstcall = 1;
+    firstcall = 1;
 }
 
 /*
  * Print decay event.
  */
 private void pr_decay( evptr e ) {
-   nptr  n = e->enode;
+    nptr  n = e->enode;
 
-   lprintf( stdout, " @ %.2fns %s: decay %c -> X\n",
-            d2ns( e->ntime ), pnode( n ), vchars[ n->npot ] );
+    lprintf( stdout, " @ %.2fns %s: decay %c -> X\n",
+             d2ns( e->ntime ), pnode( n ), vchars[ n->npot ] );
 }
 
 
@@ -87,33 +87,33 @@ private void pr_decay( evptr e ) {
  * Print watched node event.
  */
 private void pr_watched( evptr e, nptr n ) {
-   int   tmp;
+    int   tmp;
 
-   if( n->nflags & INPUT ) {
-      lprintf( stdout, " @ %.2fns input %s: -> %c\n",
-               d2ns( e->ntime ), pnode( n ), vchars[ e->eval ] );
-      return;
-   }
+    if( n->nflags & INPUT ) {
+        lprintf( stdout, " @ %.2fns input %s: -> %c\n",
+                 d2ns( e->ntime ), pnode( n ), vchars[ e->eval ] );
+        return;
+    }
 
-   tmp = ( debug & DEBUG_EV ) ? ( REPORT_TAU | REPORT_DELAY ) : treport;
+    tmp = ( debug & DEBUG_EV ) ? ( REPORT_TAU | REPORT_DELAY ) : treport;
 
-   lprintf( stdout, " @ %.2fns %s: %c -> %c",
-            d2ns( e->ntime ), pnode( n ), vchars[ n->npot ], vchars[ e->eval ] );
+    lprintf( stdout, " @ %.2fns %s: %c -> %c",
+             d2ns( e->ntime ), pnode( n ), vchars[ n->npot ], vchars[ e->eval ] );
 
-   switch( tmp & ( REPORT_TAU | REPORT_DELAY ) ) {
-   case 0 :
-      lprintf( stdout, "\n" );
-      break;
-   case REPORT_TAU :
-      lprintf( stdout, " (tau=%.2fns)\n", d2ns( e->rtime ) );
-      break;
-   case REPORT_DELAY :
-      lprintf( stdout, " (delay=%.2fns)\n", d2ns( e->delay ) );
-      break;
-   default :
-      lprintf( stdout, " (tau=%.2fns, delay=%.2fns)\n",
-               d2ns( e->rtime ), d2ns( e->delay ) );
-   }
+    switch( tmp & ( REPORT_TAU | REPORT_DELAY ) ) {
+    case 0 :
+        lprintf( stdout, "\n" );
+        break;
+    case REPORT_TAU :
+        lprintf( stdout, " (tau=%.2fns)\n", d2ns( e->rtime ) );
+        break;
+    case REPORT_DELAY :
+        lprintf( stdout, " (delay=%.2fns)\n", d2ns( e->delay ) );
+        break;
+    default :
+        lprintf( stdout, " (tau=%.2fns, delay=%.2fns)\n",
+                 d2ns( e->rtime ), d2ns( e->delay ) );
+    }
 }
 
 #ifdef POWER_EST
@@ -121,25 +121,26 @@ private void pr_watched( evptr e, nptr n ) {
  * Print capwatched node event.
  */
 private void pr_capwatched( evptr e, nptr n ) {
-   int   tmp;
+    int   tmp;
 
-   if ( caplogfile == NULL )
-      return;
+    if ( caplogfile == NULL ) {
+        return;
+    }
 
-   if( n->nflags & INPUT ) {
-      fprintf( caplogfile, "%.2f *INPUT* %s -> %c\t",
-               d2ns( e->ntime ), pnode( n ), vchars[ e->eval ] );
-      fprintf( caplogfile, "%.2f %.2f %4.3f\n",
-               d2ns( e->rtime ), d2ns( e->delay ), n->ncap );
-      return;
-   }
+    if( n->nflags & INPUT ) {
+        fprintf( caplogfile, "%.2f *INPUT* %s -> %c\t",
+                 d2ns( e->ntime ), pnode( n ), vchars[ e->eval ] );
+        fprintf( caplogfile, "%.2f %.2f %4.3f\n",
+                 d2ns( e->rtime ), d2ns( e->delay ), n->ncap );
+        return;
+    }
 
-   fprintf( caplogfile,"%.2f\t%s\t%c -> %c\t",
-            d2ns( e->ntime ), pnode( n ), vchars[ n->npot ], vchars[ e->eval ] );
-   fprintf( caplogfile, "%.2f %.2f %4.3f\n",
-            d2ns( e->rtime ), d2ns( e->delay ), n->ncap );
-   n->toggles++;
-   toggled_cap += n->ncap;    /* When finished, P = toggle_cap * v*v / (2t) */
+    fprintf( caplogfile,"%.2f\t%s\t%c -> %c\t",
+             d2ns( e->ntime ), pnode( n ), vchars[ n->npot ], vchars[ e->eval ] );
+    fprintf( caplogfile, "%.2f %.2f %4.3f\n",
+             d2ns( e->rtime ), d2ns( e->delay ), n->ncap );
+    n->toggles++;
+    toggled_cap += n->ncap;    /* When finished, P = toggle_cap * v*v / (2t) */
 }
 
 
@@ -147,8 +148,9 @@ private void pr_capwatched( evptr e, nptr n ) {
  * Tally cap * trans for giving stepwise power display
  */
 private void acc_step_power( nptr n ) {
-   if ( not ( n->nflags & INPUT ) )
-      step_cap_x_trans += n->ncap;
+    if ( not ( n->nflags & INPUT ) ) {
+        step_cap_x_trans += n->ncap;
+    }
 }
 #endif /* POWER_EST */
 
@@ -156,202 +158,224 @@ private void acc_step_power( nptr n ) {
  * Run through the event list, marking all nodes that need to be evaluated.
  */
 private void MarkNodes( evptr evlist ) {
-   register nptr   n;
-   register tptr   t;
-   register lptr   l;
-   register evptr  e = evlist;
-   long            all_flags = 0;
+    register nptr   n;
+    register tptr   t;
+    register lptr   l;
+    register evptr  e = evlist;
+    long            all_flags = 0;
 
-   do {
-      n = e->enode;
+    do {
+        n = e->enode;
 
-      all_flags |= n->nflags;
+        all_flags |= n->nflags;
 
-      if( e->type == DECAY_EV and ( ( treport & REPORT_DECAY ) or
-                                    ( n->nflags & ( WATCHED | STOPONCHANGE ) ) ) )
-         pr_decay( e );
-      else if( n->nflags & ( WATCHED | STOPONCHANGE ) )
-         pr_watched( e, n );
+        if( e->type == DECAY_EV and ( ( treport & REPORT_DECAY ) or
+                                      ( n->nflags & ( WATCHED | STOPONCHANGE ) ) ) ) {
+            pr_decay( e );
+        }
+        else if( n->nflags & ( WATCHED | STOPONCHANGE ) ) {
+            pr_watched( e, n );
+        }
 #ifdef POWER_EST
-      else if( n->nflags & ( POWWATCHED | STOPONCHANGE ) )
-         pr_capwatched( e, n );
-      if( pstep && ( n->nflags & ( POWWATCHED | STOPONCHANGE ) ) )
-         acc_step_power( n );
+        else if( n->nflags & ( POWWATCHED | STOPONCHANGE ) ) {
+            pr_capwatched( e, n );
+        }
+        if( pstep && ( n->nflags & ( POWWATCHED | STOPONCHANGE ) ) ) {
+            acc_step_power( n );
+        }
 #endif /* POWER_EST */
 
-      n->npot = e->eval;
+        n->npot = e->eval;
 
-      /* Add the new value to the history list (if they differ) */
-      if( not ( n->nflags & INPUT ) and ( n->curr->val != n->npot ) )
-         AddHist( n, n->npot, 0, ( long ) e->ntime, ( long ) e->delay,
-                  ( long ) e->rtime );
+        /* Add the new value to the history list (if they differ) */
+        if( not ( n->nflags & INPUT ) and ( n->curr->val != n->npot ) )
+            AddHist( n, n->npot, 0, ( long ) e->ntime, ( long ) e->delay,
+                     ( long ) e->rtime );
 
-      if ( n->awpending != NULL  && n->awpot == n->npot )
-         evalAssertWhen( n );
+        if ( n->awpending != NULL  && n->awpot == n->npot ) {
+            evalAssertWhen( n );
+        }
 
 #ifdef STATS
-      {
-         extern int ev_hgm;
-         if( ev_hgm ) IncHistEvCnt( -1 );
-      }
+        {
+            extern int ev_hgm;
+            if( ev_hgm ) { IncHistEvCnt( -1 ); }
+        }
 #endif /* STATS */
 
-      /* for each transistor controlled by event node, mark
-       * source and drain nodes as needing recomputation.
-       *
-       * Added MOSSIMs speed up by first checking if the
-       * node needs to be rechecked  mh
-       *
-       * Fixed it so nodes with pending events also get
-       * re_evaluated. Kevin Karplus
-       */
-      for( l = n->ngate; l != NULL; l = l->next ) {
+        /* for each transistor controlled by event node, mark
+         * source and drain nodes as needing recomputation.
+         *
+         * Added MOSSIMs speed up by first checking if the
+         * node needs to be rechecked  mh
+         *
+         * Fixed it so nodes with pending events also get
+         * re_evaluated. Kevin Karplus
+         */
+        for( l = n->ngate; l != NULL; l = l->next ) {
 #ifdef notdef
-         char  oldstate;
+            char  oldstate;
 
-         t = l->xtor;
-         /*
-          * Some of these optimizations only work right when the
-          * stage at the src/drn contains no loops.  For example,
-          * when a transistor turns off and the src=1 and drn=0,
-          * the transistor may break a previous loop causing the
-          * src or drn to change value.
-          *
-          * Also, while the state of the src/drn of the transistor
-          * in question may not change state, the current through
-          * their stage is altered; this current change may change
-          * the state of other nodes in the stage, so they better
-          * be avaluated.  These optimizations work best in MOSSIM
-          * since that model does not account for the current through
-          * the stage.	A.S.
-          */
-         oldstate = t->state;
+            t = l->xtor;
+            /*
+             * Some of these optimizations only work right when the
+             * stage at the src/drn contains no loops.  For example,
+             * when a transistor turns off and the src=1 and drn=0,
+             * the transistor may break a previous loop causing the
+             * src or drn to change value.
+             *
+             * Also, while the state of the src/drn of the transistor
+             * in question may not change state, the current through
+             * their stage is altered; this current change may change
+             * the state of other nodes in the stage, so they better
+             * be avaluated.  These optimizations work best in MOSSIM
+             * since that model does not account for the current through
+             * the stage.  A.S.
+             */
+            oldstate = t->state;
 
-         t->state = compute_trans_state( t );
-         if( ( t->drain->npot == X ) or ( t->source->npot == X ) or
-               ( ( t->drain->npot != t->source->npot ) and
-                 ( t->state == ON ) ) or
-               ( ( t->drain->npot == t->source->npot ) and
-                 ( t->state == OFF ) ) or
-               ( ( t->state == UNKNOWN ) and
-                 not ( oldstate == OFF and
-                       ( t->drain->npot == t->source->npot ) ) ) or
-               ( t->drain->events != NULL ) or
-               ( t->source->events != NULL ) ) {
-            if( not ( t->source->nflags & INPUT ) )
-               t->source->nflags |= VISITED;
-            if( not ( t->drain->nflags & INPUT ) )
-               t->drain->nflags |= VISITED;
-         }
-#else
-         t = l->xtor;
-#ifdef USER_SUBCKT
-         if ( t->ttype != SUBCKT ) {
             t->state = compute_trans_state( t );
-            if( not ( t->source->nflags & INPUT ) )
-               t->source->nflags |= VISITED;
-            if( not ( t->drain->nflags & INPUT ) )
-               t->drain->nflags |= VISITED;
-         } else t->drain->nflags |= VISITED;
+            if( ( t->drain->npot == X ) or ( t->source->npot == X ) or
+                    ( ( t->drain->npot != t->source->npot ) and
+                      ( t->state == ON ) ) or
+                    ( ( t->drain->npot == t->source->npot ) and
+                      ( t->state == OFF ) ) or
+                    ( ( t->state == UNKNOWN ) and
+                      not ( oldstate == OFF and
+                            ( t->drain->npot == t->source->npot ) ) ) or
+                    ( t->drain->events != NULL ) or
+                    ( t->source->events != NULL ) ) {
+                if( not ( t->source->nflags & INPUT ) ) {
+                    t->source->nflags |= VISITED;
+                }
+                if( not ( t->drain->nflags & INPUT ) ) {
+                    t->drain->nflags |= VISITED;
+                }
+            }
 #else
-         t->state = compute_trans_state( t );
-         if( not ( t->source->nflags & INPUT ) )
-            t->source->nflags |= VISITED;
-         if( not ( t->drain->nflags & INPUT ) )
-            t->drain->nflags |= VISITED;
-#endif
-#endif
-      }
-      free_from_node( e, n );    /* remove to avoid punting this event */
-      e = e->flink;
-   } while( e != NULL );
-
-   /* run thorugh event list again, marking src/drn of input nodes */
-   if( all_flags & INPUT ) {
-      for( e = evlist; e != NULL; e = e->flink ) {
-         n = e->enode;
-
-         if( ( n->nflags & ( INPUT | POWER_RAIL ) ) != INPUT )
-            continue;
-
-         for( l = n->nterm; l != NULL; l = l->next ) {
             t = l->xtor;
 #ifdef USER_SUBCKT
             if ( t->ttype != SUBCKT ) {
-#endif
-               if( t->state != OFF ) {
-                  register nptr other = other_node( t, n );
-                  if( not( other->nflags & ( INPUT | VISITED ) ) )
-                     other->nflags |= VISITED;
-               }
-#ifdef USER_SUBCKT
-            } else {
-               t->drain->nflags |= VISITED;
+                t->state = compute_trans_state( t );
+                if( not ( t->source->nflags & INPUT ) ) {
+                    t->source->nflags |= VISITED;
+                }
+                if( not ( t->drain->nflags & INPUT ) ) {
+                    t->drain->nflags |= VISITED;
+                }
+            }
+            else { t->drain->nflags |= VISITED; }
+#else
+            t->state = compute_trans_state( t );
+            if( not ( t->source->nflags & INPUT ) ) {
+                t->source->nflags |= VISITED;
+            }
+            if( not ( t->drain->nflags & INPUT ) ) {
+                t->drain->nflags |= VISITED;
             }
 #endif
-         }
-      }
-   }
+#endif
+        }
+        free_from_node( e, n );    /* remove to avoid punting this event */
+        e = e->flink;
+    }
+    while( e != NULL );
+
+    /* run thorugh event list again, marking src/drn of input nodes */
+    if( all_flags & INPUT ) {
+        for( e = evlist; e != NULL; e = e->flink ) {
+            n = e->enode;
+
+            if( ( n->nflags & ( INPUT | POWER_RAIL ) ) != INPUT ) {
+                continue;
+            }
+
+            for( l = n->nterm; l != NULL; l = l->next ) {
+                t = l->xtor;
+#ifdef USER_SUBCKT
+                if ( t->ttype != SUBCKT ) {
+#endif
+                    if( t->state != OFF ) {
+                        register nptr other = other_node( t, n );
+                        if( not( other->nflags & ( INPUT | VISITED ) ) ) {
+                            other->nflags |= VISITED;
+                        }
+                    }
+#ifdef USER_SUBCKT
+                }
+                else {
+                    t->drain->nflags |= VISITED;
+                }
+#endif
+            }
+        }
+    }
 }
 
 
 private long EvalNodes( evptr evlist ) {
-   register tptr   t;
-   register lptr   l;
-   register nptr   n;
-   register evptr  event = evlist;
-   long            brk_flag = 0;
+    register tptr   t;
+    register lptr   l;
+    register nptr   n;
+    register evptr  event = evlist;
+    long            brk_flag = 0;
 
-   do {
-      nevent += 1;		/* advance counter to that of this event */
-      n = cur_node = event->enode;
-      n->c.time = event->ntime;	/* set up the cause stuff */
-      n->t.cause = event->p.cause;
+    do {
+        nevent += 1;      /* advance counter to that of this event */
+        n = cur_node = event->enode;
+        n->c.time = event->ntime; /* set up the cause stuff */
+        n->t.cause = event->p.cause;
 
-      npending -= 1;
+        npending -= 1;
 
-      /* now calculate new value for each marked node.  Some nodes marked
-       * above may become unmarked by earlier calculations before we get
-       * to them in this loop...
-       */
+        /* now calculate new value for each marked node.  Some nodes marked
+         * above may become unmarked by earlier calculations before we get
+         * to them in this loop...
+         */
 
-      for( l = n->ngate; l != NULL; l = l->next ) {
-         t = l->xtor;
-#ifdef USER_SUBCKT
-         if ( t->ttype == SUBCKT ) {
-            if ( t->drain->nflags & VISITED )  {
-               if ( t->subptr->model != ( ufun )NULL )
-                  subckt_model_C( t );
-               else lprintf( stderr, "Warning: null subckt function\n" );
-            }
-         } else
-#endif
-         {
-            if( t->source->nflags & VISITED )
-               ( *model )( t->source );
-            if( t->drain->nflags & VISITED )
-               ( *model )( t->drain );
-         }
-      }
-
-      if( ( n->nflags & ( INPUT | POWER_RAIL ) ) == INPUT ) {
-         for( l = n->nterm; l != NULL; l = l->next ) {
-            nptr  other;
-
+        for( l = n->ngate; l != NULL; l = l->next ) {
             t = l->xtor;
-            other = other_node( t, n );
-            if( other->nflags & VISITED )
-               ( *model )( other );
-         }
-      }
+#ifdef USER_SUBCKT
+            if ( t->ttype == SUBCKT ) {
+                if ( t->drain->nflags & VISITED )  {
+                    if ( t->subptr->model != ( ufun )NULL ) {
+                        subckt_model_C( t );
+                    }
+                    else { lprintf( stderr, "Warning: null subckt function\n" ); }
+                }
+            }
+            else
+#endif
+            {
+                if( t->source->nflags & VISITED ) {
+                    ( *model )( t->source );
+                }
+                if( t->drain->nflags & VISITED ) {
+                    ( *model )( t->drain );
+                }
+            }
+        }
 
-      /* see if we want to halt if this node changes value */
-      brk_flag |= n->nflags;
+        if( ( n->nflags & ( INPUT | POWER_RAIL ) ) == INPUT ) {
+            for( l = n->nterm; l != NULL; l = l->next ) {
+                nptr  other;
 
-      event = event->flink;
-   } while( event != NULL );
+                t = l->xtor;
+                other = other_node( t, n );
+                if( other->nflags & VISITED ) {
+                    ( *model )( other );
+                }
+            }
+        }
 
-   return( brk_flag );
+        /* see if we want to halt if this node changes value */
+        brk_flag |= n->nflags;
+
+        event = event->flink;
+    }
+    while( event != NULL );
+
+    return( brk_flag );
 }
 
 
@@ -360,130 +384,135 @@ private long EvalNodes( evptr evlist ) {
  * setting their INPUT flag and enqueueing the event.
  */
 private void SetInputs( iptr * listp, int val ) {
-   register nptr  n, other;
-   register lptr  l;
-   register tptr  t;
-   iptr           ip, last;
+    register nptr  n, other;
+    register lptr  l;
+    register tptr  t;
+    iptr           ip, last;
 
-   for( ip = last = *listp; ip != NULL; ip = ip->next ) {
-      last = ip;
+    for( ip = last = *listp; ip != NULL; ip = ip->next ) {
+        last = ip;
 
-      n = ip->inode;
+        n = ip->inode;
 
-      n->npot = val;
-      n->nflags &= ~INPUT_MASK;
-      n->nflags |= INPUT;
+        n->npot = val;
+        n->nflags &= ~INPUT_MASK;
+        n->nflags |= INPUT;
 
-      /* enqueue event so consequences are computed. */
-      enqueue_input( n, val );
+        /* enqueue event so consequences are computed. */
+        enqueue_input( n, val );
 
-      if( n->curr->val != val or not ( n->curr->inp ) )
-         AddHist( n, val, 1, cur_delta, 0L, 0L );
-   }
+        if( n->curr->val != val or not ( n->curr->inp ) ) {
+            AddHist( n, val, 1, cur_delta, 0L, 0L );
+        }
+    }
 
-   if( last ) {
-      last->next = infree;
-      infree = *listp;
-   }
-   *listp = NULL;
+    if( last ) {
+        last->next = infree;
+        infree = *listp;
+    }
+    *listp = NULL;
 }
 
 
 private void MarkNOinputs() {
-   register iptr  list;
+    register iptr  list;
 
-   for( list = xinputs; list != NULL; list = list->next ) {
-      list->inode->nflags &= ~( INPUT_MASK | INPUT );
-      list->inode->nflags |= VISITED;
-   }
+    for( list = xinputs; list != NULL; list = list->next ) {
+        list->inode->nflags &= ~( INPUT_MASK | INPUT );
+        list->inode->nflags |= VISITED;
+    }
 }
 
 
 /* nodes which are no longer inputs */
 private void EvalNOinputs() {
-   nptr  n;
-   iptr  list, last;
+    nptr  n;
+    iptr  list, last;
 
-   for( list = last = xinputs; list != NULL; list = list->next ) {
-      cur_node = n = list->inode;
-      AddHist( n, ( int ) n->curr->val, 0, cur_delta, 0L, 0L );
-      if( n->nflags & VISITED )
-         ( *model )( n );
-      last = list;
-   }
-   if( last ) {
-      last->next = infree;
-      infree = xinputs;
-   }
-   xinputs = NULL;
+    for( list = last = xinputs; list != NULL; list = list->next ) {
+        cur_node = n = list->inode;
+        AddHist( n, ( int ) n->curr->val, 0, cur_delta, 0L, 0L );
+        if( n->nflags & VISITED ) {
+            ( *model )( n );
+        }
+        last = list;
+    }
+    if( last ) {
+        last->next = infree;
+        infree = xinputs;
+    }
+    xinputs = NULL;
 }
 
 
 public int step( long stop_time ) {
-   evptr  evlist;
-   long   brk_flag;
-   int    ret_code = 0;
+    evptr  evlist;
+    long   brk_flag;
+    int    ret_code = 0;
 
-   /* look through input lists updating any nodes which just become inputs */
+    /* look through input lists updating any nodes which just become inputs */
 
-   MarkNOinputs();			/* nodes no longer inputs */
-   SetInputs( &hinputs, HIGH );	/* HIGH inputs */
-   SetInputs( &linputs, LOW );		/* LOW inputs */
-   SetInputs( &uinputs, X );		/* X inputs */
+    MarkNOinputs();          /* nodes no longer inputs */
+    SetInputs( &hinputs, HIGH ); /* HIGH inputs */
+    SetInputs( &linputs, LOW );      /* LOW inputs */
+    SetInputs( &uinputs, X );        /* X inputs */
 
-   /*
-    * On the first call to step, make sure transistors with gates
-    * of vdd and gnd are set up correctly.  Mark initial inputs first!
-    */
-   if( firstcall )
-      init_vdd_gnd();
+    /*
+     * On the first call to step, make sure transistors with gates
+     * of vdd and gnd are set up correctly.  Mark initial inputs first!
+     */
+    if( firstcall ) {
+        init_vdd_gnd();
+    }
 
 try_again :
-   /* process events until we reach specified stop time or events run out. */
-   while( ( evlist = get_next_event( stop_time ) ) != NULL ) {
-      MarkNodes( evlist );
-      if( xinputs ) EvalNOinputs();
+    /* process events until we reach specified stop time or events run out. */
+    while( ( evlist = get_next_event( stop_time ) ) != NULL ) {
+        MarkNodes( evlist );
+        if( xinputs ) { EvalNOinputs(); }
 
-      brk_flag = EvalNodes( evlist );
+        brk_flag = EvalNodes( evlist );
 
-      FreeEventList( evlist );	/* return event list to free pool */
+        FreeEventList( evlist );  /* return event list to free pool */
 
-      if( int_received )
-         goto done;
-      if( brk_flag & ( WATCHVECTOR | STOPONCHANGE | STOPVECCHANGE ) ) {
-         if( brk_flag & ( WATCHVECTOR | STOPVECCHANGE ) )
-            disp_watch_vec( brk_flag );
-         if( brk_flag & ( STOPONCHANGE | STOPVECCHANGE ) ) {
-            ret_code = 1;
+        if( int_received ) {
             goto done;
-         }
-      }
-   }
+        }
+        if( brk_flag & ( WATCHVECTOR | STOPONCHANGE | STOPVECCHANGE ) ) {
+            if( brk_flag & ( WATCHVECTOR | STOPVECCHANGE ) ) {
+                disp_watch_vec( brk_flag );
+            }
+            if( brk_flag & ( STOPONCHANGE | STOPVECCHANGE ) ) {
+                ret_code = 1;
+                goto done;
+            }
+        }
+    }
 
-   if( xinputs ) {
-      EvalNOinputs();
-      goto try_again;
-   }
+    if( xinputs ) {
+        EvalNOinputs();
+        goto try_again;
+    }
 
-   cur_delta = stop_time;
-   
-   done:
-   
-   if( analyzerON ) {
-      UpdateWindow( cur_delta );
-   }
-   return( ret_code );
+    cur_delta = stop_time;
+
+done:
+
+    if( analyzerON ) {
+        UpdateWindow( cur_delta );
+    }
+    return( ret_code );
 }
 
 
 /* table to convert transistor type and gate node value into switch state
  * indexed by switch_state[transistor-type][gate-node-value].
  */
-public	char  switch_state[NTTYPES][4] = {
-   OFF,	UNKNOWN,	UNKNOWN,	ON,	/* NCHAH */
-   ON,		UNKNOWN,	UNKNOWN,	OFF,	/* PCHAN */
-   WEAK,	WEAK,		WEAK,		WEAK,   /* RESIST */
-   WEAK,	WEAK,		WEAK,		WEAK,   /* DEP */
+public  char  switch_state[NTTYPES][4] = {
+    OFF, UNKNOWN,    UNKNOWN,    ON, /* NCHAH */
+    ON,      UNKNOWN,    UNKNOWN,    OFF,    /* PCHAN */
+    WEAK,    WEAK,       WEAK,       WEAK,   /* RESIST */
+    WEAK,    WEAK,       WEAK,       WEAK,   /* DEP */
 };
 
 
@@ -494,48 +523,52 @@ public	char  switch_state[NTTYPES][4] = {
  * transistor is on.
  */
 public
-#define	 compute_trans_state( TRANS )					\
-    ( ((TRANS)->ttype & GATELIST) ?					\
-	ComputeTransState( TRANS ):					\
-	switch_state[ BASETYPE( (TRANS)->ttype ) ][ (TRANS)->gate->npot ] )
+#define  compute_trans_state( TRANS )                   \
+    ( ((TRANS)->ttype & GATELIST) ?                 \
+    ComputeTransState( TRANS ):                 \
+    switch_state[ BASETYPE( (TRANS)->ttype ) ][ (TRANS)->gate->npot ] )
 
 
 public int ComputeTransState( tptr t ) {
-   register nptr  n;
-   register tptr  l;
-   register int   result;
+    register nptr  n;
+    register tptr  l;
+    register int   result;
 
-   switch( BASETYPE( t->ttype ) ) {
-   case NCHAN :
-      result = ON;
-      for( l = ( tptr ) t->gate; l != NULL; l = l->scache.t ) {
-         n = l->gate;
-         if( n->npot == LOW )
-            return( OFF );
-         else if( n->npot == X )
-            result = UNKNOWN;
-      }
-      return( result );
+    switch( BASETYPE( t->ttype ) ) {
+    case NCHAN :
+        result = ON;
+        for( l = ( tptr ) t->gate; l != NULL; l = l->scache.t ) {
+            n = l->gate;
+            if( n->npot == LOW ) {
+                return( OFF );
+            }
+            else if( n->npot == X ) {
+                result = UNKNOWN;
+            }
+        }
+        return( result );
 
-   case PCHAN :
-      result = ON;
-      for( l = ( tptr ) t->gate; l != NULL; l = l->scache.t ) {
-         n = l->gate;
-         if( n->npot == HIGH )
-            return( OFF );
-         else if( n->npot == X )
-            result = UNKNOWN;
-      }
-      return( result );
+    case PCHAN :
+        result = ON;
+        for( l = ( tptr ) t->gate; l != NULL; l = l->scache.t ) {
+            n = l->gate;
+            if( n->npot == HIGH ) {
+                return( OFF );
+            }
+            else if( n->npot == X ) {
+                result = UNKNOWN;
+            }
+        }
+        return( result );
 
-   case DEP :
-   case RESIST :
-      return( WEAK );
+    case DEP :
+    case RESIST :
+        return( WEAK );
 
-   default :
-      lprintf( stderr,
-               "**** internal error: unrecongized transistor type (0x%x)\n",
-               BASETYPE( t->ttype ) );
-      return( UNKNOWN );
-   }
+    default :
+        lprintf( stderr,
+                 "**** internal error: unrecongized transistor type (0x%x)\n",
+                 BASETYPE( t->ttype ) );
+        return( UNKNOWN );
+    }
 }

@@ -36,50 +36,50 @@
 #include "defs.h"
 #include "mem.h"
 
-public	char    *cad_lib;
-public	char    *cad_bin;
+public  char  *  cad_lib;
+public  char  *  cad_bin;
 
 #ifndef OS2
-// extern	char           *getenv();
+// extern   char           *getenv();
 #endif  /* OS2  */
-extern	struct passwd  *getpwnam();
-// extern	char           *Valloc();
+extern  struct passwd * getpwnam();
+// extern   char           *Valloc();
 
 
 public void InitCAD() {
-   const char     *s;
-   struct passwd  *pwd;
-   int            len;
+    const char   *  s;
+    struct passwd * pwd;
+    int            len;
 
-   /* first try CAD_HOME env. variable */
+    /* first try CAD_HOME env. variable */
 
-   s = getenv( "CAD_HOME" );
-   if( s ) {
-      if( access( s, F_OK ) == 0 ) {
-         goto go_it;
-      }
-   }
+    s = getenv( "CAD_HOME" );
+    if( s ) {
+        if( access( s, F_OK ) == 0 ) {
+            goto go_it;
+        }
+    }
 
-   /* try "~cad" */
-   #ifndef OS2
-   pwd = getpwnam( "cad" );
-   s = ( pwd ) ? pwd->pw_dir : 0;
-   #endif  /* OS2 */
-   if( s ) {
-      if( access( s, F_OK ) == 0 ) {
-         goto go_it;
-      }
-   }
+    /* try "~cad" */
+#ifndef OS2
+    pwd = getpwnam( "cad" );
+    s = ( pwd ) ? pwd->pw_dir : 0;
+#endif  /* OS2 */
+    if( s ) {
+        if( access( s, F_OK ) == 0 ) {
+            goto go_it;
+        }
+    }
 
-   /* default */
+    /* default */
 
-   s = "/projects/cad";
+    s = "/projects/cad";
 
-   go_it:
+go_it:
 
-   len = strlen( s );
-   cad_lib = Valloc( len + 5, 1 );
-   cad_bin = Valloc( len + 5, 1 );
-   ( void ) sprintf( cad_lib, "%s/lib", s );
-   ( void ) sprintf( cad_bin, "%s/bin", s );
+    len = strlen( s );
+    cad_lib = Valloc( len + 5, 1 );
+    cad_bin = Valloc( len + 5, 1 );
+    ( void ) sprintf( cad_lib, "%s/lib", s );
+    ( void ) sprintf( cad_bin, "%s/bin", s );
 }

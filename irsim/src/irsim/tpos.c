@@ -17,111 +17,118 @@
 #include "net.h"
 #include "globals.h"
 
-#define	HASHSIZE	1021
-#define	HN1		1103515245
-#define	HN2		12345
+#define HASHSIZE    1021
+#define HN1     1103515245
+#define HN2     12345
 
 
-public	int	txt_coords = 0;		/* # of trans. with coordinates */
+public  int txt_coords = 0;     /* # of trans. with coordinates */
 
-private tptr	tpostbl[ HASHSIZE ];	/* hash table of trans position */
+private tptr    tpostbl[ HASHSIZE ];    /* hash table of trans position */
 
-private	tptr	other_t = NULL;		/* transistors without coords */
+private tptr    other_t = NULL;     /* transistors without coords */
 private struct Trans  OtherT;
 
 
-#define	UN( N )		( (Ulong) ( N ) )
-#define	HashPos( X, Y )	( UN( UN( X ) * HN1 + UN( Y ) + HN2 ) % HASHSIZE )
+#define UN( N )     ( (Ulong) ( N ) )
+#define HashPos( X, Y ) ( UN( UN( X ) * HN1 + UN( Y ) + HN2 ) % HASHSIZE )
 
 
 public void EnterPos( tptr tran, int is_pos ) {
-   long  n;
+    long  n;
 
-   if( is_pos ) {
-      n = HashPos( tran->x.pos, tran->y.pos );
+    if( is_pos ) {
+        n = HashPos( tran->x.pos, tran->y.pos );
 
-      tran->tlink = tpostbl[n];
-      tpostbl[n] = tran;
-      txt_coords ++;
-   } else {
-      if( other_t == NULL )
-         other_t = OtherT.x.ptr = OtherT.y.ptr = &OtherT;
-      tran->y.ptr = other_t;
-      tran->x.ptr = other_t->x.ptr;
-      other_t->x.ptr->y.ptr = tran;
-      other_t->y.ptr = tran;
-      tran->tlink = tran;
-   }
+        tran->tlink = tpostbl[n];
+        tpostbl[n] = tran;
+        txt_coords ++;
+    }
+    else {
+        if( other_t == NULL ) {
+            other_t = OtherT.x.ptr = OtherT.y.ptr = &OtherT;
+        }
+        tran->y.ptr = other_t;
+        tran->x.ptr = other_t->x.ptr;
+        other_t->x.ptr->y.ptr = tran;
+        other_t->y.ptr = tran;
+        tran->tlink = tran;
+    }
 }
 
 
 public tptr FindTxtorPos( long x, long y ) {
-   register tptr  t;
-   long           n;
+    register tptr  t;
+    long           n;
 
-   n = HashPos( x, y );
+    n = HashPos( x, y );
 
-   for( t = tpostbl[n]; t != NULL; t = t->tlink ) {
-      if( t->x.pos == x and t->y.pos == y )
-         return( t );
-   }
-   return( NULL );
+    for( t = tpostbl[n]; t != NULL; t = t->tlink ) {
+        if( t->x.pos == x and t->y.pos == y ) {
+            return( t );
+        }
+    }
+    return( NULL );
 }
 
 
 public void DeleteTxtorPos( tptr tran ) {
-   register tptr  *t;
-   long           n;
+    register tptr * t;
+    long           n;
 
-   n = HashPos( tran->x.pos, tran->y.pos );
+    n = HashPos( tran->x.pos, tran->y.pos );
 
-   for( t = &( tpostbl[n] ); *t != NULL; t = &( ( *t )->tlink ) ) {
-      if( *t == tran ) {
-         *t = tran->tlink;
-         tran->tlink = tran;
-         txt_coords --;
-         break;
-      }
-   }
+    for( t = &( tpostbl[n] ); *t != NULL; t = &( ( *t )->tlink ) ) {
+        if( *t == tran ) {
+            *t = tran->tlink;
+            tran->tlink = tran;
+            txt_coords --;
+            break;
+        }
+    }
 }
 
 
 public nptr FindNode_TxtorPos( const char * s ) {
-   long  x, y;
-   tptr  t;
+    long  x, y;
+    tptr  t;
 
-   if( sscanf( &s[3], "%ld,%ld", &x, &y ) != 2 )
-      return( NULL );
+    if( sscanf( &s[3], "%ld,%ld", &x, &y ) != 2 ) {
+        return( NULL );
+    }
 
-   if( ( t = FindTxtorPos( x, y ) ) == NULL )
-      return( NULL );
+    if( ( t = FindTxtorPos( x, y ) ) == NULL ) {
+        return( NULL );
+    }
 
-   switch( s[2] ) {
-   case 'g':
-      return( t->gate );
-   case 'd':
-      return( t->drain );
-   case 's':
-      return( t->source );
-   }
-   return( NULL );
+    switch( s[2] ) {
+    case 'g':
+        return( t->gate );
+    case 'd':
+        return( t->drain );
+    case 's':
+        return( t->source );
+    }
+    return( NULL );
 }
 
 void walk_trans ( void ( * func )( tptr t, char * arg ), char * arg ) {
 
-   // void  ( *func )();
-   // char  *arg;
+    // void  ( *func )();
+    // char  *arg;
 
-   register int   index;
-   register tptr  t;
+    register int   index;
+    register tptr  t;
 
-   for( index = 0; index < HASHSIZE; index++ ) {
-      for( t = tpostbl[ index ]; t != NULL; t = t->tlink )
-         ( *func )( t, arg );
-   }
+    for( index = 0; index < HASHSIZE; index++ ) {
+        for( t = tpostbl[ index ]; t != NULL; t = t->tlink ) {
+            ( *func )( t, arg );
+        }
+    }
 
-   if( other_t != NULL ) {
-      for( t = other_t->x.ptr; t != other_t; t = t->x.ptr )
-         ( *func )( t, arg );
-   }
+    if( other_t != NULL ) {
+        for( t = other_t->x.ptr; t != other_t; t = t->x.ptr ) {
+            ( *func )( t, arg );
+        }
+    }
 }

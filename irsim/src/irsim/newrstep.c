@@ -35,103 +35,103 @@
 #endif
 
 
-#define	SMALL		1E-15	    /* A small number */
-#define	LARGE		1E15	    /* A large number */
-#define	LIMIT		1E8	    /* R > LIMIT are considered infinite */
-#define	NP_RATIO	0.7	    /* nmos-pmos ratio for spike analysis */
+#define SMALL       1E-15       /* A small number */
+#define LARGE       1E15        /* A large number */
+#define LIMIT       1E8     /* R > LIMIT are considered infinite */
+#define NP_RATIO    0.7     /* nmos-pmos ratio for spike analysis */
 
 
-#define	MIN( a, b )		((a < b) ? a : b)
-#define	MAX( a, b )		((a > b) ? a : b)
+#define MIN( a, b )     ((a < b) ? a : b)
+#define MAX( a, b )     ((a > b) ? a : b)
 
 
 /* combine 2 resistors in parallel */
-#define	COMBINE( R1, R2 )	( (R1) * (R2) / ( (R1) + (R2) ) )
+#define COMBINE( R1, R2 )   ( (R1) * (R2) / ( (R1) + (R2) ) )
 /* combine 2 resistors in parallel, watch out for zero resistance */
-#define	COMBINE_R( A, B )	( ((A) + (B) <= SMALL) ? 0 : COMBINE( A, B ) )
+#define COMBINE_R( A, B )   ( ((A) + (B) <= SMALL) ? 0 : COMBINE( A, B ) )
 
-#define	IsWatched( N )		( (N)->nflags & WATCHED )
-#define	SetDebug( FL, N )	\
-	( ((debug & (FL)) == (FL) and IsWatched( N )) ? 1 : 0 )
+#define IsWatched( N )      ( (N)->nflags & WATCHED )
+#define SetDebug( FL, N )   \
+    ( ((debug & (FL)) == (FL) and IsWatched( N )) ? 1 : 0 )
 
 /* flags used in thevenin structure */
-#define	T_DEFINITE	0x01	/* set for a definite rooted path	    */
-#define	T_UDELAY	0x02	/* set if user specified delay encountered  */
-#define	T_SPIKE		0x04	/* set if charge-sharing spike possible	    */
-#define	T_DRIVEN	0x08	/* set if this branch is driven		    */
-#define	T_REFNODE	0x10	/* set for the reference node in pure c-s   */
-#define	T_XTRAN		0x20	/* set if connecting through an X trans.    */
-#define	T_INT		0x40	/* set if we should consider input slope    */
-#define	T_DOMDRIVEN	0x80	/* set if branch driven to dominant voltage */
+#define T_DEFINITE  0x01    /* set for a definite rooted path       */
+#define T_UDELAY    0x02    /* set if user specified delay encountered  */
+#define T_SPIKE     0x04    /* set if charge-sharing spike possible     */
+#define T_DRIVEN    0x08    /* set if this branch is driven         */
+#define T_REFNODE   0x10    /* set for the reference node in pure c-s   */
+#define T_XTRAN     0x20    /* set if connecting through an X trans.    */
+#define T_INT       0x40    /* set if we should consider input slope    */
+#define T_DOMDRIVEN 0x80    /* set if branch driven to dominant voltage */
 
-public	int       tunitdelay = 0;	/* if <> 0, all transitions take
-					 * 'tunitdelay' DELAY-units */
-public	int       tdecay = 0;		/* if <> 0, undriven nodes decay to
-					 * X after 'tdecay' DELAY-units */
-public	char      withdriven;		/* TRUE if stage is driven by
-					 *  some input */
+public  int       tunitdelay = 0;   /* if <> 0, all transitions take
+                     * 'tunitdelay' DELAY-units */
+public  int       tdecay = 0;       /* if <> 0, undriven nodes decay to
+                     * X after 'tdecay' DELAY-units */
+public  char      withdriven;       /* TRUE if stage is driven by
+                     *  some input */
 
 
-typedef	struct {
-   double  min;
-   double  max;
+typedef struct {
+    double  min;
+    double  max;
 } Range;
 
 /* Parameters gathered during a tree walk */
 /* resists are in ohms, caps in pf */
 typedef struct thevenin {
-   union {
-      Thev  t;
-      nptr  n;
-   } link;			/* links these structures together	    */
-   int      flags;		/* flags defined above			    */
-   Range    Clow;		/* capacitance charged low		    */
-   Range    Chigh;		/* capacitance charged high		    */
-   Range    Rup;		/* resistance pulling up to Vdd		    */
-   Range    Rdown;		/* resistance pulling down to GND	    */
-   Range    Req;		/* resist. of present (parallel) xtor(s)    */
-   Range    V;			/* normalized voltage range (0-1)	    */
-   double   Rmin;		/* minimum resistance to any driver	    */
-   double   Rdom;		/* minimum resistance to dominant driver    */
-   double   Rmax;		/* maximum resistance to dominant driver    */
-   double   Ca;		/* Adjusted non-switching capacitance 	    */
-   double   Cd;		/* Adjusted total capacitance		    */
-   double   tauD;		/* Elmore delay	(psec)			    */
-   double   tauA;		/* 1st order time-constant (psec)	    */
-   double   tauP;		/* 2nd order time-constant (psec)	    */
-   double   Tin;		/* input transition = (input_tau) * Rin	    */
-   short    tplh;		/* user specified low->high delay (DELTA)   */
-   short    tphl;		/* user specified high->low delay (DELTA)   */
-   char     final;		/* steady-state value calculated (H, L, X)  */
-   char     tau_done;		/* if tau calculated, == dominant voltage   */
-   char     taup_done;		/* if tauP calculated, == dominant voltage  */
+    union {
+        Thev  t;
+        nptr  n;
+    } link;          /* links these structures together      */
+    int      flags;      /* flags defined above              */
+    Range    Clow;       /* capacitance charged low          */
+    Range    Chigh;      /* capacitance charged high         */
+    Range    Rup;        /* resistance pulling up to Vdd         */
+    Range    Rdown;      /* resistance pulling down to GND       */
+    Range    Req;        /* resist. of present (parallel) xtor(s)    */
+    Range    V;          /* normalized voltage range (0-1)       */
+    double   Rmin;       /* minimum resistance to any driver     */
+    double   Rdom;       /* minimum resistance to dominant driver    */
+    double   Rmax;       /* maximum resistance to dominant driver    */
+    double   Ca;     /* Adjusted non-switching capacitance       */
+    double   Cd;     /* Adjusted total capacitance           */
+    double   tauD;       /* Elmore delay (psec)              */
+    double   tauA;       /* 1st order time-constant (psec)       */
+    double   tauP;       /* 2nd order time-constant (psec)       */
+    double   Tin;        /* input transition = (input_tau) * Rin     */
+    short    tplh;       /* user specified low->high delay (DELTA)   */
+    short    tphl;       /* user specified high->low delay (DELTA)   */
+    char     final;      /* steady-state value calculated (H, L, X)  */
+    char     tau_done;       /* if tau calculated, == dominant voltage   */
+    char     taup_done;      /* if tauP calculated, == dominant voltage  */
 } thevenin;
 
 
-typedef struct {		/* one for each possible dominant voltage */
-   nptr  nd;			/* list of nodes driven to this potential */
-   int   spike;		/* TRUE if this pot needs spike analysis */
+typedef struct {        /* one for each possible dominant voltage */
+    nptr  nd;            /* list of nodes driven to this potential */
+    int   spike;     /* TRUE if this pot needs spike analysis */
 } Dominant;
 
 
 typedef struct {
-   double  ch_delay;		/* charging delay */
-   double  dr_delay;		/* driven delay */
-   float   peak;		/* spike peak */
-   int     charge;		/* spike charge */
+    double  ch_delay;        /* charging delay */
+    double  dr_delay;        /* driven delay */
+    float   peak;        /* spike peak */
+    int     charge;      /* spike charge */
 } SpikeRec, *pspk;
 
 
-private	Thev      thev_free = NULL;	/* Free list of thev structures */
-private	int       inc_level;		/* 1 if debug and node is watched */
-private	Dominant  dom_pot[ N_POTS ];	/* dominant voltage structure */
+private Thev      thev_free = NULL; /* Free list of thev structures */
+private int       inc_level;        /* 1 if debug and node is watched */
+private Dominant  dom_pot[ N_POTS ];    /* dominant voltage structure */
 
-private	thevenin  init_thev;		/* pre-initialized thevenin structs */
-private	thevenin  input_thev[ N_POTS ];
+private thevenin  init_thev;        /* pre-initialized thevenin structs */
+private thevenin  input_thev[ N_POTS ];
 
 
 /* forward references */
-private	void	scheduleDriven();
+private void    scheduleDriven();
 
 private void schedulePureCS( nptr nlist );
 
@@ -158,114 +158,123 @@ private void print_spk( nptr nd, Thev r, int tab, int dom, int alpha, int beta, 
 
 
 public void linear_model( nptr n ) {
-   int  i, changes;
+    int  i, changes;
 
-   nevals++;
+    nevals++;
 
-   for( i = LOW; i <= HIGH; i++ )
-      dom_pot[i].nd = NULL, dom_pot[i].spike = FALSE;
+    for( i = LOW; i <= HIGH; i++ ) {
+        dom_pot[i].nd = NULL, dom_pot[i].spike = FALSE;
+    }
 
-   if( n->nflags & VISITED )
-      BuildConnList( n );
+    if( n->nflags & VISITED ) {
+        BuildConnList( n );
+    }
 
-   changes = ComputeDC( n );
+    changes = ComputeDC( n );
 
-   if( not changes ) {
-      CleanEvents( n );
-   }
-   else if( withdriven ) {
-      scheduleDriven();
-   }
-   else {
-      schedulePureCS( n );
-   }
+    if( not changes ) {
+        CleanEvents( n );
+    }
+    else if( withdriven ) {
+        scheduleDriven();
+    }
+    else {
+        schedulePureCS( n );
+    }
 
-   if( tdecay != 0 and not withdriven ) {
-      EnqueDecay( n );
-   }
+    if( tdecay != 0 and not withdriven ) {
+        EnqueDecay( n );
+    }
 
-   UndoConnList( n );
+    UndoConnList( n );
 }
 
 
 private void CleanEvents( nptr n ) {
-   register evptr  ev;
+    register evptr  ev;
 
-   do {
-      while( ( ev = n->events ) != NULL )
-         PuntEvent( n, ev );
-   } while( ( n = n->nlink ) != NULL );
+    do {
+        while( ( ev = n->events ) != NULL ) {
+            PuntEvent( n, ev );
+        }
+    }
+    while( ( n = n->nlink ) != NULL );
 }
 
 
 private void EnqueDecay( nptr n ) {
-   register evptr  ev;
+    register evptr  ev;
 
-   do {
-      ev = n->events;
-      if( ( ev == NULL ) ? n->npot : ev->eval != X ) {
-         if( ( debug & DEBUG_EV ) and IsWatched( n ) )
-            lprintf( stdout, "  decay transition for %s @ %.2fns\n",
-                     pnode( n ), d2ns( cur_delta + tdecay ) );
-         enqueue_event( n, DECAY, ( long ) tdecay, ( long ) tdecay );
-      }
-      n = n->nlink;
-   } while( n != NULL );
+    do {
+        ev = n->events;
+        if( ( ev == NULL ) ? n->npot : ev->eval != X ) {
+            if( ( debug & DEBUG_EV ) and IsWatched( n ) )
+                lprintf( stdout, "  decay transition for %s @ %.2fns\n",
+                         pnode( n ), d2ns( cur_delta + tdecay ) );
+            enqueue_event( n, DECAY, ( long ) tdecay, ( long ) tdecay );
+        }
+        n = n->nlink;
+    }
+    while( n != NULL );
 }
 
 
 private void UndoConnList( nptr n ) {
-   register nptr  next;
-   register lptr  l;
-   register tptr  t;
-   #ifdef CL_STATS
-   register int   num_trans = 0;
+    register nptr  next;
+    register lptr  l;
+    register tptr  t;
+#ifdef CL_STATS
+    register int   num_trans = 0;
 
-   for( next = n; next != NULL; next = next->nlink ) {
-      for( l = next->nterm; l != NULL; l = l->next ) {
-         t = l->xtor;
-         if( t->state != OFF )
-            t->tflags |= CROSSED;
-      }
-   }
-   #endif /* CL_STATS */
+    for( next = n; next != NULL; next = next->nlink ) {
+        for( l = next->nterm; l != NULL; l = l->next ) {
+            t = l->xtor;
+            if( t->state != OFF ) {
+                t->tflags |= CROSSED;
+            }
+        }
+    }
+#endif /* CL_STATS */
 
-   do {
-      next = n->nlink;
-      n->nlink = NULL;
+    do {
+        next = n->nlink;
+        n->nlink = NULL;
 
-      n->n.thev->link.t = thev_free;
-      thev_free = n->n.thev;
+        n->n.thev->link.t = thev_free;
+        thev_free = n->n.thev;
 
-      for( l = n->nterm; l != NULL; l = l->next ) {
-         t = l->xtor;
-         if( t->state == OFF )
-            continue;
+        for( l = n->nterm; l != NULL; l = l->next ) {
+            t = l->xtor;
+            if( t->state == OFF ) {
+                continue;
+            }
 
 #ifdef CL_STATS
-         if( t->tflags & CROSSED )
-            num_trans ++;
+            if( t->tflags & CROSSED ) {
+                num_trans ++;
+            }
 #endif /* CL_STATS */
-         if( not( t->tflags & ( PBROKEN | BROKEN ) ) ) {
-            register Thev  r;
+            if( not( t->tflags & ( PBROKEN | BROKEN ) ) ) {
+                register Thev  r;
 
-            if( ( r = t->scache.r ) != NULL ) {
-               r->link.t = thev_free;
-               thev_free = r;
+                if( ( r = t->scache.r ) != NULL ) {
+                    r->link.t = thev_free;
+                    thev_free = r;
+                }
+                if( ( r = t->dcache.r ) != NULL ) {
+                    r->link.t = thev_free;
+                    thev_free = r;
+                }
             }
-            if( ( r = t->dcache.r ) != NULL ) {
-               r->link.t = thev_free;
-               thev_free = r;
-            }
-         }
-         t->scache.r = t->dcache.r = NULL;
-         t->tflags &= ~( CROSSED | BROKEN | PBROKEN | PARALLEL );
-      }
-   } while( ( n = next ) != NULL );
+            t->scache.r = t->dcache.r = NULL;
+            t->tflags &= ~( CROSSED | BROKEN | PBROKEN | PARALLEL );
+        }
+    }
+    while( ( n = next ) != NULL );
 
-   #ifdef CL_STATS
-   RecordConnList( num_trans );
-   #endif /* CL_STATS */
+#ifdef CL_STATS
+    RecordConnList( num_trans );
+#endif /* CL_STATS */
 }
 
 
@@ -280,208 +289,230 @@ private void UndoConnList( nptr n ) {
  * from the previously calculated value for the node.
  */
 public void QueueFVal( nptr nd, int fval, double tau, double delay ) {
-   register evptr  ev;
-   register Ulong  delta;
-   int             queued = 0;
+    register evptr  ev;
+    register Ulong  delta;
+    int             queued = 0;
 
-   delta = cur_delta + ( Ulong ) ps2d( delay );
-   if( delta == cur_delta )			/* avoid zero delay */
-      delta++;
+    delta = cur_delta + ( Ulong ) ps2d( delay );
+    if( delta == cur_delta ) {       /* avoid zero delay */
+        delta++;
+    }
 
-   while( ( ev = nd->events ) != NULL and ev->ntime >= delta ) {
-      if( ev->ntime == delta and ev->eval == fval )
-         break;
-      PuntEvent( nd, ev );
-   }
+    while( ( ev = nd->events ) != NULL and ev->ntime >= delta ) {
+        if( ev->ntime == delta and ev->eval == fval ) {
+            break;
+        }
+        PuntEvent( nd, ev );
+    }
 
-   delta -= cur_delta;
+    delta -= cur_delta;
 
-   if( fval != ( ( ev == NULL ) ? nd->npot : ev->eval ) ) {
-      enqueue_event( nd, fval, ( long ) delta, ( long ) ps2d( tau ) );
-      queued = 1;
-   }
+    if( fval != ( ( ev == NULL ) ? nd->npot : ev->eval ) ) {
+        enqueue_event( nd, fval, ( long ) delta, ( long ) ps2d( tau ) );
+        queued = 1;
+    }
 
-   if( ( debug & DEBUG_EV ) and IsWatched( nd ) )
-      print_final( nd, queued, tau, delta );
+    if( ( debug & DEBUG_EV ) and IsWatched( nd ) ) {
+        print_final( nd, queued, tau, delta );
+    }
 }
 
 
 private void QueueSpike( nptr nd, pspk spk ) {
-   register evptr  ev;
-   register Ulong  ch_delta, dr_delta;
+    register evptr  ev;
+    register Ulong  ch_delta, dr_delta;
 
-   while( ( ev = nd->events ) != NULL )
-      PuntEvent( nd, ev );
+    while( ( ev = nd->events ) != NULL ) {
+        PuntEvent( nd, ev );
+    }
 
-   if( spk == NULL ) {	/* no spike, just punt events */
-      return;
-   }
+    if( spk == NULL ) {  /* no spike, just punt events */
+        return;
+    }
 
-   ch_delta = ( Ulong ) ps2d( spk->ch_delay );
-   dr_delta = ( Ulong ) ps2d( spk->dr_delay );
+    ch_delta = ( Ulong ) ps2d( spk->ch_delay );
+    dr_delta = ( Ulong ) ps2d( spk->dr_delay );
 
-   if( ch_delta == 0 )
-      ch_delta = 1;
-   if( dr_delta == 0 )
-      dr_delta = 1;
+    if( ch_delta == 0 ) {
+        ch_delta = 1;
+    }
+    if( dr_delta == 0 ) {
+        dr_delta = 1;
+    }
 
-   if( ( debug & DEBUG_EV ) and IsWatched( nd ) )
-      print_spike( nd, spk, ch_delta, dr_delta );
+    if( ( debug & DEBUG_EV ) and IsWatched( nd ) ) {
+        print_spike( nd, spk, ch_delta, dr_delta );
+    }
 
-   if( dr_delta <= ch_delta ) {	/* no zero delay spikes, done */
-      return;
-   }
+    if( dr_delta <= ch_delta ) { /* no zero delay spikes, done */
+        return;
+    }
 
-   /* enqueue spike and final value events */
-   enqueue_event( nd, ( int ) spk->charge, ( long ) ch_delta, ( long ) ch_delta );
-   enqueue_event( nd, ( int ) nd->npot, ( long ) dr_delta, ( long ) ch_delta );
+    /* enqueue spike and final value events */
+    enqueue_event( nd, ( int ) spk->charge, ( long ) ch_delta, ( long ) ch_delta );
+    enqueue_event( nd, ( int ) nd->npot, ( long ) dr_delta, ( long ) ch_delta );
 }
 
 
 private void scheduleDriven() {
-   register nptr  nd;
-   register Thev  r;
-   int            dom;
-   double         tau, delay;
+    register nptr  nd;
+    register Thev  r;
+    int            dom;
+    double         tau, delay;
 
-   for( dom = 0; dom < N_POTS; dom++ ) {
-      for( nd = dom_pot[ dom ].nd; nd != NULL; nd = r->link.n ) {
-         inc_level = SetDebug( DEBUG_TAU | DEBUG_TW, nd );
+    for( dom = 0; dom < N_POTS; dom++ ) {
+        for( nd = dom_pot[ dom ].nd; nd != NULL; nd = r->link.n ) {
+            inc_level = SetDebug( DEBUG_TAU | DEBUG_TW, nd );
 
-         r = get_tau( nd, ( tptr ) NULL, dom, inc_level );
+            r = get_tau( nd, ( tptr ) NULL, dom, inc_level );
 
-         if( inc_level == 0 and SetDebug( DEBUG_TAU, nd ) ) {
-            print_tau( nd, r, -1 );
-         }
-
-         r->tauA = r->Rdom * r->Ca;
-         r->tauD = r->Rdom * r->Cd;
-
-         if( r->flags & T_SPIKE )		/* deal with these later */
-            continue;
-
-         if( nd->npot == r->final ) {	/* no change, just punt */
-            evptr  ev;
-
-            while( ( ev = nd->events ) != NULL )
-               PuntEvent( nd, ev );
-            continue;
-         } else if( tunitdelay ) {
-            delay = tunitdelay;
-            tau = 0.0;
-         } else if( r->flags & T_UDELAY ) {
-            switch( r->final ) {
-            case LOW :
-               tau = d2ps( r->tphl );
-               break;
-            case HIGH :
-               tau = d2ps( r->tplh );
-               break;
-            case X :
-               tau = d2ps( MIN( r->tphl, r->tplh ) );
-               break;
+            if( inc_level == 0 and SetDebug( DEBUG_TAU, nd ) ) {
+                print_tau( nd, r, -1 );
             }
-            delay = tau;
-         } else {
-            if( r->final == X )
-               tau = r->Rmin * r->Ca;
-            else if( r->flags & T_DEFINITE )
-               tau = r->Rmax * r->Ca;
-            else
-               tau = r->Rdom * r->Ca;
 
-            if( ( r->flags & T_INT ) and r->Tin > 0.5 )
-               delay = sqrt( tau * tau + d2ps( r->Tin ) * r->Ca );
-            else
-               delay = tau;
-         }
+            r->tauA = r->Rdom * r->Ca;
+            r->tauD = r->Rdom * r->Cd;
 
-         QueueFVal( nd, ( int ) r->final, tau, delay );
-      }
+            if( r->flags & T_SPIKE ) {     /* deal with these later */
+                continue;
+            }
 
-      if( dom_pot[ dom ].spike ) {
-         pspk  spk;
+            if( nd->npot == r->final ) {   /* no change, just punt */
+                evptr  ev;
 
-         for( nd = dom_pot[ dom ].nd; nd != NULL; nd = nd->n.thev->link.n ) {
-            r = nd->n.thev;
-            if( not ( r->flags & T_SPIKE ) )
-               continue;
+                while( ( ev = nd->events ) != NULL ) {
+                    PuntEvent( nd, ev );
+                }
+                continue;
+            }
+            else if( tunitdelay ) {
+                delay = tunitdelay;
+                tau = 0.0;
+            }
+            else if( r->flags & T_UDELAY ) {
+                switch( r->final ) {
+                case LOW :
+                    tau = d2ps( r->tphl );
+                    break;
+                case HIGH :
+                    tau = d2ps( r->tplh );
+                    break;
+                case X :
+                    tau = d2ps( MIN( r->tphl, r->tplh ) );
+                    break;
+                }
+                delay = tau;
+            }
+            else {
+                if( r->final == X ) {
+                    tau = r->Rmin * r->Ca;
+                }
+                else if( r->flags & T_DEFINITE ) {
+                    tau = r->Rmax * r->Ca;
+                }
+                else {
+                    tau = r->Rdom * r->Ca;
+                }
 
-            inc_level = SetDebug( DEBUG_TAUP | DEBUG_TW, nd );
+                if( ( r->flags & T_INT ) and r->Tin > 0.5 ) {
+                    delay = sqrt( tau * tau + d2ps( r->Tin ) * r->Ca );
+                }
+                else {
+                    delay = tau;
+                }
+            }
 
-            r->tauP = get_tauP( nd, ( tptr ) NULL, dom, inc_level );
+            QueueFVal( nd, ( int ) r->final, tau, delay );
+        }
 
-            r->tauP *= r->Rdom / r->tauA;
+        if( dom_pot[ dom ].spike ) {
+            pspk  spk;
 
-            QueueSpike( nd, ComputeSpike( nd, r, dom ) );
-         }
-      }
-   }
+            for( nd = dom_pot[ dom ].nd; nd != NULL; nd = nd->n.thev->link.n ) {
+                r = nd->n.thev;
+                if( not ( r->flags & T_SPIKE ) ) {
+                    continue;
+                }
+
+                inc_level = SetDebug( DEBUG_TAUP | DEBUG_TW, nd );
+
+                r->tauP = get_tauP( nd, ( tptr ) NULL, dom, inc_level );
+
+                r->tauP *= r->Rdom / r->tauA;
+
+                QueueSpike( nd, ComputeSpike( nd, r, dom ) );
+            }
+        }
+    }
 }
 
 
 private void schedulePureCS( nptr nlist ) {
-   register nptr  nd;
-   register Thev  r;
-   int            dom;
-   double         taup, tau, delay;
+    register nptr  nd;
+    register Thev  r;
+    int            dom;
+    double         taup, tau, delay;
 
-   r = nlist->n.thev;
+    r = nlist->n.thev;
 
-   dom = r->final;
-   r->flags |= T_REFNODE;
+    dom = r->final;
+    r->flags |= T_REFNODE;
 
-   taup = 0.0;
-   for( nd = nlist; nd != NULL; nd = nd->nlink ) {
-      inc_level = SetDebug( DEBUG_TAU | DEBUG_TW, nd );
+    taup = 0.0;
+    for( nd = nlist; nd != NULL; nd = nd->nlink ) {
+        inc_level = SetDebug( DEBUG_TAU | DEBUG_TW, nd );
 
-      r = get_tau( nd, ( tptr ) NULL, dom, inc_level );
+        r = get_tau( nd, ( tptr ) NULL, dom, inc_level );
 
-      r->tauD = r->Rdom * r->Ca;
+        r->tauD = r->Rdom * r->Ca;
 
-      switch( dom ) {
-      case LOW :
-         r->tauA = r->Rdom * ( r->Ca - r->Cd * r->V.max );
-         break;
-      case HIGH :
-         r->tauA = r->Rdom * ( r->Cd * ( 1 - r->V.min ) - r->Ca );
-         break;
-      case X :			/* approximate Vf = 0.5 */
-         r->tauA = r->Rdom * ( r->Ca - r->Cd * 0.5 );
-         break;
-      }
-      taup += r->tauA * nd->ncap;
-   }
-
-   r = nlist->n.thev;
-   taup = taup / ( r->Clow.min + r->Chigh.max );		/* tauP = tauP / CT */
-
-   for( nd = nlist; nd != NULL; nd = nd->nlink ) {
-      r = nd->n.thev;
-      if( r->final == nd->npot )		/* no change, no delay */
-         delay = tau = 0.0;
-      else {
-         switch( r->final ) {
-         case LOW   :
-            tau = ( r->tauA - taup ) / ( 1.0 - r->V.max );
+        switch( dom ) {
+        case LOW :
+            r->tauA = r->Rdom * ( r->Ca - r->Cd * r->V.max );
             break;
-         case HIGH  :
-            tau = ( taup - r->tauA ) / r->V.min;
+        case HIGH :
+            r->tauA = r->Rdom * ( r->Cd * ( 1 - r->V.min ) - r->Ca );
             break;
-         case X     :
-            tau = ( r->tauA - taup ) * 2.0;
+        case X :          /* approximate Vf = 0.5 */
+            r->tauA = r->Rdom * ( r->Ca - r->Cd * 0.5 );
             break;
-         }
-         if( tau < 0.0 )
-            tau = 0.0;
-         if( tunitdelay )
-            delay = tunitdelay, tau = 0.0;
-         else
-            delay = tau;
-      }
+        }
+        taup += r->tauA * nd->ncap;
+    }
 
-      QueueFVal( nd, ( int ) r->final, tau, delay );
-   }
+    r = nlist->n.thev;
+    taup = taup / ( r->Clow.min + r->Chigh.max );        /* tauP = tauP / CT */
+
+    for( nd = nlist; nd != NULL; nd = nd->nlink ) {
+        r = nd->n.thev;
+        if( r->final == nd->npot ) {      /* no change, no delay */
+            delay = tau = 0.0;
+        }
+        else {
+            switch( r->final ) {
+            case LOW   :
+                tau = ( r->tauA - taup ) / ( 1.0 - r->V.max );
+                break;
+            case HIGH  :
+                tau = ( taup - r->tauA ) / r->V.min;
+                break;
+            case X     :
+                tau = ( r->tauA - taup ) * 2.0;
+                break;
+            }
+            if( tau < 0.0 ) {
+                tau = 0.0;
+            }
+            if( tunitdelay ) {
+                delay = tunitdelay, tau = 0.0;
+            }
+            else {
+                delay = tau;
+            }
+        }
+
+        QueueFVal( nd, ( int ) r->final, tau, delay );
+    }
 }
 
 
@@ -491,84 +522,98 @@ private void schedulePureCS( nptr nlist ) {
  * corresponding dom_driver entry.  Return TRUE if any node changes value.
  */
 private int ComputeDC( nptr nlist ) {
-   register nptr  thisPtr, next;
-   register Thev  r;
-   int            anyChange = FALSE;
+    register nptr  thisPtr, next;
+    register Thev  r;
+    int            anyChange = FALSE;
 
-   for( thisPtr = nlist; thisPtr != NULL; thisPtr = thisPtr->nlink ) {
-      inc_level = SetDebug( DEBUG_DC | DEBUG_TW, thisPtr );
+    for( thisPtr = nlist; thisPtr != NULL; thisPtr = thisPtr->nlink ) {
+        inc_level = SetDebug( DEBUG_DC | DEBUG_TW, thisPtr );
 
-      thisPtr->n.thev = r = get_dc_val( thisPtr, ( tptr ) NULL, inc_level );
+        thisPtr->n.thev = r = get_dc_val( thisPtr, ( tptr ) NULL, inc_level );
 
-      if( withdriven ) {
-         if( r->Rdown.min >= LIMIT )
-            r->V.min = 1;
-         else
-            r->V.min = r->Rdown.min / ( r->Rdown.min + r->Rup.max );
-         if( r->Rup.min >= LIMIT )
-            r->V.max = 0;
-         else
-            r->V.max = r->Rdown.max / ( r->Rdown.max + r->Rup.min );
-      } else {	/* use charge/total charge if undriven */
-         r->V.min = r->Chigh.min / ( r->Chigh.min + r->Clow.max );
-         r->V.max = r->Chigh.max / ( r->Chigh.max + r->Clow.min );
-      }
+        if( withdriven ) {
+            if( r->Rdown.min >= LIMIT ) {
+                r->V.min = 1;
+            }
+            else {
+                r->V.min = r->Rdown.min / ( r->Rdown.min + r->Rup.max );
+            }
+            if( r->Rup.min >= LIMIT ) {
+                r->V.max = 0;
+            }
+            else {
+                r->V.max = r->Rdown.max / ( r->Rdown.max + r->Rup.min );
+            }
+        }
+        else {    /* use charge/total charge if undriven */
+            r->V.min = r->Chigh.min / ( r->Chigh.min + r->Clow.max );
+            r->V.max = r->Chigh.max / ( r->Chigh.max + r->Clow.min );
+        }
 
-      if( r->V.min >= thisPtr->vhigh )
-         r->final = HIGH;
-      else if( r->V.max <= thisPtr->vlow )
-         r->final = LOW;
-      else
-         r->final = X;
+        if( r->V.min >= thisPtr->vhigh ) {
+            r->final = HIGH;
+        }
+        else if( r->V.max <= thisPtr->vlow ) {
+            r->final = LOW;
+        }
+        else {
+            r->final = X;
+        }
 
-      if( withdriven ) {
-         /*
-          * if driven and indefinite, driven value must equal
-          * charging value otherwise the final value is X
-          */
-         if( r->final != X and not ( r->flags & T_DEFINITE ) ) {
-            char  cs_val;
+        if( withdriven ) {
+            /*
+             * if driven and indefinite, driven value must equal
+             * charging value otherwise the final value is X
+             */
+            if( r->final != X and not ( r->flags & T_DEFINITE ) ) {
+                char  cs_val;
 
-            if( r->Chigh.min >= thisPtr->vhigh * ( r->Chigh.min + r->Clow.max ) )
-               cs_val = HIGH;
-            else if( r->Chigh.max <= thisPtr->vlow * ( r->Chigh.max + r->Clow.min ) )
-               cs_val = LOW;
-            else
-               cs_val = X;			/* always X */
+                if( r->Chigh.min >= thisPtr->vhigh * ( r->Chigh.min + r->Clow.max ) ) {
+                    cs_val = HIGH;
+                }
+                else if( r->Chigh.max <= thisPtr->vlow * ( r->Chigh.max + r->Clow.min ) ) {
+                    cs_val = LOW;
+                }
+                else {
+                    cs_val = X;    /* always X */
+                }
 
-            if( cs_val != r->final )
-               r->final = X;
-         }
+                if( cs_val != r->final ) {
+                    r->final = X;
+                }
+            }
 
-         r->link.n = dom_pot[ r->final ].nd;		/* add it to list */
-         dom_pot[ r->final ].nd = thisPtr;
+            r->link.n = dom_pot[ r->final ].nd;        /* add it to list */
+            dom_pot[ r->final ].nd = thisPtr;
 
-         /* possible spike if no transition and opposite charge exists */
-         if( r->final == thisPtr->npot and (
-                  ( r->final == LOW and r->Chigh.min > SMALL ) or
-                  ( r->final == HIGH and r->Clow.min > SMALL ) ) ) {
-            r->flags |= T_SPIKE;
-            dom_pot[ r->final ].spike = TRUE;
+            /* possible spike if no transition and opposite charge exists */
+            if( r->final == thisPtr->npot and (
+                        ( r->final == LOW and r->Chigh.min > SMALL ) or
+                        ( r->final == HIGH and r->Clow.min > SMALL ) ) ) {
+                r->flags |= T_SPIKE;
+                dom_pot[ r->final ].spike = TRUE;
+                anyChange = TRUE;
+            }
+        }
+
+        if( r->final != thisPtr->npot ) {
             anyChange = TRUE;
-         }
-      }
+        }
 
-      if( r->final != thisPtr->npot )
-         anyChange = TRUE;
-
-      if( SetDebug( DEBUG_DC, thisPtr ) )
-         print_fval( thisPtr, r );
-   }
-   return( anyChange );
+        if( SetDebug( DEBUG_DC, thisPtr ) ) {
+            print_fval( thisPtr, r );
+        }
+    }
+    return( anyChange );
 }
 
 
 
-#define NEW_THEV( T )						\
-  {								\
-    if( ((T) = thev_free) == NULL )				\
-	(T) = (Thev) MallocList( sizeof( thevenin ), 1 );	\
-    thev_free = T->link.t;					\
+#define NEW_THEV( T )                       \
+  {                             \
+    if( ((T) = thev_free) == NULL )             \
+    (T) = (Thev) MallocList( sizeof( thevenin ), 1 );   \
+    thev_free = T->link.t;                  \
   }
 
 
@@ -586,69 +631,72 @@ private int ComputeDC( nptr nlist ) {
  * level  : level of recursion if we are debugging this node, else 0.
  */
 private Thev get_dc_val( nptr n, tptr tran, int level ) {
-   register lptr  l;
-   register tptr  t;
-   register nptr  other;
-   register Thev  r;
-   Thev           cache, *pcache;
+    register lptr  l;
+    register tptr  t;
+    register nptr  other;
+    register Thev  r;
+    Thev           cache, *pcache;
 
-   NEW_THEV( r );
+    NEW_THEV( r );
 
-   if( n->nflags & INPUT ) {
-      *r = input_thev[ n->npot ];
-      return( r );
-   }
+    if( n->nflags & INPUT ) {
+        *r = input_thev[ n->npot ];
+        return( r );
+    }
 
-   *r = init_thev;
-   switch( n->npot ) {
-   case LOW :
-      r->Clow.min = r->Clow.max = n->ncap;
-      break;
-   case X :
-      r->Clow.max = r->Chigh.max = n->ncap;
-      break;
-   case HIGH :
-      r->Chigh.min = r->Chigh.max = n->ncap;
-      break;
-   }
+    *r = init_thev;
+    switch( n->npot ) {
+    case LOW :
+        r->Clow.min = r->Clow.max = n->ncap;
+        break;
+    case X :
+        r->Clow.max = r->Chigh.max = n->ncap;
+        break;
+    case HIGH :
+        r->Chigh.min = r->Chigh.max = n->ncap;
+        break;
+    }
 
-   for( l = n->nterm; l != NULL; l = l->next ) {
-      t = l->xtor;
+    for( l = n->nterm; l != NULL; l = l->next ) {
+        t = l->xtor;
 
-      /* ignore path going back or through a broken loop */
-      if( t == tran or t->state == OFF or ( t->tflags & ( BROKEN | PBROKEN ) ) )
-         continue;
+        /* ignore path going back or through a broken loop */
+        if( t == tran or t->state == OFF or ( t->tflags & ( BROKEN | PBROKEN ) ) ) {
+            continue;
+        }
 
-      if( n == t->source ) {
-         other = t->drain;
-         pcache = &( t->dcache.r );
-      } else {
-         other = t->source;
-         pcache = &( t->scache.r );
-      }
+        if( n == t->source ) {
+            other = t->drain;
+            pcache = &( t->dcache.r );
+        }
+        else {
+            other = t->source;
+            pcache = &( t->scache.r );
+        }
 
-      /*
-       * if cache is not empty use the value found there, otherwise
-       * compute what is on the other side of the transistor and
-       * transmit the result through a series operation.
-       */
-      if( ( cache = *pcache ) == NULL ) {
-         cache = series_op( get_dc_val( other, t, level+inc_level ), t );
-         *pcache = cache;
-      }
-      parallel_op( r, cache );
-   }
+        /*
+         * if cache is not empty use the value found there, otherwise
+         * compute what is on the other side of the transistor and
+         * transmit the result through a series operation.
+         */
+        if( ( cache = *pcache ) == NULL ) {
+            cache = series_op( get_dc_val( other, t, level+inc_level ), t );
+            *pcache = cache;
+        }
+        parallel_op( r, cache );
+    }
 
-   if( n->nflags & USERDELAY ) {	/* record user delays, if any */
-      r->tplh = n->tplh;
-      r->tphl = n->tphl;
-      r->flags |= T_UDELAY;
-   }
+    if( n->nflags & USERDELAY ) {    /* record user delays, if any */
+        r->tplh = n->tplh;
+        r->tphl = n->tphl;
+        r->flags |= T_UDELAY;
+    }
 
-   if( level != 0 )
-      print_dc( n, r, level );
+    if( level != 0 ) {
+        print_dc( n, r, level );
+    }
 
-   return( r );
+    return( r );
 }
 
 
@@ -656,56 +704,59 @@ private Thev get_dc_val( nptr n, tptr tran, int level ) {
  * The following macros set Req to the appropriate dynamic resistance.
  * If the transistor state is UNKNOWN then also set the T_XTRAN flag.
  */
-#define	GetReq( R, T, TYPE )			\
-  {						\
-    if( ( (T)->tflags & PARALLEL ) )		\
-	get_parallel( R, T, TYPE );		\
-    else					\
-      {						\
-	(R)->Req.min = (T)->r->dynres[TYPE];	\
-	if( (T)->state == UNKNOWN )		\
-	    (R)->flags |= T_XTRAN;		\
-	else					\
-	    (R)->Req.max = (T)->r->dynres[TYPE];\
-      }						\
-  }						\
+#define GetReq( R, T, TYPE )            \
+  {                     \
+    if( ( (T)->tflags & PARALLEL ) )        \
+    get_parallel( R, T, TYPE );     \
+    else                    \
+      {                     \
+    (R)->Req.min = (T)->r->dynres[TYPE];    \
+    if( (T)->state == UNKNOWN )     \
+        (R)->flags |= T_XTRAN;      \
+    else                    \
+        (R)->Req.max = (T)->r->dynres[TYPE];\
+      }                     \
+  }                     \
  
 
-#define	GetMinR( R, T )				\
-  {						\
-    if( ( (T)->tflags & PARALLEL ) )		\
-	get_min_parallel( R, T );		\
-    else					\
-      {						\
-	(R)->Req.min = MIN( (T)->r->dynhigh, (T)->r->dynlow );	\
-	if( (T)->state == UNKNOWN )		\
-	    (R)->flags |= T_XTRAN;		\
-	else					\
-	    (R)->Req.max = (R)->Req.min;	\
-      }						\
-  }						\
+#define GetMinR( R, T )             \
+  {                     \
+    if( ( (T)->tflags & PARALLEL ) )        \
+    get_min_parallel( R, T );       \
+    else                    \
+      {                     \
+    (R)->Req.min = MIN( (T)->r->dynhigh, (T)->r->dynlow );  \
+    if( (T)->state == UNKNOWN )     \
+        (R)->flags |= T_XTRAN;      \
+    else                    \
+        (R)->Req.max = (R)->Req.min;    \
+      }                     \
+  }                     \
  
 /*
  * Do the same as GetReq but deal with parallel transistors.
  */
 private void get_parallel( Thev r, tptr t, int restype ) {
-   register Resists  *rp = t->r;
-   double            gmin, gmax;
+    register Resists * rp = t->r;
+    double            gmin, gmax;
 
-   gmin = 1.0 / rp->dynres[ restype ];
-   gmax = ( t->state == UNKNOWN ) ? 0.0 : gmin;
+    gmin = 1.0 / rp->dynres[ restype ];
+    gmax = ( t->state == UNKNOWN ) ? 0.0 : gmin;
 
-   for( t = par_list( t ); t != NULL; t = t->dcache.t ) {
-      rp = t->r;
-      gmin += 1.0 / rp->dynres[ restype ];
-      if( t->state != UNKNOWN )
-         gmax += 1.0 / rp->dynres[ restype ];
-   }
-   r->Req.min = 1.0 / gmin;
-   if( gmax == 0.0 )
-      r->flags |= T_XTRAN;
-   else
-      r->Req.max = 1.0 / gmax;
+    for( t = par_list( t ); t != NULL; t = t->dcache.t ) {
+        rp = t->r;
+        gmin += 1.0 / rp->dynres[ restype ];
+        if( t->state != UNKNOWN ) {
+            gmax += 1.0 / rp->dynres[ restype ];
+        }
+    }
+    r->Req.min = 1.0 / gmin;
+    if( gmax == 0.0 ) {
+        r->flags |= T_XTRAN;
+    }
+    else {
+        r->Req.max = 1.0 / gmax;
+    }
 }
 
 
@@ -713,26 +764,27 @@ private void get_parallel( Thev r, tptr t, int restype ) {
  * Do the same as get_parallel but use the minimum dynamic resistance.
  */
 void get_min_parallel( Thev r, tptr t ) {
-   register Resists  *rp = t->r;
-   double            gmin, gmax, tmp;
+    register Resists * rp = t->r;
+    double            gmin, gmax, tmp;
 
-   gmin = 1.0 / MIN( rp->dynlow, rp->dynhigh );
-   gmax = ( t->state == UNKNOWN ) ? 0.0 : gmin;
+    gmin = 1.0 / MIN( rp->dynlow, rp->dynhigh );
+    gmax = ( t->state == UNKNOWN ) ? 0.0 : gmin;
 
-   for( t = par_list( t ); t != NULL; t = t->dcache.t ) {
-      rp = t->r;
-      tmp = 1.0 / MIN( rp->dynlow, rp->dynhigh );
-      gmin += tmp;
-      if( t->state != UNKNOWN )
-         gmax += tmp;
-   }
-   r->Req.min = 1.0 / gmin;
-   if( gmax == 0.0 ) {
-      r->flags |= T_XTRAN;
-   }
-   else {
-      r->Req.max = 1.0 / gmax;
-   }
+    for( t = par_list( t ); t != NULL; t = t->dcache.t ) {
+        rp = t->r;
+        tmp = 1.0 / MIN( rp->dynlow, rp->dynhigh );
+        gmin += tmp;
+        if( t->state != UNKNOWN ) {
+            gmax += tmp;
+        }
+    }
+    r->Req.min = 1.0 / gmin;
+    if( gmax == 0.0 ) {
+        r->flags |= T_XTRAN;
+    }
+    else {
+        r->Req.max = 1.0 / gmax;
+    }
 }
 
 
@@ -744,53 +796,58 @@ void get_min_parallel( Thev r, tptr t ) {
  * current estimates of both resistance or capacitance is used.
  */
 private Thev series_op( Thev r, tptr t ) {
-   double  up_min, down_min;
+    double  up_min, down_min;
 
-   if( not ( r->flags & T_DRIVEN ) ) {
-      if( r->Chigh.min > r->Clow.max )
-         GetReq( r, t, R_HIGH )
-         else if( r->Chigh.max < r->Clow.min )
+    if( not ( r->flags & T_DRIVEN ) ) {
+        if( r->Chigh.min > r->Clow.max )
+            GetReq( r, t, R_HIGH )
+            else if( r->Chigh.max < r->Clow.min )
+                GetReq( r, t, R_LOW )
+                else
+                    GetMinR( r, t )
+                    return( r );     /* no driver, so just set Req */
+    }
+
+    if( r->Rdown.min > r->Rup.max )
+        GetReq( r, t, R_HIGH )
+        else if( r->Rdown.max < r->Rup.min )
             GetReq( r, t, R_LOW )
             else
-               GetMinR( r, t )
-               return( r );		/* no driver, so just set Req */
-   }
+                GetMinR( r, t )
 
-   if( r->Rdown.min > r->Rup.max )
-      GetReq( r, t, R_HIGH )
-      else if( r->Rdown.max < r->Rup.min )
-         GetReq( r, t, R_LOW )
-         else
-            GetMinR( r, t )
+                up_min = r->Rup.min;
+    down_min = r->Rdown.min;
 
-            up_min = r->Rup.min;
-   down_min = r->Rdown.min;
-
-   if( up_min < LIMIT )
-      r->Rup.min += r->Req.min * ( 1.0 + up_min / r->Rdown.max );
-   if( down_min < LIMIT )
-      r->Rdown.min += r->Req.min * ( 1.0 + down_min / r->Rup.max );
-   if( r->flags & T_XTRAN ) {
-      r->flags &= ~T_DEFINITE;
-      r->Rup.max = r->Rdown.max = LARGE;
-   } else {
-      if( r->Rup.max < LIMIT )
-         r->Rup.max += r->Req.max * ( 1.0 + r->Rup.max / down_min );
-      if( r->Rdown.max < LIMIT )
-         r->Rdown.max += r->Req.max * ( 1.0 + r->Rdown.max / up_min );
-   }
-   return( r );
+    if( up_min < LIMIT ) {
+        r->Rup.min += r->Req.min * ( 1.0 + up_min / r->Rdown.max );
+    }
+    if( down_min < LIMIT ) {
+        r->Rdown.min += r->Req.min * ( 1.0 + down_min / r->Rup.max );
+    }
+    if( r->flags & T_XTRAN ) {
+        r->flags &= ~T_DEFINITE;
+        r->Rup.max = r->Rdown.max = LARGE;
+    }
+    else {
+        if( r->Rup.max < LIMIT ) {
+            r->Rup.max += r->Req.max * ( 1.0 + r->Rup.max / down_min );
+        }
+        if( r->Rdown.max < LIMIT ) {
+            r->Rdown.max += r->Req.max * ( 1.0 + r->Rdown.max / up_min );
+        }
+    }
+    return( r );
 }
 
 
 /* make oldr = (oldr || newr), but watch out for infinte resistances. */
-#define	DoParallel( oldr, newr )	\
-  {					\
-    if( oldr > LIMIT )			\
-	oldr = newr;			\
-    else if( newr < LIMIT )		\
-	oldr = COMBINE( oldr, newr );	\
-  }					\
+#define DoParallel( oldr, newr )    \
+  {                 \
+    if( oldr > LIMIT )          \
+    oldr = newr;            \
+    else if( newr < LIMIT )     \
+    oldr = COMBINE( oldr, newr );   \
+  }                 \
  
 
 /*
@@ -799,51 +856,51 @@ private Thev series_op( Thev r, tptr t ) {
  * delay (if any), and the driven flag of the resulting structure.
  */
 private void parallel_op( Thev r, Thev newR ) {
-   r->Clow.max += newR->Clow.max;
-   r->Chigh.max += newR->Chigh.max;
-   if( not ( newR->flags & T_XTRAN ) ) {
-      r->Clow.min += newR->Clow.min;
-      r->Chigh.min += newR->Chigh.min;
-   }
+    r->Clow.max += newR->Clow.max;
+    r->Chigh.max += newR->Chigh.max;
+    if( not ( newR->flags & T_XTRAN ) ) {
+        r->Clow.min += newR->Clow.min;
+        r->Chigh.min += newR->Chigh.min;
+    }
 
-   /*
-    * Accumulate the minimum user-specified delay only if the newR block
-    * has some drive associated with it.
-    */
-   if( ( newR->flags & ( T_DEFINITE | T_UDELAY ) ) == ( T_DEFINITE | T_UDELAY ) ) {
-      if( r->flags & T_UDELAY ) {
-         r->tplh = MIN( r->tplh, newR->tplh );
-         r->tphl = MIN( r->tphl, newR->tphl );
-      }
-      else {
-         r->tplh = newR->tplh;
-         r->tphl = newR->tphl;
-         r->flags |= T_UDELAY;
-      }
-   }
+    /*
+     * Accumulate the minimum user-specified delay only if the newR block
+     * has some drive associated with it.
+     */
+    if( ( newR->flags & ( T_DEFINITE | T_UDELAY ) ) == ( T_DEFINITE | T_UDELAY ) ) {
+        if( r->flags & T_UDELAY ) {
+            r->tplh = MIN( r->tplh, newR->tplh );
+            r->tphl = MIN( r->tphl, newR->tphl );
+        }
+        else {
+            r->tplh = newR->tplh;
+            r->tphl = newR->tphl;
+            r->flags |= T_UDELAY;
+        }
+    }
 
-   if( not ( newR->flags & T_DRIVEN ) ) {
-      return;				/* undriven, just update caps */
-   }
+    if( not ( newR->flags & T_DRIVEN ) ) {
+        return;               /* undriven, just update caps */
+    }
 
-   r->flags |= T_DRIVEN;		/* combined result is driven */
+    r->flags |= T_DRIVEN;        /* combined result is driven */
 
-   DoParallel( r->Rup.min, newR->Rup.min );
-   DoParallel( r->Rdown.min, newR->Rdown.min );
+    DoParallel( r->Rup.min, newR->Rup.min );
+    DoParallel( r->Rdown.min, newR->Rdown.min );
 
-   if( r->flags & newR->flags & T_DEFINITE ) {	/* both definite blocks */
-      DoParallel( r->Rup.max, newR->Rup.max );
-      DoParallel( r->Rdown.max, newR->Rdown.max );
-   }
-   else if( newR->flags & T_DEFINITE ) {	/* only newR is definite */
-      r->Rup.max = newR->Rup.max;
-      r->Rdown.max = newR->Rdown.max;
-      r->flags |= T_DEFINITE;			    /* result is definite */
-   }
-   else {			/* newR (perhaps r) is indefinite */
-      if( newR->Rup.max < r->Rup.max )	r->Rup.max = newR->Rup.max;
-      if( newR->Rdown.max < r->Rdown.max ) r->Rdown.max = newR->Rdown.max;
-   }
+    if( r->flags & newR->flags & T_DEFINITE ) {  /* both definite blocks */
+        DoParallel( r->Rup.max, newR->Rup.max );
+        DoParallel( r->Rdown.max, newR->Rdown.max );
+    }
+    else if( newR->flags & T_DEFINITE ) {    /* only newR is definite */
+        r->Rup.max = newR->Rup.max;
+        r->Rdown.max = newR->Rdown.max;
+        r->flags |= T_DEFINITE;               /* result is definite */
+    }
+    else {           /* newR (perhaps r) is indefinite */
+        if( newR->Rup.max < r->Rup.max ) { r->Rup.max = newR->Rup.max; }
+        if( newR->Rdown.max < r->Rdown.max ) { r->Rdown.max = newR->Rdown.max; }
+    }
 }
 
 
@@ -853,7 +910,7 @@ private void parallel_op( Thev r, Thev newR ) {
  * at time == cur_delta).  We must be careful not to report as a transition
  * nodes that stop being inputs (hist->delay == 0 and hist->inp == 0).
  */
-#define IsCurrTransition( H )			\
+#define IsCurrTransition( H )           \
   ( (H)->time == cur_delta and ((H)->inp == 1 or (H)->t.r.delay != 0) )
 
 /*
@@ -861,50 +918,52 @@ private void parallel_op( Thev r, Thev newR ) {
  * a side-effect, return the input time constant in 'ptin'.
  */
 private int GetTin( tptr t, double * ptin ) {
-   register hptr  h;
-   int            is_int = FALSE;
+    register hptr  h;
+    int            is_int = FALSE;
 
-   if( t->state != ON )
-      return( FALSE );
+    if( t->state != ON ) {
+        return( FALSE );
+    }
 
-   if( ( t->ttype & GATELIST ) == 0 ) {
-      h = t->gate->curr;
-      if( IsCurrTransition( h ) ) {
-         *ptin = h->t.r.rtime * t->r->rstatic;
-         is_int = TRUE;
-      }
-   } else {
-      double  tmp = 0.0;
-
-      for( t = ( tptr ) t->gate; t != NULL; t = t->scache.t ) {
-         h = t->gate->curr;
-         if( IsCurrTransition( h ) ) {
+    if( ( t->ttype & GATELIST ) == 0 ) {
+        h = t->gate->curr;
+        if( IsCurrTransition( h ) ) {
+            *ptin = h->t.r.rtime * t->r->rstatic;
             is_int = TRUE;
-            tmp += h->t.r.rtime * t->r->rstatic;
-         }
-      }
-      *ptin = tmp;
-   }
-   return( is_int );
+        }
+    }
+    else {
+        double  tmp = 0.0;
+
+        for( t = ( tptr ) t->gate; t != NULL; t = t->scache.t ) {
+            h = t->gate->curr;
+            if( IsCurrTransition( h ) ) {
+                is_int = TRUE;
+                tmp += h->t.r.rtime * t->r->rstatic;
+            }
+        }
+        *ptin = tmp;
+    }
+    return( is_int );
 }
 
-#define	InputTau( T, PR )	\
+#define InputTau( T, PR )   \
   ( ((T)->tflags & PARALLEL) ? parallel_GetTin( T, PR ) : GetTin( T, PR ) )
 
 private int parallel_GetTin( tptr t, double * itau ) {
-   double  tin, tmp = 0.0;
-   int     is_int;
+    double  tin, tmp = 0.0;
+    int     is_int;
 
-   is_int = GetTin( t, &tin );
+    is_int = GetTin( t, &tin );
 
-   for( t = par_list( t ); t != NULL; t = t->dcache.t ) {
-      if( GetTin( t, &tmp ) ) {
-         tin = ( is_int ) ? COMBINE_R( tin, tmp ) : tmp;
-         is_int = TRUE;
-      }
-      *itau = tin;
-   }
-   return( is_int );
+    for( t = par_list( t ); t != NULL; t = t->dcache.t ) {
+        if( GetTin( t, &tmp ) ) {
+            tin = ( is_int ) ? COMBINE_R( tin, tmp ) : tmp;
+            is_int = TRUE;
+        }
+        *itau = tin;
+    }
+    return( is_int );
 }
 
 
@@ -929,122 +988,139 @@ private int parallel_GetTin( tptr t, double * itau ) {
  * recompute the values.
  */
 private Thev get_tau( nptr n, tptr tran, int dom, int level ) {
-   register Thev  r, cache;
-   register lptr  l;
-   register tptr  t;
-   register nptr  other;
+    register Thev  r, cache;
+    register lptr  l;
+    register tptr  t;
+    register nptr  other;
 
-   if( tran == NULL )
-      r = n->n.thev;
-   else
-      r = ( tran->source == n ) ? tran->scache.r : tran->dcache.r;
+    if( tran == NULL ) {
+        r = n->n.thev;
+    }
+    else {
+        r = ( tran->source == n ) ? tran->scache.r : tran->dcache.r;
+    }
 
-   r->tau_done = dom;
+    r->tau_done = dom;
 
-   if( n->nflags & INPUT ) {
-      r->Tin = r->Rmin = r->Ca = r->Cd = 0.0;
-      if( n->npot == dom ) {
-         r->Rdom = r->Rmax = 0.0;
-         r->flags |= T_DOMDRIVEN;
-      } else {
-         r->flags &= ~( T_DOMDRIVEN | T_INT );
-         if( dom == X )
+    if( n->nflags & INPUT ) {
+        r->Tin = r->Rmin = r->Ca = r->Cd = 0.0;
+        if( n->npot == dom ) {
             r->Rdom = r->Rmax = 0.0;
-         else
-            r->Rdom = r->Rmax = LARGE;
-      }
-      return( r );
-   }
+            r->flags |= T_DOMDRIVEN;
+        }
+        else {
+            r->flags &= ~( T_DOMDRIVEN | T_INT );
+            if( dom == X ) {
+                r->Rdom = r->Rmax = 0.0;
+            }
+            else {
+                r->Rdom = r->Rmax = LARGE;
+            }
+        }
+        return( r );
+    }
 
-   if( n->n.thev->flags & T_REFNODE ) {    /* reference node in pure CS */
-      r->Rmin = r->Rdom = r->Rmax = 0.0;
-      r->Ca = r->Cd = 0.0;
-      return( r );
-   }
+    if( n->n.thev->flags & T_REFNODE ) {    /* reference node in pure CS */
+        r->Rmin = r->Rdom = r->Rmax = 0.0;
+        r->Ca = r->Cd = 0.0;
+        return( r );
+    }
 
-   r->Rmin = r->Rdom = r->Rmax = LARGE;
-   r->Cd = n->ncap;
-   if( dom == X )			/* assume X nodes are charged high */
-      r->Ca = ( n->npot == LOW ) ? 0.0 : n->ncap;
-   else
-      r->Ca = ( n->npot == dom ) ? 0.0 : n->ncap;
+    r->Rmin = r->Rdom = r->Rmax = LARGE;
+    r->Cd = n->ncap;
+    if( dom == X ) {         /* assume X nodes are charged high */
+        r->Ca = ( n->npot == LOW ) ? 0.0 : n->ncap;
+    }
+    else {
+        r->Ca = ( n->npot == dom ) ? 0.0 : n->ncap;
+    }
 
-   r->Tin = 0.0;
-   r->flags &= ~( T_DOMDRIVEN | T_INT );
+    r->Tin = 0.0;
+    r->flags &= ~( T_DOMDRIVEN | T_INT );
 
-   for( l = n->nterm; l != NULL; l = l->next ) {
-      t = l->xtor;
-      if( t->state == OFF or t == tran or ( t->tflags & ( BROKEN | PBROKEN ) ) )
-         continue;
+    for( l = n->nterm; l != NULL; l = l->next ) {
+        t = l->xtor;
+        if( t->state == OFF or t == tran or ( t->tflags & ( BROKEN | PBROKEN ) ) ) {
+            continue;
+        }
 
-      if( n == t->source ) {
-         other = t->drain;
-         cache = t->dcache.r;
-      } else {
-         other = t->source;
-         cache = t->scache.r;
-      }
+        if( n == t->source ) {
+            other = t->drain;
+            cache = t->dcache.r;
+        }
+        else {
+            other = t->source;
+            cache = t->scache.r;
+        }
 
-      if( cache->tau_done != dom ) {
-         double  oldr;
+        if( cache->tau_done != dom ) {
+            double  oldr;
 
-         cache = get_tau( other, t, dom, level + inc_level );
-         /* Only use input slope for xtors on the dominant (driven) path */
-         if( ( cache->flags & T_DOMDRIVEN ) and InputTau( t, &oldr ) ) {
-            cache->flags |= T_INT;
-            cache->Tin += oldr;
-         }
+            cache = get_tau( other, t, dom, level + inc_level );
+            /* Only use input slope for xtors on the dominant (driven) path */
+            if( ( cache->flags & T_DOMDRIVEN ) and InputTau( t, &oldr ) ) {
+                cache->flags |= T_INT;
+                cache->Tin += oldr;
+            }
 
-         oldr = cache->Rdom;
+            oldr = cache->Rdom;
 
-         cache->Rmin += cache->Req.min;
-         cache->Rdom += cache->Req.min;
-         if( cache->flags & T_XTRAN )
-            cache->Rmax = LARGE;
-         else
-            cache->Rmax += cache->Req.max;
+            cache->Rmin += cache->Req.min;
+            cache->Rdom += cache->Req.min;
+            if( cache->flags & T_XTRAN ) {
+                cache->Rmax = LARGE;
+            }
+            else {
+                cache->Rmax += cache->Req.max;
+            }
 
-         /* Exclude capacitors if the other side of X transistor == dom */
-         if( ( cache->flags & T_XTRAN ) and other->npot == dom )
-            cache->tauP = cache->Ca = cache->Cd = 0.0;
-         else if( oldr > LIMIT )
-            cache->tauP = 1.0;
-         else {
-            cache->tauP = oldr / cache->Rdom;
-            cache->Ca *= cache->tauP;
-            cache->Cd *= cache->tauP;
-         }
-      }
+            /* Exclude capacitors if the other side of X transistor == dom */
+            if( ( cache->flags & T_XTRAN ) and other->npot == dom ) {
+                cache->tauP = cache->Ca = cache->Cd = 0.0;
+            }
+            else if( oldr > LIMIT ) {
+                cache->tauP = 1.0;
+            }
+            else {
+                cache->tauP = oldr / cache->Rdom;
+                cache->Ca *= cache->tauP;
+                cache->Cd *= cache->tauP;
+            }
+        }
 
-      r->Ca += cache->Ca;
-      r->Cd += cache->Cd;
+        r->Ca += cache->Ca;
+        r->Cd += cache->Cd;
 
-      r->Rmin = COMBINE( r->Rmin, cache->Rmin );
-      if( r->Rdom > LIMIT ) {
-         r->Rdom = cache->Rdom;
-         r->Rmax = cache->Rmax;
-      } else if( cache->Rdom < LIMIT ) {
-         r->Rdom = COMBINE( r->Rdom, cache->Rdom );
-         r->Rmax = COMBINE( r->Rmax, cache->Rmax );
-      }
+        r->Rmin = COMBINE( r->Rmin, cache->Rmin );
+        if( r->Rdom > LIMIT ) {
+            r->Rdom = cache->Rdom;
+            r->Rmax = cache->Rmax;
+        }
+        else if( cache->Rdom < LIMIT ) {
+            r->Rdom = COMBINE( r->Rdom, cache->Rdom );
+            r->Rmax = COMBINE( r->Rmax, cache->Rmax );
+        }
 
-      if( cache->flags & T_DOMDRIVEN )
-         r->flags |= T_DOMDRIVEN;	/* at least 1 dominant driven path */
+        if( cache->flags & T_DOMDRIVEN ) {
+            r->flags |= T_DOMDRIVEN;    /* at least 1 dominant driven path */
+        }
 
-      if( cache->flags & T_INT ) {
-         if( r->flags & T_INT )
-            r->Tin = COMBINE_R( r->Tin, cache->Tin );
-         else {
-            r->Tin = cache->Tin;
-            r->flags |= T_INT;
-         }
-      }
-   }
+        if( cache->flags & T_INT ) {
+            if( r->flags & T_INT ) {
+                r->Tin = COMBINE_R( r->Tin, cache->Tin );
+            }
+            else {
+                r->Tin = cache->Tin;
+                r->flags |= T_INT;
+            }
+        }
+    }
 
-   if( level > 0 )
-      print_tau( n, r, level );
+    if( level > 0 ) {
+        print_tau( n, r, level );
+    }
 
-   return( r );
+    return( r );
 }
 
 
@@ -1057,44 +1133,49 @@ private Thev get_tau( nptr n, tptr tran, int dom, int level ) {
  * entry as well as the taup_done flag.
  */
 private double get_tauP( nptr n, tptr tran, int dom, int level ) {
-   register lptr  l;
-   register tptr  t;
-   register Thev  r;
-   nptr           other;
-   double         taup;
+    register lptr  l;
+    register tptr  t;
+    register Thev  r;
+    nptr           other;
+    double         taup;
 
-   if( n->nflags & INPUT )
-      return( 0.0 );
+    if( n->nflags & INPUT ) {
+        return( 0.0 );
+    }
 
-   r = n->n.thev;
-   if( r->tau_done != dom ) {	/* compute tauA for the node */
-      r = get_tau( n, ( tptr ) NULL, dom, 0 );
-      r->tauA = r->Rdom * r->Ca;
-      r->tauD = r->Rdom * r->Cd;
-   }
+    r = n->n.thev;
+    if( r->tau_done != dom ) {   /* compute tauA for the node */
+        r = get_tau( n, ( tptr ) NULL, dom, 0 );
+        r->tauA = r->Rdom * r->Ca;
+        r->tauD = r->Rdom * r->Cd;
+    }
 
-   taup = r->tauA * n->ncap;
+    taup = r->tauA * n->ncap;
 
-   for( l = n->nterm; l != NULL; l = l->next ) {
-      t = l->xtor;
-      if( t->state == OFF or t == tran or ( t->tflags & ( BROKEN | PBROKEN ) ) )
-         continue;
+    for( l = n->nterm; l != NULL; l = l->next ) {
+        t = l->xtor;
+        if( t->state == OFF or t == tran or ( t->tflags & ( BROKEN | PBROKEN ) ) ) {
+            continue;
+        }
 
-      if( t->source == n )
-         other = t->drain,	r = t->dcache.r;
-      else
-         other = t->source,	r = t->scache.r;
+        if( t->source == n ) {
+            other = t->drain,    r = t->dcache.r;
+        }
+        else {
+            other = t->source,   r = t->scache.r;
+        }
 
-      if( r->taup_done != dom ) {
-         r->tauP *= get_tauP( other, t, dom, level + inc_level );
-         r->taup_done = dom;
-      }
-      taup += r->tauP;
-   }
-   if( level > 0 )
-      print_taup( n, level, taup );
+        if( r->taup_done != dom ) {
+            r->tauP *= get_tauP( other, t, dom, level + inc_level );
+            r->taup_done = dom;
+        }
+        taup += r->tauP;
+    }
+    if( level > 0 ) {
+        print_taup( n, level, taup );
+    }
 
-   return( taup );
+    return( taup );
 }
 
 
@@ -1109,79 +1190,99 @@ private double get_tauP( nptr n, tptr tran, int dom, int level ) {
  * network.  This simple scheme should work for most simple nets.
  */
 private pspk ComputeSpike( nptr nd, Thev r, int dom ) {
-   int              rtype, tab_indx, alpha, beta, N;
-   float            nmos, pmos;
-   static SpikeRec  spk;
-   register lptr    l;
+    int              rtype, tab_indx, alpha, beta, N;
+    float            nmos, pmos;
+    static SpikeRec  spk;
+    register lptr    l;
 
-   if( r->tauP <= SMALL ) {	/* no capacitance, no spike */
-      if( ( debug & DEBUG_SPK ) and IsWatched( nd ) )
-         lprintf( stdout, " spike( %s ) ignored (taup=0)\n" );
-      return( NULL );
-   }
+    if( r->tauP <= SMALL ) { /* no capacitance, no spike */
+        if( ( debug & DEBUG_SPK ) and IsWatched( nd ) ) {
+            lprintf( stdout, " spike( %s ) ignored (taup=0)\n" );
+        }
+        return( NULL );
+    }
 
-   rtype = ( dom == LOW ) ? R_LOW : R_HIGH;
-   nmos = pmos = 0;
-   for( l = nd->nterm; l != NULL; l = l->next ) {
-      register tptr  t;
+    rtype = ( dom == LOW ) ? R_LOW : R_HIGH;
+    nmos = pmos = 0;
+    for( l = nd->nterm; l != NULL; l = l->next ) {
+        register tptr  t;
 
-      t = l->xtor;
-      if( t->state == OFF or ( t->tflags & BROKEN ) )
-         continue;
-      if( BASETYPE( t->ttype ) == PCHAN )
-         pmos += 1.0 / t->r->dynres[ rtype ];
-      else
-         nmos += 1.0 / t->r->dynres[ rtype ];
-   }
-   if( nmos > NP_RATIO * ( pmos + nmos ) )		/* mostly nmos */
-      tab_indx = ( rtype == R_LOW ) ? NLSPKMIN : NLSPKMAX;
-   else if( pmos > NP_RATIO * ( pmos + nmos ) )		/* mostly pmos */
-      tab_indx = ( rtype == R_LOW ) ? NLSPKMAX : NLSPKMIN;
-   else
-      tab_indx = LINEARSPK;
+        t = l->xtor;
+        if( t->state == OFF or ( t->tflags & BROKEN ) ) {
+            continue;
+        }
+        if( BASETYPE( t->ttype ) == PCHAN ) {
+            pmos += 1.0 / t->r->dynres[ rtype ];
+        }
+        else {
+            nmos += 1.0 / t->r->dynres[ rtype ];
+        }
+    }
+    if( nmos > NP_RATIO * ( pmos + nmos ) ) {    /* mostly nmos */
+        tab_indx = ( rtype == R_LOW ) ? NLSPKMIN : NLSPKMAX;
+    }
+    else if( pmos > NP_RATIO * ( pmos + nmos ) ) {   /* mostly pmos */
+        tab_indx = ( rtype == R_LOW ) ? NLSPKMAX : NLSPKMIN;
+    }
+    else {
+        tab_indx = LINEARSPK;
+    }
 
-   alpha = ( int ) ( SPIKETBLSIZE * r->tauA / ( r->tauA + r->tauP - r->tauD ) );
-   if( alpha < 0 )
-      alpha = 0;
-   else if( alpha > SPIKETBLSIZE )
-      alpha = SPIKETBLSIZE;
+    alpha = ( int ) ( SPIKETBLSIZE * r->tauA / ( r->tauA + r->tauP - r->tauD ) );
+    if( alpha < 0 ) {
+        alpha = 0;
+    }
+    else if( alpha > SPIKETBLSIZE ) {
+        alpha = SPIKETBLSIZE;
+    }
 
-   beta = ( int ) ( SPIKETBLSIZE * ( r->tauD - r->tauA ) / r->tauD );
-   if( beta < 0 )
-      beta = 0;
-   else if( beta > SPIKETBLSIZE )
-      beta = SPIKETBLSIZE;
+    beta = ( int ) ( SPIKETBLSIZE * ( r->tauD - r->tauA ) / r->tauD );
+    if( beta < 0 ) {
+        beta = 0;
+    }
+    else if( beta > SPIKETBLSIZE ) {
+        beta = SPIKETBLSIZE;
+    }
 
-   spk.peak = spikeTable[ tab_indx ][ beta ][ alpha ];
-   spk.ch_delay = delayTable[ beta ][ alpha ];
+    spk.peak = spikeTable[ tab_indx ][ beta ][ alpha ];
+    spk.ch_delay = delayTable[ beta ][ alpha ];
 
-   if( dom == LOW ) {
-      if( spk.peak <= nd->vlow )		/* spike is too small */
-         goto no_spike;
-      else
-         spk.charge = ( spk.peak >= nd->vhigh ) ? HIGH : X;
-   } else {	/* dom == HIGH */
-      if( spk.peak <= 1.0 - nd->vhigh )
-         goto no_spike;
-      else
-         spk.charge = ( spk.peak >= 1.0 - nd->vlow ) ? LOW : X;
-   }
+    if( dom == LOW ) {
+        if( spk.peak <= nd->vlow ) {      /* spike is too small */
+            goto no_spike;
+        }
+        else {
+            spk.charge = ( spk.peak >= nd->vhigh ) ? HIGH : X;
+        }
+    }
+    else {   /* dom == HIGH */
+        if( spk.peak <= 1.0 - nd->vhigh ) {
+            goto no_spike;
+        }
+        else {
+            spk.charge = ( spk.peak >= 1.0 - nd->vlow ) ? LOW : X;
+        }
+    }
 
-   spk.ch_delay *= r->tauA * r->tauD / r->tauP;
+    spk.ch_delay *= r->tauA * r->tauD / r->tauP;
 
-   if( r->Rmax < LARGE )
-      spk.dr_delay = r->Rmax * r->Ca;
-   else
-      spk.dr_delay = r->Rdom * r->Ca;
+    if( r->Rmax < LARGE ) {
+        spk.dr_delay = r->Rmax * r->Ca;
+    }
+    else {
+        spk.dr_delay = r->Rdom * r->Ca;
+    }
 
-   if( ( debug & DEBUG_SPK ) and IsWatched( nd ) )
-      print_spk( nd, r, tab_indx, dom, alpha, beta, &spk, TRUE );
-   return( &spk );
+    if( ( debug & DEBUG_SPK ) and IsWatched( nd ) ) {
+        print_spk( nd, r, tab_indx, dom, alpha, beta, &spk, TRUE );
+    }
+    return( &spk );
 
 no_spike :
-   if( ( debug & DEBUG_SPK ) and IsWatched( nd ) )
-      print_spk( nd, r, tab_indx, dom, alpha, beta, &spk, FALSE );
-   return( NULL );
+    if( ( debug & DEBUG_SPK ) and IsWatched( nd ) ) {
+        print_spk( nd, r, tab_indx, dom, alpha, beta, &spk, FALSE );
+    }
+    return( NULL );
 }
 
 
@@ -1190,128 +1291,128 @@ no_spike :
  * and this is much safer than letting the compiler initialize it.
  */
 public void InitThevs() {
-   register Thev  t;
+    register Thev  t;
 
-   init_thev.link.n	= NULL;
-   init_thev.flags	= 0;
-   init_thev.Clow.min	= 0.0;
-   init_thev.Clow.max	= 0.0;
-   init_thev.Chigh.min	= 0.0;
-   init_thev.Chigh.max	= 0.0;
-   init_thev.Rup.min	= LARGE;
-   init_thev.Rup.max	= LARGE;
-   init_thev.Rdown.min	= LARGE;
-   init_thev.Rdown.max	= LARGE;
-   init_thev.Req.min	= LARGE;
-   init_thev.Req.max	= LARGE;
-   init_thev.V.min	= 1.0;
-   init_thev.V.max	= 0.0;
-   init_thev.Rmin	= LARGE;
-   init_thev.Rdom	= LARGE;
-   init_thev.Rmax	= LARGE;
-   init_thev.Ca	= 0.0;
-   init_thev.Cd	= 0.0;
-   init_thev.tauD	= 0.0;
-   init_thev.tauA	= 0.0;
-   init_thev.tauP	= 0.0;
-   init_thev.Tin	= SMALL;
-   init_thev.tplh	= 0;
-   init_thev.tphl	= 0;
-   init_thev.final	= X;
-   init_thev.tau_done	= N_POTS;
-   init_thev.taup_done	= N_POTS;
+    init_thev.link.n = NULL;
+    init_thev.flags  = 0;
+    init_thev.Clow.min   = 0.0;
+    init_thev.Clow.max   = 0.0;
+    init_thev.Chigh.min  = 0.0;
+    init_thev.Chigh.max  = 0.0;
+    init_thev.Rup.min    = LARGE;
+    init_thev.Rup.max    = LARGE;
+    init_thev.Rdown.min  = LARGE;
+    init_thev.Rdown.max  = LARGE;
+    init_thev.Req.min    = LARGE;
+    init_thev.Req.max    = LARGE;
+    init_thev.V.min  = 1.0;
+    init_thev.V.max  = 0.0;
+    init_thev.Rmin   = LARGE;
+    init_thev.Rdom   = LARGE;
+    init_thev.Rmax   = LARGE;
+    init_thev.Ca = 0.0;
+    init_thev.Cd = 0.0;
+    init_thev.tauD   = 0.0;
+    init_thev.tauA   = 0.0;
+    init_thev.tauP   = 0.0;
+    init_thev.Tin    = SMALL;
+    init_thev.tplh   = 0;
+    init_thev.tphl   = 0;
+    init_thev.final  = X;
+    init_thev.tau_done   = N_POTS;
+    init_thev.taup_done  = N_POTS;
 
-   t =	&input_thev[ LOW ];
-   t->link.n		= NULL;
-   t->flags		= T_DEFINITE | T_DRIVEN;
-   t->Clow.min		= 0.0;
-   t->Clow.max		= 0.0;
-   t->Chigh.min	= 0.0;
-   t->Chigh.max	= 0.0;
-   t->Rup.min		= LARGE;
-   t->Rup.max		= LARGE;
-   t->Rdown.min	= SMALL;
-   t->Rdown.max	= SMALL;
-   t->Req.min		= LARGE;
-   t->Req.max		= LARGE;
-   t->V.min		= 0.0;
-   t->V.max		= 0.0;
-   t->Rmin		= SMALL;
-   t->Rdom		= LARGE;
-   t->Rmax		= LARGE;
-   t->Ca		= 0.0;
-   t->Cd		= 0.0;
-   t->tauD		= 0.0;
-   t->tauA		= 0.0;
-   t->tauP		= 0.0;
-   t->Tin		= SMALL;
-   t->tplh		= 0;
-   t->tphl		= 0;
-   t->final		= LOW;
-   t->tau_done		= N_POTS;
-   t->taup_done	= N_POTS;
+    t =  &input_thev[ LOW ];
+    t->link.n        = NULL;
+    t->flags     = T_DEFINITE | T_DRIVEN;
+    t->Clow.min      = 0.0;
+    t->Clow.max      = 0.0;
+    t->Chigh.min = 0.0;
+    t->Chigh.max = 0.0;
+    t->Rup.min       = LARGE;
+    t->Rup.max       = LARGE;
+    t->Rdown.min = SMALL;
+    t->Rdown.max = SMALL;
+    t->Req.min       = LARGE;
+    t->Req.max       = LARGE;
+    t->V.min     = 0.0;
+    t->V.max     = 0.0;
+    t->Rmin      = SMALL;
+    t->Rdom      = LARGE;
+    t->Rmax      = LARGE;
+    t->Ca        = 0.0;
+    t->Cd        = 0.0;
+    t->tauD      = 0.0;
+    t->tauA      = 0.0;
+    t->tauP      = 0.0;
+    t->Tin       = SMALL;
+    t->tplh      = 0;
+    t->tphl      = 0;
+    t->final     = LOW;
+    t->tau_done      = N_POTS;
+    t->taup_done = N_POTS;
 
-   t = &input_thev[ HIGH ];
-   t->link.n		= NULL;
-   t->flags		= T_DEFINITE | T_DRIVEN;
-   t->Clow.min		= 0.0;
-   t->Clow.max		= 0.0;
-   t->Chigh.min	= 0.0;
-   t->Chigh.max	= 0.0;
-   t->Rup.min		= SMALL;
-   t->Rup.max		= SMALL;
-   t->Rdown.min	= LARGE;
-   t->Rdown.max	= LARGE;
-   t->Req.min		= LARGE;
-   t->Req.max		= LARGE;
-   t->V.min		= 1.0;
-   t->V.max		= 1.0;
-   t->Rmin		= SMALL;
-   t->Rdom		= LARGE;
-   t->Rmax		= LARGE;
-   t->Ca		= 0.0;
-   t->Cd		= 0.0;
-   t->tauD		= 0.0;
-   t->tauA		= 0.0;
-   t->tauP		= 0.0;
-   t->Tin		= SMALL;
-   t->tplh		= 0;
-   t->tphl		= 0;
-   t->final		= HIGH;
-   t->tau_done		= N_POTS;
-   t->taup_done	= N_POTS;
+    t = &input_thev[ HIGH ];
+    t->link.n        = NULL;
+    t->flags     = T_DEFINITE | T_DRIVEN;
+    t->Clow.min      = 0.0;
+    t->Clow.max      = 0.0;
+    t->Chigh.min = 0.0;
+    t->Chigh.max = 0.0;
+    t->Rup.min       = SMALL;
+    t->Rup.max       = SMALL;
+    t->Rdown.min = LARGE;
+    t->Rdown.max = LARGE;
+    t->Req.min       = LARGE;
+    t->Req.max       = LARGE;
+    t->V.min     = 1.0;
+    t->V.max     = 1.0;
+    t->Rmin      = SMALL;
+    t->Rdom      = LARGE;
+    t->Rmax      = LARGE;
+    t->Ca        = 0.0;
+    t->Cd        = 0.0;
+    t->tauD      = 0.0;
+    t->tauA      = 0.0;
+    t->tauP      = 0.0;
+    t->Tin       = SMALL;
+    t->tplh      = 0;
+    t->tphl      = 0;
+    t->final     = HIGH;
+    t->tau_done      = N_POTS;
+    t->taup_done = N_POTS;
 
-   t = &input_thev[ X ];
-   t->link.n		= NULL;
-   t->flags		= T_DEFINITE | T_DRIVEN;
-   t->Clow.min		= 0.0;
-   t->Clow.max		= 0.0;
-   t->Chigh.min	= 0.0;
-   t->Chigh.max	= 0.0;
-   t->Rup.min		= SMALL;
-   t->Rup.max		= LARGE;
-   t->Rdown.min	= SMALL;
-   t->Rdown.max	= LARGE;
-   t->Req.min		= LARGE;
-   t->Req.max		= LARGE;
-   t->V.min		= 1.0;
-   t->V.max		= 0.0;
-   t->Rmin		= SMALL;
-   t->Rdom		= LARGE;
-   t->Rmax		= LARGE;
-   t->Ca		= 0.0;
-   t->Cd		= 0.0;
-   t->tauD		= 0.0;
-   t->tauA		= 0.0;
-   t->tauP		= 0.0;
-   t->Tin		= SMALL;
-   t->tplh		= 0;
-   t->tphl		= 0;
-   t->final		= X;
-   t->tau_done		= N_POTS;
-   t->taup_done	= N_POTS;
+    t = &input_thev[ X ];
+    t->link.n        = NULL;
+    t->flags     = T_DEFINITE | T_DRIVEN;
+    t->Clow.min      = 0.0;
+    t->Clow.max      = 0.0;
+    t->Chigh.min = 0.0;
+    t->Chigh.max = 0.0;
+    t->Rup.min       = SMALL;
+    t->Rup.max       = LARGE;
+    t->Rdown.min = SMALL;
+    t->Rdown.max = LARGE;
+    t->Req.min       = LARGE;
+    t->Req.max       = LARGE;
+    t->V.min     = 1.0;
+    t->V.max     = 0.0;
+    t->Rmin      = SMALL;
+    t->Rdom      = LARGE;
+    t->Rmax      = LARGE;
+    t->Ca        = 0.0;
+    t->Cd        = 0.0;
+    t->tauD      = 0.0;
+    t->tauA      = 0.0;
+    t->tauP      = 0.0;
+    t->Tin       = SMALL;
+    t->tplh      = 0;
+    t->tphl      = 0;
+    t->final     = X;
+    t->tau_done      = N_POTS;
+    t->taup_done = N_POTS;
 
-   input_thev[ X+1 ] = input_thev[ X ];
+    input_thev[ X+1 ] = input_thev[ X ];
 }
 
 
@@ -1319,154 +1420,164 @@ public void InitThevs() {
  * printing routines for debug mode
  */
 
-private char *get_indent( int i ) {
-   static char   indent[] = ".........................";
-   static char   spaces[] = "                          ";
-   static int    last_c = 0;
-   int           c;
+private char * get_indent( int i ) {
+    static char   indent[] = ".........................";
+    static char   spaces[] = "                          ";
+    static int    last_c = 0;
+    int           c;
 
-   if( i >= sizeof( indent ) )
-      i = sizeof( indent ) - 1;
-   else
-      i++;
+    if( i >= sizeof( indent ) ) {
+        i = sizeof( indent ) - 1;
+    }
+    else {
+        i++;
+    }
 
-   indent[ i ] = '\0';
-   lprintf( stdout, " %s", indent );
-   indent[ i ] = ' ';
-   spaces[ last_c ] = ' ';
-   last_c = i + 1;
-   spaces[ last_c ] = '\0';
-   return( spaces );
+    indent[ i ] = '\0';
+    lprintf( stdout, " %s", indent );
+    indent[ i ] = ' ';
+    spaces[ last_c ] = ' ';
+    last_c = i + 1;
+    spaces[ last_c ] = '\0';
+    return( spaces );
 }
 
 
-private char *r2ascii( char * s, double r ) {
-   if( r >= LIMIT )
-      ( void ) strcpy( s, " - " );
-   else if( r > 1.0 ) {
-      int  exp;
+private char * r2ascii( char * s, double r ) {
+    if( r >= LIMIT ) {
+        ( void ) strcpy( s, " - " );
+    }
+    else if( r > 1.0 ) {
+        int  exp;
 
-      for( exp = 0; r >= 1000.0; exp++, r *= 0.001 );
-      ( void ) sprintf( s, "%.1f%c", r, " KMG"[ exp ] );
-   } else
-      ( void ) sprintf( s, "%g", r );
+        for( exp = 0; r >= 1000.0; exp++, r *= 0.001 );
+        ( void ) sprintf( s, "%.1f%c", r, " KMG"[ exp ] );
+    }
+    else {
+        ( void ) sprintf( s, "%g", r );
+    }
 
-   return( s );
+    return( s );
 }
 
 
 private void print_dc( nptr n, Thev r, int level ) {
-   char  cbuf[4][20];
-   char  *indent;
+    char  cbuf[4][20];
+    char * indent;
 
-   indent = get_indent( level );
-   lprintf( stdout, "compute_dc( %s )\n%s", pnode( n ), indent );
+    indent = get_indent( level );
+    lprintf( stdout, "compute_dc( %s )\n%s", pnode( n ), indent );
 
-   if( not withdriven )
-      lprintf( stdout, "pure cs:" );
-   else
-      lprintf( stdout, "%sefinite", ( r->flags & T_DEFINITE ) ? "D" : "Ind" );
+    if( not withdriven ) {
+        lprintf( stdout, "pure cs:" );
+    }
+    else {
+        lprintf( stdout, "%sefinite", ( r->flags & T_DEFINITE ) ? "D" : "Ind" );
+    }
 
-   lprintf( stdout, "  Rup=[%s, %s]  Rdown=[%s, %s]\n",
-            r2ascii( cbuf[0], r->Rup.min ), r2ascii( cbuf[1], r->Rup.max ),
-            r2ascii( cbuf[2], r->Rdown.min ), r2ascii( cbuf[3], r->Rdown.max ) );
+    lprintf( stdout, "  Rup=[%s, %s]  Rdown=[%s, %s]\n",
+             r2ascii( cbuf[0], r->Rup.min ), r2ascii( cbuf[1], r->Rup.max ),
+             r2ascii( cbuf[2], r->Rdown.min ), r2ascii( cbuf[3], r->Rdown.max ) );
 
-   lprintf( stdout, "%sClow=[%.2f, %.2f]  Chigh=[%.2f, %.2f]\n",
-            indent, r->Clow.min, r->Clow.max, r->Chigh.min, r->Chigh.max );
+    lprintf( stdout, "%sClow=[%.2f, %.2f]  Chigh=[%.2f, %.2f]\n",
+             indent, r->Clow.min, r->Clow.max, r->Chigh.min, r->Chigh.max );
 }
 
 
 private void print_fval( nptr n, Thev r ) {
-   lprintf( stdout, " final_value( %s )  V=[%.2f, %.2f]  => %c",
-            pnode( n ), r->V.min, r->V.max, vchars[ r->final ] );
-   lprintf( stdout,  ( r->flags & T_SPIKE ) ? "  (spk)\n" : "\n" );
+    lprintf( stdout, " final_value( %s )  V=[%.2f, %.2f]  => %c",
+             pnode( n ), r->V.min, r->V.max, vchars[ r->final ] );
+    lprintf( stdout,  ( r->flags & T_SPIKE ) ? "  (spk)\n" : "\n" );
 }
 
 
 private void print_tau( nptr n, Thev r, int level ) {
-   char  cbuf[3][20];
-   char  *indent;
+    char  cbuf[3][20];
+    char * indent;
 
-   indent = get_indent( level );
-   lprintf( stdout, "compute_tau( %s )\n%s", pnode( n ), indent );
+    indent = get_indent( level );
+    lprintf( stdout, "compute_tau( %s )\n%s", pnode( n ), indent );
 
-   lprintf( stdout, "{Rmin=%s  Rdom=%s  Rmax=%s}",
-            r2ascii( cbuf[0], r->Rmin ), r2ascii( cbuf[1], r->Rdom ),
-            r2ascii( cbuf[2], r->Rmax ) );
+    lprintf( stdout, "{Rmin=%s  Rdom=%s  Rmax=%s}",
+             r2ascii( cbuf[0], r->Rmin ), r2ascii( cbuf[1], r->Rdom ),
+             r2ascii( cbuf[2], r->Rmax ) );
 
-   lprintf( stdout, "  {Ca=%.2f  Cd=%.2f}\n", r->Ca, r->Cd );
+    lprintf( stdout, "  {Ca=%.2f  Cd=%.2f}\n", r->Ca, r->Cd );
 
-   lprintf( stdout, "%stauA=%.2f  tauD=%.2f ns, RTin=",
-            indent, ps2ns( r->Rdom * r->Ca ), ps2ns( r->Rdom * r->Cd ) );
+    lprintf( stdout, "%stauA=%.2f  tauD=%.2f ns, RTin=",
+             indent, ps2ns( r->Rdom * r->Ca ), ps2ns( r->Rdom * r->Cd ) );
 
-   if( r->flags & T_INT )
-      lprintf( stdout, "%.2f ohm*ns\n", d2ns( r->Tin ) );
-   else
-      lprintf( stdout, "-\n" );
+    if( r->flags & T_INT ) {
+        lprintf( stdout, "%.2f ohm*ns\n", d2ns( r->Tin ) );
+    }
+    else {
+        lprintf( stdout, "-\n" );
+    }
 }
 
 
 private void print_taup( nptr n, int level, double taup ) {
-   ( void ) get_indent( level );
-   lprintf( stdout, "tauP( %s ) = %.2f ns\n", pnode( n ), ps2ns( taup ) );
+    ( void ) get_indent( level );
+    lprintf( stdout, "tauP( %s ) = %.2f ns\n", pnode( n ), ps2ns( taup ) );
 }
 
 
 private void print_final( nptr nd, int queued, double tau, Ulong delay ) {
-   Thev   r;
-   Ulong  dtau;	/* tau in deltas */
+    Thev   r;
+    Ulong  dtau; /* tau in deltas */
 
-   r = nd->n.thev;
-   dtau = ps2d( tau );
+    r = nd->n.thev;
+    dtau = ps2d( tau );
 
-   lprintf( stdout, " [event %s->%c @ %.2f] ",
-            pnode( cur_node ), vchars[ cur_node->npot ], d2ns( cur_delta ) );
+    lprintf( stdout, " [event %s->%c @ %.2f] ",
+             pnode( cur_node ), vchars[ cur_node->npot ], d2ns( cur_delta ) );
 
-   lprintf( stdout, ( queued ? "causes %stransition for" : "%sevaluates" ),
-            ( withdriven ? "" : "CS " ) );
+    lprintf( stdout, ( queued ? "causes %stransition for" : "%sevaluates" ),
+             ( withdriven ? "" : "CS " ) );
 
-   lprintf( stdout, " %s: %c -> %c", pnode( nd ),
-            vchars[ nd->npot ], vchars[ r->final ] );
-   lprintf( stdout, " (tau=%.2fns, delay=%.2fns)\n",
-            d2ns( dtau ), d2ns( delay ) );
+    lprintf( stdout, " %s: %c -> %c", pnode( nd ),
+             vchars[ nd->npot ], vchars[ r->final ] );
+    lprintf( stdout, " (tau=%.2fns, delay=%.2fns)\n",
+             d2ns( dtau ), d2ns( delay ) );
 }
 
 
 private void print_spike( nptr nd, pspk spk, Ulong ch_delay, Ulong dr_delay ) {
-   lprintf( stdout, "  [event %s->%c @ %.2f] causes ",
-            pnode( cur_node ), vchars[ cur_node->npot ], d2ns( cur_delta ) );
-   if( dr_delay <= ch_delay )
-      lprintf( stdout, "suppressed " );
+    lprintf( stdout, "  [event %s->%c @ %.2f] causes ",
+             pnode( cur_node ), vchars[ cur_node->npot ], d2ns( cur_delta ) );
+    if( dr_delay <= ch_delay ) {
+        lprintf( stdout, "suppressed " );
+    }
 
-   lprintf( stdout, "spike for %s: %c -> %c -> %c", pnode( nd ),
-            vchars[ nd->npot ], vchars[ spk->charge ], vchars[ nd->npot ] );
-   lprintf( stdout, " (peak=%.2f delay: ch=%.2fns, dr=%.2fns)\n",
-            spk->peak, d2ns( ch_delay ), d2ns( dr_delay ) );
+    lprintf( stdout, "spike for %s: %c -> %c -> %c", pnode( nd ),
+             vchars[ nd->npot ], vchars[ spk->charge ], vchars[ nd->npot ] );
+    lprintf( stdout, " (peak=%.2f delay: ch=%.2fns, dr=%.2fns)\n",
+             spk->peak, d2ns( ch_delay ), d2ns( dr_delay ) );
 }
 
 
 private void print_spk( nptr nd, Thev r, int tab, int dom, int alpha, int beta, pspk spk, int is_spk ) {
-   const char * net_type;
+    const char * net_type;
 
-   lprintf( stdout, " spike_analysis( %s ):", pnode( nd ) );
-   if( tab == LINEARSPK ) {
-      net_type = "n-p mix";
-   }
-   else if( tab == NLSPKMIN ) {
-      net_type = ( dom == LOW ) ? "nmos" : "pmos";
-   }
-   else {
-      net_type = ( dom == LOW ) ? "pmos" : "nmos";
-   }
+    lprintf( stdout, " spike_analysis( %s ):", pnode( nd ) );
+    if( tab == LINEARSPK ) {
+        net_type = "n-p mix";
+    }
+    else if( tab == NLSPKMIN ) {
+        net_type = ( dom == LOW ) ? "nmos" : "pmos";
+    }
+    else {
+        net_type = ( dom == LOW ) ? "pmos" : "nmos";
+    }
 
-   lprintf( stdout, " %s driven %s\n", net_type, ( dom == LOW ) ? "low" : "high" );
-   lprintf( stdout, "{tauA=%.2f  tauD=%.2f  tauP=%.2f} ns  ", ps2ns( r->tauA ), ps2ns( r->tauD ), ps2ns( r->tauP ) );
-   lprintf( stdout, "alpha=%d  beta=%d => peak=%.2f", alpha, beta, spk->peak );
+    lprintf( stdout, " %s driven %s\n", net_type, ( dom == LOW ) ? "low" : "high" );
+    lprintf( stdout, "{tauA=%.2f  tauD=%.2f  tauP=%.2f} ns  ", ps2ns( r->tauA ), ps2ns( r->tauD ), ps2ns( r->tauP ) );
+    lprintf( stdout, "alpha=%d  beta=%d => peak=%.2f", alpha, beta, spk->peak );
 
-   if( is_spk ) {
-      lprintf( stdout, " v=%c\n", vchars[ spk->charge ] );
-   }
-   else {
-      lprintf( stdout, " (too small)\n" );
-   }
+    if( is_spk ) {
+        lprintf( stdout, " v=%c\n", vchars[ spk->charge ] );
+    }
+    else {
+        lprintf( stdout, " (too small)\n" );
+    }
 }
