@@ -8,135 +8,135 @@ bool cnvt::initDone = false;
 
 void cnvt::initializeColorsStyles() {
 
-   if( initDone ) {
-      return;
-   }
+    if( initDone ) {
+        return;
+    }
 
-   colors.push_back( "b" );
-   colors.push_back( "r" );
-   colors.push_back( "k" );
-   colors.push_back( "m" );
-   colors.push_back( "y" );
-   colors.push_back( "c" );
-   colors.push_back( "g" );
+    colors.push_back( "b" );
+    colors.push_back( "r" );
+    colors.push_back( "k" );
+    colors.push_back( "m" );
+    colors.push_back( "y" );
+    colors.push_back( "c" );
+    colors.push_back( "g" );
 
-   styles.push_back( "-" );
-   styles.push_back( "--" );
-   styles.push_back( "-." );
-   styles.push_back( ":" );
+    styles.push_back( "-" );
+    styles.push_back( "--" );
+    styles.push_back( "-." );
+    styles.push_back( ":" );
 
-   mrkers.push_back( "+" );
-   mrkers.push_back( "o" );
-   mrkers.push_back( "*" );
-   mrkers.push_back( "." );
-   mrkers.push_back( "x" );
-   mrkers.push_back( "s" );
-   mrkers.push_back( "d" );
-   mrkers.push_back( "^" );
-   mrkers.push_back( "v" );
-   mrkers.push_back( ">" );
-   mrkers.push_back( "<" );
-   mrkers.push_back( "p" );
-   mrkers.push_back( "h" );
+    mrkers.push_back( "+" );
+    mrkers.push_back( "o" );
+    mrkers.push_back( "*" );
+    mrkers.push_back( "." );
+    mrkers.push_back( "x" );
+    mrkers.push_back( "s" );
+    mrkers.push_back( "d" );
+    mrkers.push_back( "^" );
+    mrkers.push_back( "v" );
+    mrkers.push_back( ">" );
+    mrkers.push_back( "<" );
+    mrkers.push_back( "p" );
+    mrkers.push_back( "h" );
 
-   initDone = true;
+    initDone = true;
 
-   return;
+    return;
 }
 
 vector< double > cnvt::mapToDoubleVector( const map<string,double> & doubleMap ) {
-   vector<double> vec;
+    vector<double> vec;
 
-   map<string,double>::const_iterator it;
+    map<string,double>::const_iterator it;
 
-   for( it = doubleMap.begin(); it != doubleMap.end(); it++ ) {
-      vec.push_back( it->second );
-   }
+    for( it = doubleMap.begin(); it != doubleMap.end(); it++ ) {
+        vec.push_back( it->second );
+    }
 
-   assert( vec.size() == doubleMap.size() );
+    assert( vec.size() == doubleMap.size() );
 
-   return vec;
+    return vec;
 }
 
 ostream & cnvt::matlabPlotToOstream( ostream & os, const vector<string> & xnames, const vector<string> & ynames, bool marker ) {
-   assert( xnames.size() == ynames.size() );
-   initializeColorsStyles();
+    assert( xnames.size() == ynames.size() );
+    initializeColorsStyles();
 
-   os << "plot( ";
+    os << "plot( ";
 
-   for( vector<string>::size_type i = 0; i < xnames.size(); i++ ) {
-      size_t colorNum = i - ( ( size_t )( i/colors.size() ) )*colors.size();
-      size_t styleNum = i - ( ( size_t )( i/styles.size() ) )*styles.size();
-      size_t mrkerNum = i - ( ( size_t )( i/mrkers.size() ) )*mrkers.size();
+    for( vector<string>::size_type i = 0; i < xnames.size(); i++ ) {
+        size_t colorNum = i - ( ( size_t )( i/colors.size() ) )*colors.size();
+        size_t styleNum = i - ( ( size_t )( i/styles.size() ) )*styles.size();
+        size_t mrkerNum = i - ( ( size_t )( i/mrkers.size() ) )*mrkers.size();
 
-      os << xnames[i] << ", " << ynames[i] << ", '";
-      os << colors[colorNum] << styles[styleNum];
-      if( marker ) os << mrkers[mrkerNum];
+        os << xnames[i] << ", " << ynames[i] << ", '";
+        os << colors[colorNum] << styles[styleNum];
+        if( marker ) { os << mrkers[mrkerNum]; }
 
-      if( i != xnames.size() - 1 ) os << "', ..." << endl;
-      else os << "');" << endl << endl;
-   }
+        if( i != xnames.size() - 1 ) { os << "', ..." << endl; }
+        else { os << "');" << endl << endl; }
+    }
 
-   return os;
+    return os;
 }
 
 ostream & cnvt::matlabLegendToOstream( ostream & os, const vector<string> & vec ) {
 
-   os << "legend( ";
+    os << "legend( ";
 
-   for( vector<string>::size_type i = 0; i < vec.size(); i ++ ) {
-      if( i != 0 ) os << ", ";
-      os << "'" << vec[i] << "'";
-   }
+    for( vector<string>::size_type i = 0; i < vec.size(); i ++ ) {
+        if( i != 0 ) { os << ", "; }
+        os << "'" << vec[i] << "'";
+    }
 
-   os << " );" << endl;
+    os << " );" << endl;
 
-   return os;
+    return os;
 }
 
 double cnvt::interpolate( double xx, double x1, double y1, double x2, double y2 ) {
 
-   assert( xx > x1 );
-   assert( x2 > xx );
+    assert( xx > x1 );
+    assert( x2 > xx );
 
-   double ic = ( x2-x1 );
-   double w1 = ( x2-xx )/ic;
-   double w2 = ( xx-x1 )/ic;
+    double ic = ( x2-x1 );
+    double w1 = ( x2-xx )/ic;
+    double w2 = ( xx-x1 )/ic;
 
-   return ( w1 * y1 + w2 * y2 );
+    return ( w1 * y1 + w2 * y2 );
 }
 
 vector<double> cnvt::linSpaceToVec( double s, double e, size_t num ) {
 
-   assert( e > s );
+    assert( e > s );
 
-   vector<double> vec;
-   double inc = ( e-s )/( double )num;
+    vector<double> vec;
+    double inc = ( e-s )/( double )num;
 
-   for( size_t i = 0; i < num; i ++ ) vec.push_back( s + inc * ( double )i );
+    for( size_t i = 0; i < num; i ++ ) { vec.push_back( s + inc * ( double )i ); }
 
-   return vec;
+    return vec;
 }
 
 double cnvt::getMean( const vector<double> & vec ) {
 
-   double s = 0.0;
-   vector<double>::size_type num = vec.size();
+    double s = 0.0;
+    vector<double>::size_type num = vec.size();
 
-   for( vector<double>::size_type i = 0; i < num; i++ ) {
-      s += vec[i];
-   }
+    for( vector<double>::size_type i = 0; i < num; i++ ) {
+        s += vec[i];
+    }
 
-   return s/( double )num;
+    return s/( double )num;
 }
 
 double cnvt::getSTD( const  vector<double> & vec, double mean ) {
-   double s = 0.0;
-   vector<double>::size_type num = vec.size();
+    double s = 0.0;
+    vector<double>::size_type num = vec.size();
 
-   for( vector<double>::size_type i = 0; i < num; i ++ ) {
-      s += vec[i]*vec[i];
-   }
+    for( vector<double>::size_type i = 0; i < num; i ++ ) {
+        s += vec[i]*vec[i];
+    }
 
-   return sqrt( s/( double )num-mean*mean );
+    return sqrt( s/( double )num-mean*mean );
 }
