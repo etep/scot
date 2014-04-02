@@ -14,6 +14,7 @@ default: dirs $(BIN)
 dirs:
 	mkdir -p $(BINDIR)
 	mkdir -p $(OBJDIR)
+	mkdir -p $(SHOBJDIR)
 
 # Set up the list of source and object files
 SRCS = Type.cpp               \
@@ -93,6 +94,7 @@ $(SHOBJDIR)/%.o: $(SHSRCDIR)/%.cpp
 clean:
 	rm -f $(OBJDIR)/*
 	rm -f $(BINDIR)/*
+	rm -f $(SHOBJDIR)/*
 
 Type.o: Type.cpp Type.hpp
 Path.o: Path.cpp Path.hpp utility.hpp Node.hpp Type.hpp ModelPrefix.hpp Transistor.hpp
