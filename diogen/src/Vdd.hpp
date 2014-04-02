@@ -5,9 +5,9 @@
 
 class Vdd : public Node {
 public:
-   Vdd();
+    Vdd();
 
-   void addConnection( Node * n );
+    void addConnection( Node * n );
 };
 
 #endif

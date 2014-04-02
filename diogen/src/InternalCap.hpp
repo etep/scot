@@ -9,13 +9,13 @@ private:
 
 public:
 
-   InternalCap( string name, Type * type, Node * drainNode, Node * otherNodes, SymbolTable parameters );
+    InternalCap( string name, Type * type, Node * drainNode, Node * otherNodes, SymbolTable parameters );
 
-   void addConnectionAt( Node * n, int location );
-   Node * getConnectionAt( int location );
+    void addConnectionAt( Node * n, int location );
+    Node * getConnectionAt( int location );
 
-   vector<Node *> getChildren( Node * goal );
-   string getParameter( string key );
+    vector<Node *> getChildren( Node * goal );
+    string getParameter( string key );
 
 };
 

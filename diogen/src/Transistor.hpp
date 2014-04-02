@@ -9,18 +9,18 @@ private:
 
 public:
 
-   static const int DrainConnection = 0;
-   static const int SourceConnection = 1;
-   static const int GateConnection = 2;
-   static const int BodyConnection = 3;
+    static const int DrainConnection = 0;
+    static const int SourceConnection = 1;
+    static const int GateConnection = 2;
+    static const int BodyConnection = 3;
 
-   Transistor( string name, Type * type, Node * drainNode, Node * sourceNode, Node * gateNode, Node * bodyNode, SymbolTable parameters );
+    Transistor( string name, Type * type, Node * drainNode, Node * sourceNode, Node * gateNode, Node * bodyNode, SymbolTable parameters );
 
-   void addConnectionAt( Node * n, int location );
-   Node * getConnectionAt( int location );
+    void addConnectionAt( Node * n, int location );
+    Node * getConnectionAt( int location );
 
-   vector<Node *> getChildren( Node * goal );
-   string getParameter( string key );
+    vector<Node *> getChildren( Node * goal );
+    string getParameter( string key );
 
 };
 

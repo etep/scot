@@ -5,7 +5,7 @@
 
 class Capacitor : public Node {
 public:
-   Capacitor( string name, vector<Node *> connections, SymbolTable parameters );
+    Capacitor( string name, vector<Node *> connections, SymbolTable parameters );
 };
 
 #endif

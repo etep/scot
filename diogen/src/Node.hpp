@@ -20,106 +20,106 @@ class Path;
  * is a subclass of the three terminal device.
  */
 struct ltstr {
-   bool operator()( string s1, string s2 ) const {
-      return strcasecmp( s1.c_str(), s2.c_str() );
-      //return strcmp(s1, s2) < 0;
-   }
+    bool operator()( string s1, string s2 ) const {
+        return strcasecmp( s1.c_str(), s2.c_str() );
+        //return strcmp(s1, s2) < 0;
+    }
 };
 
 class Node {
-   friend class Input;
+    friend class Input;
 
 protected:
 
-   string name; // as defined in the spice netlist
-   Type * type;
+    string name; // as defined in the spice netlist
+    Type * type;
 
-   vector<Node *> connections;
-   int numMaxConnections;
+    vector<Node *> connections;
+    int numMaxConnections;
 
-   bool hasVisited; // for path generation
-
-
-   string fallCapExpr;
-   string riseCapExpr;
-
-   string avgCapExpr;
-   string wireCapExpr;
-
-   SymbolTable parameters;
+    bool hasVisited; // for path generation
 
 
-   // activity factors
-   double lowToHighTransitionFactor;
-   double highToLowTransitionFactor;
+    string fallCapExpr;
+    string riseCapExpr;
+
+    string avgCapExpr;
+    string wireCapExpr;
+
+    SymbolTable parameters;
 
 
-   static const int notRestricted = -1;
-   virtual void addConnectionAt( Node * n, int connectionNum );
+    // activity factors
+    double lowToHighTransitionFactor;
+    double highToLowTransitionFactor;
+
+
+    static const int notRestricted = -1;
+    virtual void addConnectionAt( Node * n, int connectionNum );
 
 
 
 public:
-   //typedef vector<Node *> Path;
+    //typedef vector<Node *> Path;
 
-   virtual void addConnection( Node * n );
-   Node * getConnectionAt( int i ) {
-      return connections[i];
-   }
-   vector<Node *> getConnections() {
-      return connections;
-   }
+    virtual void addConnection( Node * n );
+    Node * getConnectionAt( int i ) {
+        return connections[i];
+    }
+    vector<Node *> getConnections() {
+        return connections;
+    }
 
-   virtual string toString();
-   Type * getType();
-   string getName();
+    virtual string toString();
+    Type * getType();
+    string getName();
 
-   virtual string getAvgCapExpr() {
-      return "";
-   }
-   virtual string getAvgCapExpr( SymbolTable s, string m, Node * o ) {
-      return "";
-   }
-   virtual string getWireCapExpr() {
-      return "";
-   }
+    virtual string getAvgCapExpr() {
+        return "";
+    }
+    virtual string getAvgCapExpr( SymbolTable s, string m, Node * o ) {
+        return "";
+    }
+    virtual string getWireCapExpr() {
+        return "";
+    }
 
-   virtual string getFallCapExpr() {
-      return "";
-   }
-   virtual string getFallCapExpr( SymbolTable s, string m, Node * o ) {
-      return "";
-   }
+    virtual string getFallCapExpr() {
+        return "";
+    }
+    virtual string getFallCapExpr( SymbolTable s, string m, Node * o ) {
+        return "";
+    }
 
-   virtual string getRiseCapExpr() {
-      return "";
-   }
-   virtual string getRiseCapExpr( SymbolTable s, string m, Node * o ) {
-      return "";
-   }
+    virtual string getRiseCapExpr() {
+        return "";
+    }
+    virtual string getRiseCapExpr( SymbolTable s, string m, Node * o ) {
+        return "";
+    }
 
-   virtual string getParameter( string key ) {
-      return "";
-   }
+    virtual string getParameter( string key ) {
+        return "";
+    }
 
-   void resetHasVisited();
+    void resetHasVisited();
 
-   virtual vector<Node *> getChildren( Node * goal );
+    virtual vector<Node *> getChildren( Node * goal );
 
-   bool concatToPath( Path &path, vector<Node *> outputNodeVec, map<string,string> AntiCorrInputMap );
+    bool concatToPath( Path & path, vector<Node *> outputNodeVec, map<string,string> AntiCorrInputMap );
 
-   void findPathOnChildren ( Node * end, vector<Node *> outputVec, Path &currentPath, vector<Path> &finishedPaths, map<string,string> AntiCorrInputMap );
-   void findPathBetween    ( Node * end, vector<Node *> outputVec, Path &currentPath, vector<Path> &finishedPaths, map<string,string> AntiCorrInputMap );
-   bool equals( Node * e );
+    void findPathOnChildren ( Node * end, vector<Node *> outputVec, Path & currentPath, vector<Path> & finishedPaths, map<string,string> AntiCorrInputMap );
+    void findPathBetween    ( Node * end, vector<Node *> outputVec, Path & currentPath, vector<Path> & finishedPaths, map<string,string> AntiCorrInputMap );
+    bool equals( Node * e );
 
-   virtual bool existConnectionTo( Node * );
+    virtual bool existConnectionTo( Node * );
 
-   void setLowToHighTransitionFactor( double f );
-   void setHighToLowTransitionFactor( double f );
-   double getLowToHighTransitionFactor();
-   double getHighToLowTransitionFactor();
+    void setLowToHighTransitionFactor( double f );
+    void setHighToLowTransitionFactor( double f );
+    double getLowToHighTransitionFactor();
+    double getHighToLowTransitionFactor();
 
-   virtual ~Node() {}
+    virtual ~Node() {}
 };
 
 

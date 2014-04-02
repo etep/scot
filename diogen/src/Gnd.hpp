@@ -6,9 +6,9 @@
 class Gnd : public Node {
 public:
 
-   Gnd();
+    Gnd();
 
-   void addConnection( Node * n );
+    void addConnection( Node * n );
 };
 
 #endif
