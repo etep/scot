@@ -16,6 +16,6 @@
 
 #define EXPRESSION_LEN 16
 
-int dual2primal( const std::string & file_name, int numvar, int numcon, double* primal_solution, double* at_act, double* u_lower, double* p_obj, double* d_obj );
+int dual2primal( const std::string & file_name, int numvar, int numcon, double * primal_solution, double * at_act, double * u_lower, double * p_obj, double * d_obj );
 
 #endif
