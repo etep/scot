@@ -24,46 +24,50 @@
 #include "stocc.h"                     // define random library classes
 #include "stoc1.cpp"                   // random library source code
 
-int main()
-{
-  long int seed = time(0);             // random seed
-  StochasticLib sto(seed);             // make instance of random library
-  int i;                               // loop counter
-  double r;                            // random number
-  int ir;                              // random integer number
+int main() {
+    long int seed = time( 0 );           // random seed
+    StochasticLib sto( seed );           // make instance of random library
+    int i;                               // loop counter
+    double r;                            // random number
+    int ir;                              // random integer number
 
-  // make random numbers with uniform distribution
-  printf("Random numbers with uniform distribution:\n");
-  for (i=0; i<16; i++) {
-    ir = sto.IRandom(0, 20);
-    printf("%8i  ", ir);}
+    // make random numbers with uniform distribution
+    printf( "Random numbers with uniform distribution:\n" );
+    for ( i=0; i<16; i++ ) {
+        ir = sto.IRandom( 0, 20 );
+        printf( "%8i  ", ir );
+    }
 
-  // make random numbers with normal distribution
-  printf("\n\nRandom numbers with normal distribution:\n");
-  for (i=0; i<16; i++) {
-    r = sto.Normal(10, 4);
-    printf("%8.5f  ", r);}
+    // make random numbers with normal distribution
+    printf( "\n\nRandom numbers with normal distribution:\n" );
+    for ( i=0; i<16; i++ ) {
+        r = sto.Normal( 10, 4 );
+        printf( "%8.5f  ", r );
+    }
 
-  // make random numbers with poisson distribution
-  printf("\n\nRandom numbers with poisson distribution:\n");
-  for (i=0; i<16; i++) {
-    ir = sto.Poisson(10);
-    printf("%8i  ", ir);}
-  
-  // make random numbers with binomial distribution
-  printf("\n\nRandom numbers with binomial distribution:\n");
-  for (i=0; i<16; i++) {
-    ir = sto.Binomial(40, 0.25);
-    printf("%8i  ", ir);}
-  
-  // make random numbers with hypergeometric distribution
-  printf("\n\nRandom numbers with hypergeometric distribution:\n");
-  for (i=0; i<16; i++) {
-    ir = sto.Hypergeometric(20, 20, 40);
-    printf("%8i  ", ir);}
+    // make random numbers with poisson distribution
+    printf( "\n\nRandom numbers with poisson distribution:\n" );
+    for ( i=0; i<16; i++ ) {
+        ir = sto.Poisson( 10 );
+        printf( "%8i  ", ir );
+    }
 
-  
-  EndOfProgram();                      // system-specific exit code
+    // make random numbers with binomial distribution
+    printf( "\n\nRandom numbers with binomial distribution:\n" );
+    for ( i=0; i<16; i++ ) {
+        ir = sto.Binomial( 40, 0.25 );
+        printf( "%8i  ", ir );
+    }
 
-  return 0;
+    // make random numbers with hypergeometric distribution
+    printf( "\n\nRandom numbers with hypergeometric distribution:\n" );
+    for ( i=0; i<16; i++ ) {
+        ir = sto.Hypergeometric( 20, 20, 40 );
+        printf( "%8i  ", ir );
+    }
+
+
+    EndOfProgram();                      // system-specific exit code
+
+    return 0;
 }

@@ -75,60 +75,60 @@
 #include <stdio.h>
 
 class TRanrotBGenerator {               // encapsulate random number generator
-   enum constants {                     // define parameters
-      KK = 17, JJ = 10, R1 = 13, R2 =  9
-   };
+    enum constants {                     // define parameters
+        KK = 17, JJ = 10, R1 = 13, R2 =  9
+    };
 public:
-   void RandomInit( long int seed );    // initialization
-   int IRandom( int min, int max );     // get integer random number in desired interval
-   double Random();                     // get floating point random number
-   TRanrotBGenerator( long int seed );  // constructor
+    void RandomInit( long int seed );    // initialization
+    int IRandom( int min, int max );     // get integer random number in desired interval
+    double Random();                     // get floating point random number
+    TRanrotBGenerator( long int seed );  // constructor
 protected:
-   int p1, p2;                          // indexes into buffer
-   unsigned long randbuffer[KK];        // history buffer
-   unsigned long randbufcopy[KK*2];     // used for self-test
+    int p1, p2;                          // indexes into buffer
+    unsigned long randbuffer[KK];        // history buffer
+    unsigned long randbufcopy[KK*2];     // used for self-test
 
-   enum TArch { AF_LITTLE_ENDIAN, AF_BIG_ENDIAN, AF_NON_IEEE };
-   TArch Architecture;                  // conversion to float depends on computer architecture
+    enum TArch { AF_LITTLE_ENDIAN, AF_BIG_ENDIAN, AF_NON_IEEE };
+    TArch Architecture;                  // conversion to float depends on computer architecture
 };
 
 
 class TRanrotWGenerator {               // encapsulate random number generator
-   enum constants {                     // define parameters
-      KK = 17, JJ = 10, R1 = 19, R2 =  27
-   };
+    enum constants {                     // define parameters
+        KK = 17, JJ = 10, R1 = 19, R2 =  27
+    };
 public:
-   void RandomInit( long int seed );    // initialization
-   int IRandom( int min, int max );     // get integer random number in desired interval
-   long double Random();                // get floating point random number
-   unsigned long BRandom();             // output random bits
-   TRanrotWGenerator( long int seed );  // constructor
+    void RandomInit( long int seed );    // initialization
+    int IRandom( int min, int max );     // get integer random number in desired interval
+    long double Random();                // get floating point random number
+    unsigned long BRandom();             // output random bits
+    TRanrotWGenerator( long int seed );  // constructor
 protected:
-   int p1, p2;                          // indexes into buffer
-   union {                              // used for conversion to float
-      long double randp1;
-      unsigned long randbits[3];
-   };
-   unsigned long randbuffer[KK][2];     // history buffer
-   unsigned long randbufcopy[KK*2][2];  // used for self-test
-   enum TArch { AF_LITTLE_ENDIAN, AF_BIG_ENDIAN, AF_NON_IEEE, AF_EXTENDED_PRECISION_LITTLE_ENDIAN };
-   TArch Architecture;                  // conversion to float depends on computer architecture
+    int p1, p2;                          // indexes into buffer
+    union {                              // used for conversion to float
+        long double randp1;
+        unsigned long randbits[3];
+    };
+    unsigned long randbuffer[KK][2];     // history buffer
+    unsigned long randbufcopy[KK*2][2];  // used for self-test
+    enum TArch { AF_LITTLE_ENDIAN, AF_BIG_ENDIAN, AF_NON_IEEE, AF_EXTENDED_PRECISION_LITTLE_ENDIAN };
+    TArch Architecture;                  // conversion to float depends on computer architecture
 };
 
 class TRandomMotherOfAll {             // encapsulate random number generator
 public:
-   void RandomInit( long int seed );    // initialization
-   int IRandom( int min, int max );     // get integer random number in desired interval
-   double Random();                     // get floating point random number
-   TRandomMotherOfAll( long int seed ); // constructor
+    void RandomInit( long int seed );    // initialization
+    int IRandom( int min, int max );     // get integer random number in desired interval
+    double Random();                     // get floating point random number
+    TRandomMotherOfAll( long int seed ); // constructor
 protected:
-   double x[5];                         // history buffer
+    double x[5];                         // history buffer
 };
 
 class TRandomMersenne {                // encapsulate random number generator
 #if 1
-   // define constants for MT11213A:
-   // (long constants cannot be defined as enum in 16-bit compilers)
+    // define constants for MT11213A:
+    // (long constants cannot be defined as enum in 16-bit compilers)
 #define MERS_N   351
 #define MERS_M   175
 #define MERS_R   19
@@ -140,7 +140,7 @@ class TRandomMersenne {                // encapsulate random number generator
 #define MERS_B   0x655E5280
 #define MERS_C   0xFFD58000
 #else
-   // or constants for MT19937:
+    // or constants for MT19937:
 #define MERS_N   624
 #define MERS_M   397
 #define MERS_R   31
@@ -153,25 +153,25 @@ class TRandomMersenne {                // encapsulate random number generator
 #define MERS_C   0xEFC60000
 #endif
 public:
-   TRandomMersenne( long int seed ) {   // constructor
-      RandomInit( seed );
-   }
-   void RandomInit( long int seed );    // re-seed
-   long IRandom( long min, long max );  // output random integer
-   double Random();                     // output random float
-   unsigned long BRandom();             // output random bits
+    TRandomMersenne( long int seed ) {   // constructor
+        RandomInit( seed );
+    }
+    void RandomInit( long int seed );    // re-seed
+    long IRandom( long min, long max );  // output random integer
+    double Random();                     // output random float
+    unsigned long BRandom();             // output random bits
 private:
-   unsigned long mt[MERS_N];            // state vector
-   int mti;                             // index into mt
-   enum TArch { AF_LITTLE_ENDIAN, AF_BIG_ENDIAN, AF_NON_IEEE };
-   TArch Architecture;                  // conversion to float depends on computer architecture
+    unsigned long mt[MERS_N];            // state vector
+    int mti;                             // index into mt
+    enum TArch { AF_LITTLE_ENDIAN, AF_BIG_ENDIAN, AF_NON_IEEE };
+    TArch Architecture;                  // conversion to float depends on computer architecture
 };
 
 class TRandomMotRot {                  // encapsulate random number generator from assembly library
 public:
-   int IRandom( int min, int max );     // get integer random number in desired interval
-   double Random();                     // get floating point random number
-   TRandomMotRot( long int seed );      // constructor
+    int IRandom( int min, int max );     // get integer random number in desired interval
+    double Random();                     // get floating point random number
+    TRandomMotRot( long int seed );      // constructor
 };
 
 #endif

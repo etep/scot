@@ -15,108 +15,116 @@
 #include "userintf.cpp"                // define system specific user interface
 
 
-// main  
+// main
 void main() {
-  // parameters. You may change these
-  long int n = 8;                      // number of balls taken
-  long int m = 20;                     // number of red balls
-  long int N = 50;                     // total number of balls
-  long int nn = 1000000;               // number of samples
-  
-  // other variables
-  double sum;                          // sum
-  double ssum;                         // squaresum
-  long int min, max;                   // minimum, maximum
-  double mean;                         // mean
-  double var;                          // variance
-  long int i;                          // loop counter
-  long int x;                          // random variate
-  const int DSIZE = 18;                // size of array
-  long int dis[DSIZE] = {0};           // number of samples in each range
-  int c;                               // index into dis list
-  double f;                            // calculated function value
-  double xme;                          // expected mean
-  double xva;                          // expected variance
-  double xsd;                          // expected standard deviation
-  long int delta;                      // step in list
-  long int xa, xb;                     // list minimum, maximum
-  long int x1, x2;                     // category range
-  
-  // make random seed
-  long int seed = time(0);             // random seed = time
+    // parameters. You may change these
+    long int n = 8;                      // number of balls taken
+    long int m = 20;                     // number of red balls
+    long int N = 50;                     // total number of balls
+    long int nn = 1000000;               // number of samples
 
-  // make instance of random library for producing random variates
-  StochasticLib sto(seed);             // object of class StochasticLib
+    // other variables
+    double sum;                          // sum
+    double ssum;                         // squaresum
+    long int min, max;                   // minimum, maximum
+    double mean;                         // mean
+    double var;                          // variance
+    long int i;                          // loop counter
+    long int x;                          // random variate
+    const int DSIZE = 18;                // size of array
+    long int dis[DSIZE] = {0};           // number of samples in each range
+    int c;                               // index into dis list
+    double f;                            // calculated function value
+    double xme;                          // expected mean
+    double xva;                          // expected variance
+    double xsd;                          // expected standard deviation
+    long int delta;                      // step in list
+    long int xa, xb;                     // list minimum, maximum
+    long int x1, x2;                     // category range
 
-  // calculate exact mean and variance
-  xme = (double)n*m/N;                 // calculated mean
-  xva = xme*(1.-(double)m/N)*(double)(N-n)/(N-1.);  // calculated variance
+    // make random seed
+    long int seed = time( 0 );           // random seed = time
 
-  // calculate appropriate list divisions
-  xsd = sqrt(xva);                     // calculated std.dev.
-  xa = int(xme - 6.*xsd + 0.5);        // calculated minimum
-  if (xa < 0) xa=0;
-  if (xa < n+m-N) xa = n+m-N;  
-  delta = int(12.*xsd/(DSIZE-1));      // list step
-  if (delta < 1) delta = 1; 
-  xb = xa + (DSIZE-1)*delta;           // calculated maximum
-  if (xb > n) xb = n;
-  if (xb > m) xb = m;
+    // make instance of random library for producing random variates
+    StochasticLib sto( seed );           // object of class StochasticLib
 
-  // initialize
-  sum = ssum = 0; min = 2000000000; max = -1;
+    // calculate exact mean and variance
+    xme = ( double )n*m/N;               // calculated mean
+    xva = xme*( 1.-( double )m/N )*( double )( N-n )/( N-1. ); // calculated variance
 
-  // start message
-  printf("taking %li samples from hypergeometric distribution...", nn);
-  
-  // sample nn times
-  for (i = 0; i < nn; i++) {
+    // calculate appropriate list divisions
+    xsd = sqrt( xva );                   // calculated std.dev.
+    xa = int( xme - 6.*xsd + 0.5 );      // calculated minimum
+    if ( xa < 0 ) { xa=0; }
+    if ( xa < n+m-N ) { xa = n+m-N; }
+    delta = int( 12.*xsd/( DSIZE-1 ) );  // list step
+    if ( delta < 1 ) { delta = 1; }
+    xb = xa + ( DSIZE-1 )*delta;         // calculated maximum
+    if ( xb > n ) { xb = n; }
+    if ( xb > m ) { xb = m; }
 
-    // generate random number with desired distribution
-    x = sto.Hypergeometric(n,m,N);
+    // initialize
+    sum = ssum = 0;
+    min = 2000000000;
+    max = -1;
 
-    // update sums
-    sum += x;
-    ssum += (double)x*x;
-    if (x < min) min = x;
-    if (x > max) max = x;
-    c = (x-xa)/delta;
-    if (c < 0) c = 0;
-    if (c >= DSIZE) c = DSIZE-1;
-    dis[c]++;}
-    
-  // calculate sampled mean and variance
-  mean = sum / nn; 
-  var = (ssum - sum*sum/nn) / nn;
+    // start message
+    printf( "taking %li samples from hypergeometric distribution...", nn );
 
-  // print sampled and theoretical mean and variance
-  printf("\n\nparameters: n=%li, m=%li, N=%li", n, m, N);
-  printf("\n                mean        variance");
-  printf("\nsampled:   %12.6f %12.6f", mean, var);
-  printf("\nexpected:  %12.6f %12.6f", xme,  xva);
+    // sample nn times
+    for ( i = 0; i < nn; i++ ) {
 
-  // print found and expected frequencies
-  printf("\n\n      x              found     expected");
-  for (c = 0; c < DSIZE; c++) {
-    x1 = c*delta + xa;
-    if (x1 > xb) break;
-    x2 = x1+delta-1;
-    if (x2 > xb) x2 = xb;
-    if (c==0 && min<x1) x1 = min;
-    if (c==DSIZE-1 && max>x2) x2 = max;
+        // generate random number with desired distribution
+        x = sto.Hypergeometric( n,m,N );
 
-    // calculate expected frequency
-    for (x=x1, f=0.; x <= x2; x++) {
-      f += exp(LnFac(m) - LnFac(x) - LnFac(m-x) + LnFac(N-m) -
-        LnFac(n-x) - LnFac(N-m-n+x) - (LnFac(N) - LnFac(n) - LnFac(N-n)));}
+        // update sums
+        sum += x;
+        ssum += ( double )x*x;
+        if ( x < min ) { min = x; }
+        if ( x > max ) { max = x; }
+        c = ( x-xa )/delta;
+        if ( c < 0 ) { c = 0; }
+        if ( c >= DSIZE ) { c = DSIZE-1; }
+        dis[c]++;
+    }
 
-    // output found and expected frequency
-    if (dis[c] || f*nn > 1E-4) {
-      if (x1==x2) {
-        printf("\n%7li       %12.6f %12.6f", x1, (double)dis[c]/nn, f);}
-      else {
-        printf("\n%6li-%-6li %12.6f %12.6f", x1, x2, (double)dis[c]/nn, f);}}}
+    // calculate sampled mean and variance
+    mean = sum / nn;
+    var = ( ssum - sum*sum/nn ) / nn;
+
+    // print sampled and theoretical mean and variance
+    printf( "\n\nparameters: n=%li, m=%li, N=%li", n, m, N );
+    printf( "\n                mean        variance" );
+    printf( "\nsampled:   %12.6f %12.6f", mean, var );
+    printf( "\nexpected:  %12.6f %12.6f", xme,  xva );
+
+    // print found and expected frequencies
+    printf( "\n\n      x              found     expected" );
+    for ( c = 0; c < DSIZE; c++ ) {
+        x1 = c*delta + xa;
+        if ( x1 > xb ) { break; }
+        x2 = x1+delta-1;
+        if ( x2 > xb ) { x2 = xb; }
+        if ( c==0 && min<x1 ) { x1 = min; }
+        if ( c==DSIZE-1 && max>x2 ) { x2 = max; }
+
+        // calculate expected frequency
+        for ( x=x1, f=0.; x <= x2; x++ ) {
+            f += exp( LnFac( m ) - LnFac( x ) - LnFac( m-x ) + LnFac( N-m ) -
+                      LnFac( n-x ) - LnFac( N-m-n+x ) - ( LnFac( N ) - LnFac( n ) - LnFac( N-n ) ) );
+        }
+
+        // output found and expected frequency
+        if ( dis[c] || f*nn > 1E-4 ) {
+            if ( x1==x2 ) {
+                printf( "\n%7li       %12.6f %12.6f", x1, ( double )dis[c]/nn, f );
+            }
+            else {
+                printf( "\n%6li-%-6li %12.6f %12.6f", x1, x2, ( double )dis[c]/nn, f );
+            }
+        }
+    }
 
 
-  EndOfProgram();                      // system-specific exit code
-  }
+    EndOfProgram();                      // system-specific exit code
+}

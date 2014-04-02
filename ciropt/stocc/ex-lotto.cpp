@@ -16,30 +16,30 @@
 
 
 void main () {
-   // define constants
-   const int nmin = 1;                  // set the lowest allowed number
-   const int nmax = 36;                 // set the highest allowed number
-   const int select = 6;                // the number of numbers to draw
+    // define constants
+    const int nmin = 1;                  // set the lowest allowed number
+    const int nmax = 36;                 // set the highest allowed number
+    const int select = 6;                // the number of numbers to draw
 
-   long int seed = time( 0 );           // generate random seed
-   StochasticLib sto( seed );           // make instance of random library
-   int urn[nmax-nmin+1];                // contains the shuffled numbers
-   int i;                               // loop counter
+    long int seed = time( 0 );           // generate random seed
+    StochasticLib sto( seed );           // make instance of random library
+    int urn[nmax-nmin+1];                // contains the shuffled numbers
+    int i;                               // loop counter
 
-   // Make shuffled list of numbers from nmin to nmax:
-   sto.Shuffle( urn, nmin, nmax-nmin+1 );
+    // Make shuffled list of numbers from nmin to nmax:
+    sto.Shuffle( urn, nmin, nmax-nmin+1 );
 
-   // output heading text
-   printf( "Your lucky numbers:\n\n" );
+    // output heading text
+    printf( "Your lucky numbers:\n\n" );
 
-   // loop to output the first "select" numbers
-   for ( i=0; i < select; i++ ) {
-      if ( i < nmax-nmin+1 ) {
-         // output number
-         printf( "%4i    ", urn[i] );
-      }
-   }
+    // loop to output the first "select" numbers
+    for ( i=0; i < select; i++ ) {
+        if ( i < nmax-nmin+1 ) {
+            // output number
+            printf( "%4i    ", urn[i] );
+        }
+    }
 
 
-   EndOfProgram();                      // system-specific exit code
+    EndOfProgram();                      // system-specific exit code
 }

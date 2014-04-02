@@ -223,38 +223,38 @@ const int FAK_LEN = 1024;              // length of factorial table used by LnFa
 ***********************************************************************/
 
 class StochasticLib : public RANDOM_GENERATOR {
-   // This class encapsulates the random variate generating functions.
-   // May be derived from any of the random number generators.
+    // This class encapsulates the random variate generating functions.
+    // May be derived from any of the random number generators.
 public:
-   StochasticLib ( int seed );          // constructor
-   int Bernoulli( double p );           // bernoulli distribution
-   double Normal( double m, double s ); // normal distribution
-   long int Poisson ( double L );       // poisson distribution
-   long int Binomial ( long int n, double p ); // binomial distribution
-   long int Hypergeometric ( long int n, long int m, long int N ); // hypergeometric distribution
-   void Multinomial ( long int * destination, double * source, long int n, int colors ); // multinomial distribution
-   void Multinomial ( long int * destination, long int * source, long int n, int colors ); // multinomial distribution
-   void MultiHypergeo ( long int * destination, long int * source, long int n, int colors ); // multivariate hypergeometric distribution
-   void Shuffle( int * list, int min, int n ); // shuffle integers
+    StochasticLib ( int seed );          // constructor
+    int Bernoulli( double p );           // bernoulli distribution
+    double Normal( double m, double s ); // normal distribution
+    long int Poisson ( double L );       // poisson distribution
+    long int Binomial ( long int n, double p ); // binomial distribution
+    long int Hypergeometric ( long int n, long int m, long int N ); // hypergeometric distribution
+    void Multinomial ( long int * destination, double * source, long int n, int colors ); // multinomial distribution
+    void Multinomial ( long int * destination, long int * source, long int n, int colors ); // multinomial distribution
+    void MultiHypergeo ( long int * destination, long int * source, long int n, int colors ); // multivariate hypergeometric distribution
+    void Shuffle( int * list, int min, int n ); // shuffle integers
 
-   // functions used internally
+    // functions used internally
 protected:
-   static double fc_lnpk( long int k, long int N_Mn, long int M, long int n ); // used by Hypergeometric
+    static double fc_lnpk( long int k, long int N_Mn, long int M, long int n ); // used by Hypergeometric
 
-   // subfunctions for each approximation method
-   long int PoissonInver( double L );               // poisson by inversion
-   long int PoissonRatioUniforms( double L );       // poisson by ratio of uniforms
-   long int PoissonLow( double L );                 // poisson for extremely low L
-   long int BinomialInver ( long int n, double p ); // binomial by inversion
-   long int BinomialRatioOfUniforms ( long int n, double p ); // binomial by ratio of uniforms
-   long int HypInversionMod ( long int n, long int M, long int N ); // hypergeometric by inversion searching from mode
-   long int HypRatioOfUnifoms ( long int n, long int M, long int N ); // hypergeometric by ratio of uniforms method
+    // subfunctions for each approximation method
+    long int PoissonInver( double L );               // poisson by inversion
+    long int PoissonRatioUniforms( double L );       // poisson by ratio of uniforms
+    long int PoissonLow( double L );                 // poisson for extremely low L
+    long int BinomialInver ( long int n, double p ); // binomial by inversion
+    long int BinomialRatioOfUniforms ( long int n, double p ); // binomial by ratio of uniforms
+    long int HypInversionMod ( long int n, long int M, long int N ); // hypergeometric by inversion searching from mode
+    long int HypRatioOfUnifoms ( long int n, long int M, long int N ); // hypergeometric by ratio of uniforms method
 
-   // define constants
-   enum constants {
-      // maximum value of 'colors' in multivariate distributions:
-      MAXCOLORS = 20
-   };         // you may change this number
+    // define constants
+    enum constants {
+        // maximum value of 'colors' in multivariate distributions:
+        MAXCOLORS = 20
+    };         // you may change this number
 };
 
 
@@ -263,21 +263,21 @@ protected:
 ***********************************************************************/
 
 class StochasticLib2 : public StochasticLib {
-   // derived class, redefining some functions
+    // derived class, redefining some functions
 public:
-   long int Poisson ( double L );       // poisson distribution
-   long int Binomial ( long int n, double p ); // binomial distribution
-   long int Hypergeometric ( long int n, long int M, long int N ); // hypergeometric distribution
-   StochasticLib2( int seed ):StochasticLib( seed ) {}; // constructor
-   // subfunctions for each approximation method:
+    long int Poisson ( double L );       // poisson distribution
+    long int Binomial ( long int n, double p ); // binomial distribution
+    long int Hypergeometric ( long int n, long int M, long int N ); // hypergeometric distribution
+    StochasticLib2( int seed ):StochasticLib( seed ) {}; // constructor
+    // subfunctions for each approximation method:
 protected:
-   long int PoissonModeSearch( double L ); // poisson by search from mode
-   long int PoissonPatchwork( double L ); // poisson by patchwork rejection
-   static double PoissonF( long int k, double l_nu, double c_pm ); // used by PoissonPatchwork
-   long int BinomialModeSearch( long int n, double p ); // binomial by search from mode
-   long int BinomialPatchwork( long int n, double p ); // binomial by patchwork rejection
-   double BinomialF( long int k, long int n, double l_pq, double c_pm ); // used by BinomialPatchwork
-   long int HypPatchwork ( long int n, long int M, long int N ); // hypergeometric by patchwork rejection
+    long int PoissonModeSearch( double L ); // poisson by search from mode
+    long int PoissonPatchwork( double L ); // poisson by patchwork rejection
+    static double PoissonF( long int k, double l_nu, double c_pm ); // used by PoissonPatchwork
+    long int BinomialModeSearch( long int n, double p ); // binomial by search from mode
+    long int BinomialPatchwork( long int n, double p ); // binomial by patchwork rejection
+    double BinomialF( long int k, long int n, double l_pq, double c_pm ); // used by BinomialPatchwork
+    long int HypPatchwork ( long int n, long int M, long int N ); // hypergeometric by patchwork rejection
 };
 
 
@@ -286,25 +286,25 @@ protected:
 ***********************************************************************/
 
 class StochasticLib3 : public StochasticLib {
-   // This class can be derived from either StochasticLib or StochasticLib2.
-   // Adds more probability distributions
+    // This class can be derived from either StochasticLib or StochasticLib2.
+    // Adds more probability distributions
 public:
-   StochasticLib3( int seed ); // constructor
-   void SetAccuracy( double accur ); // define accuracy of calculations
-   long int NonCentralHypergeometric ( long int n, long int m, long int N, double odds ); // non-central hypergeometric distribution
-   long int ExtendedHypergeometric ( long int n, long int m, long int N, double odds ); // extended hypergeometric distribution
-   void MultiNonCentralHypergeo ( long int * destination, long int * source, double * weights, long int n, int colors ); // multivariate noncentral hypergeometric distribution
-   void MultiComplementaryNonCentralHypergeo ( long int * destination, long int * source, double * weights, long int n, int colors ); // multivariate complementary noncentral hypergeometric distribution
-   void MultiExtendedHypergeo ( long int * destination, long int * source, double * weights, long int n, int colors ); // multivariate extended hypergeometric distribution
-   // subfunctions for each approximation method
+    StochasticLib3( int seed ); // constructor
+    void SetAccuracy( double accur ); // define accuracy of calculations
+    long int NonCentralHypergeometric ( long int n, long int m, long int N, double odds ); // non-central hypergeometric distribution
+    long int ExtendedHypergeometric ( long int n, long int m, long int N, double odds ); // extended hypergeometric distribution
+    void MultiNonCentralHypergeo ( long int * destination, long int * source, double * weights, long int n, int colors ); // multivariate noncentral hypergeometric distribution
+    void MultiComplementaryNonCentralHypergeo ( long int * destination, long int * source, double * weights, long int n, int colors ); // multivariate complementary noncentral hypergeometric distribution
+    void MultiExtendedHypergeo ( long int * destination, long int * source, double * weights, long int n, int colors ); // multivariate extended hypergeometric distribution
+    // subfunctions for each approximation method
 protected:
-   long int NoncentralHypergeometricUrn ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
-   long int NoncentralHypergeometricInversion ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
-   long int NoncentralHypergeometricTable ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
-   long int NoncentralHypergeometricRatioOfUnifoms ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
-   long int ExtendedHypergeometricInversion ( long int n, long int m, long int N, double odds ); // extended hypergeometric by inversion
-   long int ExtendedHypergeometricRatioOfUnifoms ( long int n, long int m, long int N, double odds ); // extended hypergeometric by ratio-of-uniforms
-   double accuracy; // accuracy of calculations
+    long int NoncentralHypergeometricUrn ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
+    long int NoncentralHypergeometricInversion ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
+    long int NoncentralHypergeometricTable ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
+    long int NoncentralHypergeometricRatioOfUnifoms ( long int n, long int m, long int N, double odds ); // noncentral hypergeometric by urn model
+    long int ExtendedHypergeometricInversion ( long int n, long int m, long int N, double odds ); // extended hypergeometric by inversion
+    long int ExtendedHypergeometricRatioOfUnifoms ( long int n, long int m, long int N, double odds ); // extended hypergeometric by ratio-of-uniforms
+    double accuracy; // accuracy of calculations
 };
 
 
@@ -313,39 +313,39 @@ protected:
 ***********************************************************************/
 
 class NonCentralHypergeometricC {
-   // This class contains methods for calculating the univariate
-   // noncentral hypergeometric probability function
+    // This class contains methods for calculating the univariate
+    // noncentral hypergeometric probability function
 public:
-   NonCentralHypergeometricC( long int n, long int m, long int N, double odds, double accuracy=1.E-8 ); // constructor
-   double probability( long int x ); // calculate probability function
-   int MakeTable( double * table, long int MaxLength, long int * start, long int * end ); // make table of probabilities
-   double mean( void );       // calculate approximate mean
-   double moments( double * mean, double * var ); // calculate exact mean and variance
+    NonCentralHypergeometricC( long int n, long int m, long int N, double odds, double accuracy=1.E-8 ); // constructor
+    double probability( long int x ); // calculate probability function
+    int MakeTable( double * table, long int MaxLength, long int * start, long int * end ); // make table of probabilities
+    double mean( void );       // calculate approximate mean
+    double moments( double * mean, double * var ); // calculate exact mean and variance
 
-   // implementations of different calculation methods
+    // implementations of different calculation methods
 protected:
-   double recursive( void );  // recursive calculation
-   double binoexpand( void ); // binomial expansion of integrand
-   double laplace( void );    // Laplace's method with narrow integration interval
-   double integrate( void );  // numerical integration
+    double recursive( void );  // recursive calculation
+    double binoexpand( void ); // binomial expansion of integrand
+    double laplace( void );    // Laplace's method with narrow integration interval
+    double integrate( void );  // numerical integration
 
-   // other subfunctions
-   double lnbico( void );     // natural log of binomial coefficients
-   void findpars( void );     // calculate r, w, E
-   double integrate_step( double a, double b ); // used by integrate()
-   double search_inflect( double t_from, double t_to ); // used by integrate()
+    // other subfunctions
+    double lnbico( void );     // natural log of binomial coefficients
+    void findpars( void );     // calculate r, w, E
+    double integrate_step( double a, double b ); // used by integrate()
+    double search_inflect( double t_from, double t_to ); // used by integrate()
 
-   // parameters
-   double omega;
-   double accuracy;
-   long int n, m, N, x;
-   long int xmin, xmax;
-   // parameters used by lnbico
-   double bico, mFac, xFac;
-   int ParametersChanged;
-   long int xLast;
-   // parameters generated by findpars and used by probability, laplace, integrate:
-   double r, rd, w, E, phi2d;
+    // parameters
+    double omega;
+    double accuracy;
+    long int n, m, N, x;
+    long int xmin, xmax;
+    // parameters used by lnbico
+    double bico, mFac, xFac;
+    int ParametersChanged;
+    long int xLast;
+    // parameters generated by findpars and used by probability, laplace, integrate:
+    double r, rd, w, E, phi2d;
 };
 
 
@@ -354,38 +354,38 @@ protected:
 ***********************************************************************/
 
 class MultiNonCentralHypergeometricC {
-   // This class encapsulates the different methods for calculating the
-   // multivariate noncentral hypergeometric probability function
+    // This class encapsulates the different methods for calculating the
+    // multivariate noncentral hypergeometric probability function
 public:
-   enum constants {
-      MAXCOLORS = 20
-   };                   // maximum number of colors. May be changed
-   MultiNonCentralHypergeometricC( long int n, long int * m, double * odds, int colors, float accuracy=1.E-8f ); // constructor
-   double probability( long int * x );  // calculate probability function
-   void mean( double * mu );            // calculate approximate mean
+    enum constants {
+        MAXCOLORS = 20
+    };                   // maximum number of colors. May be changed
+    MultiNonCentralHypergeometricC( long int n, long int * m, double * odds, int colors, float accuracy=1.E-8f ); // constructor
+    double probability( long int * x );  // calculate probability function
+    void mean( double * mu );            // calculate approximate mean
 
-   // implementations of different calculation methods
+    // implementations of different calculation methods
 protected:
-   double binoexpand( void ); // binomial expansion of integrand
-   double laplace( void );    // Laplace's method with narrow integration interval
-   double integrate( void );  // numerical integration
+    double binoexpand( void ); // binomial expansion of integrand
+    double laplace( void );    // Laplace's method with narrow integration interval
+    double integrate( void );  // numerical integration
 
-   // other subfunctions
-   double lnbico( void );     // natural log of binomial coefficients
-   void findpars( void );     // calculate r, w, E
-   double integrate_step( double a, double b ); // used by integrate()
-   double search_inflect( double t_from, double t_to ); // used by integrate()
+    // other subfunctions
+    double lnbico( void );     // natural log of binomial coefficients
+    void findpars( void );     // calculate r, w, E
+    double integrate_step( double a, double b ); // used by integrate()
+    double search_inflect( double t_from, double t_to ); // used by integrate()
 
-   // parameters
-   double * omega;
-   float accuracy;
-   long int n, N;
-   long int * m, * x;
-   int colors;
-   // parameters generated by findpars and used by probability, laplace, integrate:
-   double r, rd, w, E, phi2d;
-   // generated by lnbico
-   double bico;
+    // parameters
+    double * omega;
+    float accuracy;
+    long int n, N;
+    long int * m, * x;
+    int colors;
+    // parameters generated by findpars and used by probability, laplace, integrate:
+    double r, rd, w, E, phi2d;
+    // generated by lnbico
+    double bico;
 };
 
 
@@ -394,24 +394,24 @@ protected:
 ***********************************************************************/
 
 class MultiNonCentralHypergeometricMoments: public MultiNonCentralHypergeometricC {
-   // This class calculates the exact mean and variance of the multivariate
-   // noncentral hypergeometric distribution by calculating all the
-   // possible x-combinations with probability < accuracy
+    // This class calculates the exact mean and variance of the multivariate
+    // noncentral hypergeometric distribution by calculating all the
+    // possible x-combinations with probability < accuracy
 public:
-   MultiNonCentralHypergeometricMoments( long int n, long int * m, double * odds, int colors, float accuracy=1.E-8 )
-      : MultiNonCentralHypergeometricC( n, m, odds, colors, accuracy ) {};
-   double moments( double * mean, double * stddev, long int * combinations = 0 );
+    MultiNonCentralHypergeometricMoments( long int n, long int * m, double * odds, int colors, float accuracy=1.E-8 )
+        : MultiNonCentralHypergeometricC( n, m, odds, colors, accuracy ) {};
+    double moments( double * mean, double * stddev, long int * combinations = 0 );
 
 protected:
-   // functions used internally
-   double loop( long int n, int c );    // recursive loops
-   // data
-   long int xi[MAXCOLORS];              // x vector to calculate probability of
-   long int xm[MAXCOLORS];              // rounded approximate mean of x[i]
-   long int remaining[MAXCOLORS];       // number of balls of color > c in urn
-   double sx[MAXCOLORS];                // sum of x*f(x)
-   double sxx[MAXCOLORS];               // sum of x^2*f(x)
-   long int sn;                         // number of combinations
+    // functions used internally
+    double loop( long int n, int c );    // recursive loops
+    // data
+    long int xi[MAXCOLORS];              // x vector to calculate probability of
+    long int xm[MAXCOLORS];              // rounded approximate mean of x[i]
+    long int remaining[MAXCOLORS];       // number of balls of color > c in urn
+    double sx[MAXCOLORS];                // sum of x*f(x)
+    double sxx[MAXCOLORS];               // sum of x^2*f(x)
+    long int sn;                         // number of combinations
 };
 
 
@@ -420,30 +420,30 @@ protected:
 ***********************************************************************/
 
 class ExtendedHypergeometricC {
-   // This class contains methods for calculating the univariate
-   // extended hypergeometric probability function
+    // This class contains methods for calculating the univariate
+    // extended hypergeometric probability function
 public:
-   ExtendedHypergeometricC( long int n, long int m, long int N, double odds ); // constructor
-   double probability( long int x );    // calculate probability function
-   double probabilityRatio( long int x, long int x0 ); // calculate probability f(x)/f(x0)
-   double mean( void );                 // calculate approximate mean
-   double moments( double * mean, double * var ); // calculate exact mean and variance
+    ExtendedHypergeometricC( long int n, long int m, long int N, double odds ); // constructor
+    double probability( long int x );    // calculate probability function
+    double probabilityRatio( long int x, long int x0 ); // calculate probability f(x)/f(x0)
+    double mean( void );                 // calculate approximate mean
+    double moments( double * mean, double * var ); // calculate exact mean and variance
 
 protected:
-   double lng( long int x );            // natural log of proportional function
+    double lng( long int x );            // natural log of proportional function
 
-   // parameters
-   double odds;                         // odds ratio
-   double logodds;                      // ln odds ratio
-   long int n, m, N;
-   long int xmin, xmax;                 // minimum and maximum of x
+    // parameters
+    double odds;                         // odds ratio
+    double logodds;                      // ln odds ratio
+    long int n, m, N;
+    long int xmin, xmax;                 // minimum and maximum of x
 
-   // parameters used by subfunctions
-   long int xLast;
-   double mFac, xFac;                   // log factorials
-   double scale;                        // scale to apply to lng function
-   double rsum;                         // reciprocal sum of proportional function
-   int ParametersChanged;
+    // parameters used by subfunctions
+    long int xLast;
+    double mFac, xFac;                   // log factorials
+    double scale;                        // scale to apply to lng function
+    double rsum;                         // reciprocal sum of proportional function
+    int ParametersChanged;
 };
 
 
@@ -452,42 +452,42 @@ protected:
 ***********************************************************************/
 
 class MultiExtendedHypergeometricC {
-   // This class contains functions for calculating the multivariate
-   // extended hypergeometric probability function and its mean and
-   // variance. Warning: the time consumption for first call to
-   // probability or moments is proportional to the total number of
-   // possible x combinations, which may be extreme!
+    // This class contains functions for calculating the multivariate
+    // extended hypergeometric probability function and its mean and
+    // variance. Warning: the time consumption for first call to
+    // probability or moments is proportional to the total number of
+    // possible x combinations, which may be extreme!
 public:
-   enum constants {
-      MAXCOLORS = 16
-   };                   // maximum number of colors. May be changed
-   MultiExtendedHypergeometricC( long int n, long int * m, double * odds, int colors, float accuracy = 1E-9f ); // constructor
-   double probability( long int * x );  // calculate probability function
-   void mean( double * mu );            // calculate approximate mean
-   void variance( double * var );       // calculate approximate variance
-   double moments( double * mean, double * stddev, long int * combinations = 0 ); // calculate exact mean and variance
+    enum constants {
+        MAXCOLORS = 16
+    };                   // maximum number of colors. May be changed
+    MultiExtendedHypergeometricC( long int n, long int * m, double * odds, int colors, float accuracy = 1E-9f ); // constructor
+    double probability( long int * x );  // calculate probability function
+    void mean( double * mu );            // calculate approximate mean
+    void variance( double * var );       // calculate approximate variance
+    double moments( double * mean, double * stddev, long int * combinations = 0 ); // calculate exact mean and variance
 
 protected:
-   double lng( long int * x );          // natural log of proportional function
-   void SumOfAll( void );               // calculates sum of proportional function for all x combinations
-   double loop( long int n, int c );    // recursive loops used by SumOfAll
-   long int n, N;                       // copy of parameters
-   long int * m;
-   double * odds;
-   int colors;
-   double logodds[MAXCOLORS];           // log odds
-   double mFac;                         // sum of log m[i]!
-   double scale;                        // scale to apply to lng function
-   double rsum;                         // reciprocal sum of proportional function
-   float accuracy;                     // accuracy of calculation
+    double lng( long int * x );          // natural log of proportional function
+    void SumOfAll( void );               // calculates sum of proportional function for all x combinations
+    double loop( long int n, int c );    // recursive loops used by SumOfAll
+    long int n, N;                       // copy of parameters
+    long int * m;
+    double * odds;
+    int colors;
+    double logodds[MAXCOLORS];           // log odds
+    double mFac;                         // sum of log m[i]!
+    double scale;                        // scale to apply to lng function
+    double rsum;                         // reciprocal sum of proportional function
+    float accuracy;                     // accuracy of calculation
 
-   // data used by used by SumOfAll
-   long int xi[MAXCOLORS];              // x vector to calculate probability of
-   long int xm[MAXCOLORS];              // rounded approximate mean of x[i]
-   long int remaining[MAXCOLORS];       // number of balls of color > c in urn
-   double sx[MAXCOLORS];                // sum of x*f(x) or mean
-   double sxx[MAXCOLORS];               // sum of x^2*f(x) or variance
-   long int sn;                         // number of possible combinations of x
+    // data used by used by SumOfAll
+    long int xi[MAXCOLORS];              // x vector to calculate probability of
+    long int xm[MAXCOLORS];              // rounded approximate mean of x[i]
+    long int remaining[MAXCOLORS];       // number of balls of color > c in urn
+    double sx[MAXCOLORS];                // sum of x*f(x) or mean
+    double sxx[MAXCOLORS];               // sum of x^2*f(x) or variance
+    long int sn;                         // number of possible combinations of x
 };
 
 #endif
