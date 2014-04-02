@@ -26,7 +26,7 @@
 #include "defs.h"
 
 
-public  typedef struct {
+public typedef struct {
     char  exist;
     char  read;
     char  write;
