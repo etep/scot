@@ -393,7 +393,7 @@ void ggp::solveUsingMOSEKdgopt( const string & fileName, ggp & GGP ) {
 
     const string mpsToEoCmd = mpsToEo + " " + mpsFileName + " " + fFileName + " " + eoFileName;
     const string rmMpsCmd   = "rm " + mpsFileName + " " + fFileName;
-    const string mosekCmd   = "mskexpopt " + eoFileName + " -primal" + " -p " + paramFile + " -sol " + solFileName;
+    const string mosekCmd   = "mskexpopt " + eoFileName + " -dual" + " -p " + paramFile + " -sol " + solFileName;
 
     SystemWrapper( mpsToEoCmd );
     SystemWrapper( rmMpsCmd   );
