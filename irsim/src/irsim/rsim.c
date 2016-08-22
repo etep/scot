@@ -3875,7 +3875,7 @@ private void init_commands() {
 }
 
 
-main( int argc, char ** argv ) {
+int main( int argc, char ** argv ) {
     int  i, arg1;
 
     InitSignals();
@@ -3949,6 +3949,7 @@ main( int argc, char ** argv ) {
     ( void ) input( stdin );
 
     TerminateAnalyzer();
-    exit( 0 );
+    return 0;
+    // exit( 0 );
     /* NOTREACHED */
 }

@@ -116,7 +116,7 @@ char * weak( int i, int j ) {
 }
 
 
-main() {
+int main( int argc, char ** argv ) {
     register int  i, j, k, ii, jj, interval2;
 
     if( ( out = fopen( "stables.c", "w" ) ) == NULL ) {
@@ -198,5 +198,7 @@ main() {
                 }
         }
     fprintf( out, "\n};\n" );
-    exit( 0 );
+    
+    return 0;
+    // exit( 0 );
 }
